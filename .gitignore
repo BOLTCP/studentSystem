@@ -1,0 +1,34 @@
+# Flutter specific
+build/
+*.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.idea/
+.vscode/
+
+# Ignore Flutter emulators
+*.iml
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/.flutter-plugins
+android/.gradle/
+android/app/build/
+android/build/
+
+# Makefile and build output
+Makefile
+*.o
+*.out
+*.a
+*.dSYM/
+
+# Python virtual environments
+.venv/
+env/
+
+# Log files
+*.log
+
+# Editor swap files
+*~
+*.swp
