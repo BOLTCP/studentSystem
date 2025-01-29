@@ -1,5 +1,3 @@
-import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:logger/logger.dart';
 
 var logger = Logger();
@@ -46,47 +44,46 @@ class Major {
   });
 
   @override
-String toString() {
-  return 'Major: $majorName, Year: $majorsYear, Type: $majorsType, Credit Unit Rate: $creditUnitRate, Major Tuition: $majorTuition, Academic Degree: $academicDegree, '
-         'Total Years: $totalYears, Total Credits per Year: $totalCreditsPerYear, Created At: $createdAt, '
-         'Exam1: $exam1, Exam2: $exam2, Description: $majorsDescription, Brief Description: $descriptionBrief, '
-         'Qualifications: $qualifications, Qualifications1: $qualifications1, Qualifications2: $qualifications2';
-}
+  String toString() {
+    return 'Major: $majorName, Year: $majorsYear, Type: $majorsType, Credit Unit Rate: $creditUnitRate, Major Tuition: $majorTuition, Academic Degree: $academicDegree, '
+        'Total Years: $totalYears, Total Credits per Year: $totalCreditsPerYear, Created At: $createdAt, '
+        'Exam1: $exam1, Exam2: $exam2, Description: $majorsDescription, Brief Description: $descriptionBrief, '
+        'Qualifications: $qualifications, Qualifications1: $qualifications1, Qualifications2: $qualifications2';
+  }
 
   factory Major.fromJson(Map<String, dynamic> json) {
-  return Major(
-    majorId: json['major_id'],
-    majorName: json['major_name'],
-    majorsYear: DateTime.parse(json['majors_year']),
-    majorsType: json['majors_type'],
-    creditUnitRate: _parseCurrency(json['credit_unit_rate']),
-    majorTuition: _parseCurrency(json['major_tuition']),
-    academicDegree: json['academic_degree'],
-    totalYears: json['total_years'],
-    totalCreditsPerYear: json['total_credits_per_year'],
-    departmentsOfEducationiD: json['department_of_edu_id'],
-    createdAt: DateTime.parse(json['created_at']),
-    exam1: (json['exam1'] as num).toDouble(),
-    exam2: (json['exam2'] as num).toDouble(),
-    majorsDescription: json['majors_description'],
-    descriptionBrief: json['description_brief'],
-    qualifications: json['qualifications'] != null
-        ? Map<String, dynamic>.from(json['qualifications'])
-        : null,
-    qualifications1: json['qualifications1'],
-    qualifications2: json['qualifications2'],
-  );
-}
+    return Major(
+      majorId: json['major_id'],
+      majorName: json['major_name'],
+      majorsYear: DateTime.parse(json['majors_year']),
+      majorsType: json['majors_type'],
+      creditUnitRate: _parseCurrency(json['credit_unit_rate']),
+      majorTuition: _parseCurrency(json['major_tuition']),
+      academicDegree: json['academic_degree'],
+      totalYears: json['total_years'],
+      totalCreditsPerYear: json['total_credits_per_year'],
+      departmentsOfEducationiD: json['department_of_edu_id'],
+      createdAt: DateTime.parse(json['created_at']),
+      exam1: (json['exam1'] as num).toDouble(),
+      exam2: (json['exam2'] as num).toDouble(),
+      majorsDescription: json['majors_description'],
+      descriptionBrief: json['description_brief'],
+      qualifications: json['qualifications'] != null
+          ? Map<String, dynamic>.from(json['qualifications'])
+          : null,
+      qualifications1: json['qualifications1'],
+      qualifications2: json['qualifications2'],
+    );
+  }
 
 // Helper function to parse currency strings into double
-static double _parseCurrency(String currency) {
-  if (currency == null || currency.isEmpty) return 0.0;
+  static double _parseCurrency(String currency) {
+    if (currency.isEmpty) return 0.0;
 
-  // Remove the dollar sign, commas, and parse the remaining number as double
-  String parsed = currency.replaceAll(RegExp(r'[^\d.]'), '');
-  return double.tryParse(parsed) ?? 0.0;
-}
-
+    // Remove the dollar sign, commas, and parse the remaining number as double
+    String parsed = currency.replaceAll(RegExp(r'[^\d.]'), '');
+    return double.tryParse(parsed) ?? 0.0;
+  }
 
   // JSON serialization
   Map<String, dynamic> toJson() {
@@ -111,11 +108,9 @@ static double _parseCurrency(String currency) {
       'qualifications2': qualifications2,
     };
   }
-      
 }
 
-class MajorBrief{
-
+class MajorBrief {
   final int majorId;
   final String majorName;
   final String? majorsDescription;
@@ -130,13 +125,12 @@ class MajorBrief{
     try {
       return MajorBrief(
         majorId: json['major_id'],
-        majorName: json['major_name'] ?? '', 
-        majorsDescription: json['majors_description'] ?? '', 
+        majorName: json['major_name'] ?? '',
+        majorsDescription: json['majors_description'] ?? '',
       );
     } catch (e) {
       logger.d('Error parsing field: $e');
       rethrow; // This rethrows the exception, which can be caught in your Flutter app
     }
   }
-
 }

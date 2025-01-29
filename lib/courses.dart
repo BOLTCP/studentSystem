@@ -120,8 +120,8 @@ class _CoursesIntroductionState extends State<CoursesIntroduction> {
                                 Navigator.pushNamed(
                                   context,
                                   '/student_signup',
-                                  arguments:
-                                      majors, // Pass majors list to the next screen
+                                  arguments: majors[
+                                      0], // Pass majors list to the next screen
                                 );
                               },
                               child: Text(

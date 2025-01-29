@@ -9,7 +9,7 @@ import 'package:onemissystem/models/major.dart';
 var logger = Logger();
 
 class StudentSignup extends StatefulWidget {
-  final List<Major> major;
+  final Major major;
 
   const StudentSignup({required this.major, Key? key}) : super(key: key);
 
@@ -23,6 +23,7 @@ class _StudentSignupState extends State<StudentSignup> {
   late Future<Student> student;
   String password = '';
   bool areExamsValid = false;
+  DateTime currectDateTime = DateTime.now();
 
   final _formKey = GlobalKey<FormState>();
   bool _isPasswordVisible = true;
@@ -195,18 +196,25 @@ class _StudentSignupState extends State<StudentSignup> {
                         }
                         final result = await fetchExam(email, password);
 
-                        if (result != null && result is Student) {
-                          if (widget.major[0].exam1 <= result.exams[0].score &&
-                              widget.major[0].exam2 <= result.exams[1].score) {
+                        if (currectDateTime.isBefore(result.validUntil)) {
+                          if (widget.major.exam1 <= result.exams[0].score &&
+                              widget.major.exam2 <= result.exams[1].score) {
                             Navigator.pushNamed(context, '/personal_info',
                                 arguments: {
                                   'student': result,
                                   'major': widget.major
                                 } // Pass the 'majors' list to the next screen
                                 );
-                          } else {
-                            print('no');
                           }
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                  'Уучлаарай, Таны ${result.examCode} дугаартай ЭЕШ - н хүчинтэй хугацаа дууссан байна. '
+                                  'Шалгалт өгсөн огноо: ${result.createdAt}, Хүчинтэй хугацаа дуусах огноо: ${result.validUntil} байна!'),
+                              duration: Duration(seconds: 10),
+                            ),
+                          );
                         }
                       },
                       child: Text('Бүртгүүлэх', style: TextStyle(fontSize: 18)),

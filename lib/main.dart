@@ -42,7 +42,7 @@ class MyApp extends StatelessWidget {
           );
         }
         if (settings.name == '/student_signup') {
-          List<Major> major = settings.arguments as List<Major>;
+          final Major major = settings.arguments as Major;
 
           return MaterialPageRoute(
             builder: (context) => StudentSignup(major: major),
@@ -53,7 +53,7 @@ class MyApp extends StatelessWidget {
 
           if (arguments != null) {
             final Student student = arguments['student'] as Student;
-            final List<Major> major = arguments['major'] as List<Major>;
+            final Major major = arguments['major'] as Major;
 
             return MaterialPageRoute(
               builder: (context) => PersonalInfo(
