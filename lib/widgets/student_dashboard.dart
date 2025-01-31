@@ -99,7 +99,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
         currentAcademicDegree: '',
         profession: null,
         professionCertification: null,
-        passportNumber: '',
+        fPassportNumber: '',
         married: '',
         militaryService: '',
         pensionsEstablished: null,
@@ -254,7 +254,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
       _buildUserDetailRow('Valid Address', user.validAddress),
       _buildUserDetailRow('Phone (Emergency)', user.phoneNumberEmergency),
       _buildUserDetailRow('Blood Type', user.bloodType ?? 'N/A'),
-      _buildUserDetailRow('Passport Number', user.passportNumber),
+      _buildUserDetailRow('Passport Number', user.fPassportNumber ?? 'N/A'),
       _buildUserDetailRow('Marital Status', user.married),
       _buildUserDetailRow('Military Service', user.militaryService),
       _buildUserDetailRow('Disabled', user.disabled),
@@ -272,9 +272,10 @@ class _StudentDashboardState extends State<StudentDashboard> {
       _buildUserDetailRow(
           'Pensions Established', user.pensionsEstablished ?? 'N/A'),
       _buildUserDetailRow('Additional Notes', user.additionalNotes ?? 'N/A'),
-      _buildUserDetailRow('Drivers Certificate', user.driversCertificate),
       _buildUserDetailRow(
-          'Drivers Certificate Number', user.driversCertificateNumber),
+          'Drivers Certificate', user.driversCertificate ?? 'N/A'),
+      _buildUserDetailRow(
+          'Drivers Certificate Number', user.driversCertificateNumber ?? 'N/A'),
       _buildUserDetailRow(
           'Profession Certification', user.professionCertification ?? 'N/A'),
       _buildUserDetailRow('Email', user.email),

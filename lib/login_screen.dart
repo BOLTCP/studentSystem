@@ -66,7 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
             _saveCredentials(loginName, passwordHash);
           }
 
-          if (user.userRole == 'student') {
+          if (user.userRole == 'Оюутан') {
             // Navigate to the student dashboard
             Navigator.pushReplacement(
               context,

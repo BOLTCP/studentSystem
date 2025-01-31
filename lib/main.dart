@@ -6,6 +6,7 @@ import 'login_screen.dart';
 import 'package:onemissystem/models/major.dart';
 import 'package:onemissystem/widgets/personal_info.dart';
 import 'package:onemissystem/models/exam_json.dart';
+import 'package:onemissystem/widgets/rules.dart';
 
 void main() {
   runApp(MyApp());
@@ -32,6 +33,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/login_screen': (context) => LoginScreen(),
         '/admission_courses': (context) => AdmissionCourses(),
+        '/rules': (context) => Rules(),
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/courses') {
