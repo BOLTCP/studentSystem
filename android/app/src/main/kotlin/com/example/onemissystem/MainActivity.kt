@@ -1,4 +1,5 @@
-package com.example.onemissystem
+package com.example.studentsystem
+
 
 import io.flutter.embedding.android.FlutterActivity
 

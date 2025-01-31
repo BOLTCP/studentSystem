@@ -4,7 +4,7 @@ import 'package:external_path/external_path.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:onemissystem/widgets/pdf_viewer_screen.dart';
+import 'package:studentsystem/widgets/pdf_viewer_screen.dart';
 
 var logger = Logger();
 

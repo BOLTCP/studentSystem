@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:onemissystem/api/get_api_url.dart';
+import 'package:studentsystem/api/get_api_url.dart';
 import 'package:logger/logger.dart';
-import 'package:onemissystem/models/exam_json.dart';
-import 'package:onemissystem/models/major.dart';
+import 'package:studentsystem/models/exam_json.dart';
+import 'package:studentsystem/models/major.dart';
 
 var logger = Logger();
 

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:onemissystem/widgets/student_signup.dart';
+import 'package:studentsystem/widgets/student_signup.dart';
 import 'admission_courses.dart';
 import 'courses.dart';
 import 'login_screen.dart';
-import 'package:onemissystem/models/major.dart';
-import 'package:onemissystem/widgets/personal_info.dart';
-import 'package:onemissystem/models/exam_json.dart';
-import 'package:onemissystem/widgets/rules.dart';
+import 'package:studentsystem/models/major.dart';
+import 'package:studentsystem/widgets/personal_info.dart';
+import 'package:studentsystem/models/exam_json.dart';
+import 'package:studentsystem/widgets/rules.dart';
 
 void main() {
   runApp(MyApp());

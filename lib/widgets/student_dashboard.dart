@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'dart:convert';
-import 'package:onemissystem/models/auth_user.dart';
-import 'package:onemissystem/login_screen.dart';
-import 'package:onemissystem/api/get_api_url.dart'; // Import the login screen
+import 'package:studentsystem/models/auth_user.dart';
+import 'package:studentsystem/login_screen.dart';
+import 'package:studentsystem/api/get_api_url.dart'; // Import the login screen
 import 'package:logger/logger.dart';
 
 var logger = Logger();

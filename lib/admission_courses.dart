@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:onemissystem/courses.dart';
-import 'package:onemissystem/models/major.dart';
-import 'package:onemissystem/api/get_api_url.dart';
+import 'package:studentsystem/courses.dart';
+import 'package:studentsystem/models/major.dart';
+import 'package:studentsystem/api/get_api_url.dart';
 import 'package:logger/logger.dart';
 
 var logger = Logger();

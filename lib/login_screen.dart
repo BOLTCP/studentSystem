@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'api/get_api_url.dart';
-import 'package:onemissystem/widgets/student_dashboard.dart';
-import 'package:onemissystem/models/auth_user.dart';
+import 'package:studentsystem/widgets/student_dashboard.dart';
+import 'package:studentsystem/models/auth_user.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:logger/logger.dart';
 
