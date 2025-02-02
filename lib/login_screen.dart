@@ -18,20 +18,20 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  bool _isPasswordVisible = false; // To toggle password visibility
+  bool _isPasswordVisible = false;
   final _loginNameController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _rememberMe = false; // To track if user wants to save their credentials
-  bool _isLoading = false; // To track loading state
+  bool _rememberMe = false;
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _loadCredentials(); // Load saved credentials when the screen loads
+    _loadCredentials();
   }
 
   // Login function
-  Future<void> _login() async {
+  Future<String> _login() async {
     if (_formKey.currentState!.validate()) {
       final loginName = _loginNameController.text.trim();
       final passwordHash = _passwordController.text.trim();
@@ -42,43 +42,40 @@ class _LoginScreenState extends State<LoginScreen> {
       };
 
       setState(() {
-        _isLoading = true; // Show loading indicator
+        _isLoading = true;
       });
 
       try {
         final response = await http.post(
-          getApiUrl('/login'), // Use platform-specific API URL with endpoint
-          body: json.encode(data), // Send the data as JSON
-          headers: {
-            'Content-Type': 'application/json'
-          }, // Ensure the correct content type
-        ).timeout(Duration(seconds: 30)); // Set timeout for the request
+          getApiUrl('/login'),
+          body: json.encode(data),
+          headers: {'Content-Type': 'application/json'},
+        ).timeout(Duration(seconds: 30));
 
         if (response.statusCode == 200) {
-          // Parse response if login is successful
           logger.d('Login successful!');
           final decodedJson = json.decode(response.body);
           logger.d(decodedJson);
           final user = AuthUser.fromJson(decodedJson['user']);
 
           if (_rememberMe) {
-            // Save the login credentials if "Remember me" is checked
             _saveCredentials(loginName, passwordHash);
           }
 
           if (user.userRole == 'Оюутан') {
-            // Navigate to the student dashboard
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const StudentDashboard()),
             );
           }
-        } else {
-          // Handle login failure
-          logger.d('Login failed: ${response.body}');
+          return '';
+        } else if (response.statusCode == 401) {
+          final decodedJson = json.decode(response.body);
+          logger.d(decodedJson);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Login failed. Please try again.')),
-          );
+              const SnackBar(content: Text('Буруу нэр эсвэл нууц үг байна')));
+
+          return 'Буруу нэр эсвэл нууц үг байна';
         }
       } catch (e) {
         // Handle error (e.g., network issues)
@@ -86,12 +83,14 @@ class _LoginScreenState extends State<LoginScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('An error occurred. Please try again.')),
         );
+        return '';
       } finally {
         setState(() {
           _isLoading = false; // Stop loading indicator
         });
       }
     }
+    return '';
   }
 
   // Save credentials to SharedPreferences

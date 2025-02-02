@@ -1,4 +1,4 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.example.studentsystem">
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:enabled="true" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:enabled="true" />
 
@@ -7,7 +7,7 @@
         android:enabled="true" />
 
     <application
-        android:label="onemissystem"
+        android:label="studentsystem"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:requestLegacyExternalStorage="true">

@@ -1,4 +1,6 @@
-import 'dart:convert';
+import 'package:logger/logger.dart';
+
+var logger = Logger();
 
 class StudentUser {
   int studentId;
@@ -88,24 +90,24 @@ class StudentUser {
 
   // Debug method to print the object data
   void debugPrint() {
-    print('Student {');
-    print('  studentId: $studentId');
-    print('  userId: $userId');
-    print('  studentClubId: $studentClubId');
-    print('  additionalRoles: $additionalRoles');
-    print('  studentCode: $studentCode');
-    print('  studentEmail: $studentEmail');
-    print('  studentFile: $studentFile');
-    print('  enrollmentNumber: $enrollmentNumber');
-    print('  enrollmentYear: $enrollmentYear');
-    print('  yearClassification: $yearClassification');
-    print('  isActive: $isActive');
-    print('  currentAcademicDegree: $currentAcademicDegree');
-    print('  academicDegreeFile: $academicDegreeFile');
-    print('  majorId: $majorId');
-    print('  createdAt: $createdAt');
-    print('  contracts: $contracts');
-    print('  student_active_note: $studentActiveNote');
-    print('}');
+    logger.d('Student {');
+    logger.d('  studentId: $studentId');
+    logger.d('  userId: $userId');
+    logger.d('  studentClubId: $studentClubId');
+    logger.d('  additionalRoles: $additionalRoles');
+    logger.d('  studentCode: $studentCode');
+    logger.d('  studentEmail: $studentEmail');
+    logger.d('  studentFile: $studentFile');
+    logger.d('  enrollmentNumber: $enrollmentNumber');
+    logger.d('  enrollmentYear: $enrollmentYear');
+    logger.d('  yearClassification: $yearClassification');
+    logger.d('  isActive: $isActive');
+    logger.d('  currentAcademicDegree: $currentAcademicDegree');
+    logger.d('  academicDegreeFile: $academicDegreeFile');
+    logger.d('  majorId: $majorId');
+    logger.d('  createdAt: $createdAt');
+    logger.d('  contracts: $contracts');
+    logger.d('  student_active_note: $studentActiveNote');
+    logger.d('}');
   }
 }

@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
+import 'package:logger/logger.dart';
+
+var logger = Logger();
 
 class PdfViewerScreen extends StatefulWidget {
   final String pdfPath;
@@ -52,7 +55,7 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
           openAppSettings();
         });
       } else {
-        print("Permission granted!");
+        logger.d("Permission granted!");
       }
     }
   }
@@ -82,27 +85,28 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
                       child: PDFView(
                         filePath: widget.pdfPath,
                         onRender: (pages) {
-                          print("PDF rendered with $pages pages"); // Debug log
+                          logger
+                              .d("PDF rendered with $pages pages"); // Debug log
                           setState(() {
                             totalPages = pages!;
                             isLoading = false;
                           });
                         },
                         onError: (error) {
-                          print("PDF load error: $error"); // Debug log
+                          logger.d("PDF load error: $error"); // Debug log
                           setState(() {
                             isLoading = false;
                             errorMessage = "Failed to load PDF: $error";
                           });
                         },
                         onViewCreated: (controller) {
-                          print("PDF view created"); // Debug log
+                          logger.d("PDF view created"); // Debug log
                           setState(() {
                             pdfViewController = controller;
                           });
                         },
                         onPageChanged: (page, total) {
-                          print("Page changed: $page/$total"); // Debug log
+                          logger.d("Page changed: $page/$total"); // Debug log
                           setState(() {
                             currentPage = page!;
                           });

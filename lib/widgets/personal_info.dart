@@ -5,6 +5,9 @@ import 'package:flutter/services.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:studentsystem/api/get_api_url.dart';
+import 'package:logger/logger.dart';
+
+var logger = Logger();
 
 class PersonalInfo extends StatefulWidget {
   const PersonalInfo({
@@ -21,7 +24,7 @@ class PersonalInfo extends StatefulWidget {
 }
 
 class _PersonalInfoState extends State<PersonalInfo> {
-  String? _requiredFieldValidator(String? value) {
+  String? requiredFieldValidator(String? value) {
     if (value == null || value.isEmpty) {
       return 'This field is required';
     }
@@ -32,6 +35,7 @@ class _PersonalInfoState extends State<PersonalInfo> {
   Widget build(BuildContext context) {
     final Student student = widget.student;
     final Major major = widget.major;
+    // ignore: unused_local_variable
     String rulesPath = 'assets/documents/Сургалтын_Журам.pdf';
     bool canProceed = false;
     final userRole = 'Оюутан';
@@ -185,21 +189,24 @@ class _PersonalInfoState extends State<PersonalInfo> {
           headers: {'Content-Type': 'application/json'},
         ).timeout(Duration(seconds: 30));
 
-        /*
-        
         if (response.statusCode == 200) {
-
           final Map<String, dynamic> responseJson = jsonDecode(response.body);
-          final Map<String, dynamic> examJson = responseJson['exam_json'];
-          final student = Student.fromJson(examJson);
-          logger.d(student.toString());
-          return ['loginName': login_name, 'passwordHash': password_hash];
+          String message = responseJson['message'];
+          var user = responseJson['user'];
+
+          return [message, user];
+        } else if (response.statusCode == 400) {
+          final Map<String, dynamic> responseJson = jsonDecode(response.body);
+          String message = responseJson['message'];
+
+          return [message];
+        } else if (response.statusCode == 500) {
+          final Map<String, dynamic> responseJson = jsonDecode(response.body);
+          String message = responseJson['message'];
+
+          return [message];
         } else {
-          logger.d('Error: ${response.statusCode}');
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Сурагч шалгалт өгөөгүй байна!')),
-          );
-          return student;
+          return ['Unexpected response status: ${response.statusCode}'];
         }
       } catch (e) {
         logger.d('Error: $e');
@@ -207,14 +214,8 @@ class _PersonalInfoState extends State<PersonalInfo> {
           const SnackBar(
               content: Text('Алдаа гарлаа, түр хүлээгээд дахин оролдоно уу.')),
         );
-        return student;
+        return ['Error: $e'];
       }
-        
-         */
-      } catch (e) {
-        print(e);
-      }
-      return [0];
     }
 
     return Scaffold(
@@ -1987,23 +1988,34 @@ class _PersonalInfoState extends State<PersonalInfo> {
                   onPressed: !canProceed
                       ? () {
                           if (formKey.currentState?.validate() ?? false) {
-                            // If the form is valid, submit it
-                            // Handle form submission logic here
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(content: Text('Та түр хүлээнэ үү!')),
                             );
-                            createContract();
+                            createContract().then((response) {
+                              print("Response from createContract: $response");
+                              String message = response[0];
+
+                              if (response.length > 1) {
+                                var user = response[1];
+                              }
+
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(message)),
+                              );
+                            }).catchError((e) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Алдаа гарлаа: $e')),
+                              );
+                            });
                           } else {
-                            // If the form is invalid, show a message
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                   content: Text(
                                       'Заавал бөглөх хэсгүүдийг бөглөнө үү.')),
                             );
                           }
-                          // Execute contract creation logic
                         }
-                      : null, // If canProceed is false, the button is disabled
+                      : null,
                   child: const Text('Сургалтын гэрээтэй танилцах'),
                 ),
               ],
