@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:studentsystem/widgets/student_signup.dart';
 import 'admission_courses.dart';
 import 'courses.dart';
@@ -6,7 +7,7 @@ import 'login_screen.dart';
 import 'package:studentsystem/models/major.dart';
 import 'package:studentsystem/widgets/personal_info.dart';
 import 'package:studentsystem/models/exam_json.dart';
-import 'package:studentsystem/widgets/rules.dart';
+import 'package:studentsystem/widgets/pdf_viewer_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -33,7 +34,10 @@ class MyApp extends StatelessWidget {
       routes: {
         '/login_screen': (context) => LoginScreen(),
         '/admission_courses': (context) => AdmissionCourses(),
-        '/rules': (context) => Rules(),
+        '/pdf_viewer_screen': (context) => PdfViewerScreen(
+              isAsset: true,
+              canProceed: false,
+            ),
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/courses') {
@@ -59,8 +63,8 @@ class MyApp extends StatelessWidget {
 
             return MaterialPageRoute(
               builder: (context) => PersonalInfo(
-                student: student, // Passing the resolved Student
-                major: major, // Passing the Major
+                student: student,
+                major: major,
               ),
             );
           } else {

@@ -1,30 +1,32 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
 import 'package:logger/logger.dart';
+import 'package:flutter_cached_pdfview/flutter_cached_pdfview.dart';
+import 'package:studentsystem/widgets/personal_info.dart';
 
 var logger = Logger();
 
 class PdfViewerScreen extends StatefulWidget {
-  final String pdfPath;
-  final String pdfName;
-  const PdfViewerScreen({
+  PdfViewerScreen({
     super.key,
-    required this.pdfPath,
-    required this.pdfName,
+    required this.isAsset,
+    required this.canProceed,
   });
+
+  final bool isAsset;
+  bool canProceed;
 
   @override
   State<PdfViewerScreen> createState() => _PdfViewerScreenState();
 }
 
 class _PdfViewerScreenState extends State<PdfViewerScreen> {
-  int totalPages = 0;
   int currentPage = 0;
-  bool isLoading = true; // To show loading indicator while PDF is loading
   String errorMessage = ''; // To show any error
+  bool isLoading = true; // To show loading indicator while PDF is loading
   PDFViewController? pdfViewController; // Controller to interact with PDFView
+  int totalPages = 0;
 
   @override
   void initState() {
@@ -32,7 +34,6 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
     requestPermissions();
   }
 
-  // Request permissions before loading the PDF
   Future<void> requestPermissions() async {
     if (Platform.isAndroid) {
       PermissionStatus permissionStatus;
@@ -60,98 +61,59 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
     }
   }
 
+  void _onPageChanged(int page, int total) {
+    setState(() {
+      currentPage = page;
+      totalPages = total;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.red[200],
       appBar: AppBar(
         backgroundColor: Colors.white,
-        title: Text(widget.pdfName),
+        title: Text('Сургалтын Журам'),
       ),
-      body: isLoading
-          ? Center(
-              child: CircularProgressIndicator(),
-            )
-          : errorMessage.isNotEmpty
-              ? Center(
-                  child: Text(
-                    errorMessage,
-                    style: TextStyle(color: Colors.red, fontSize: 18),
-                  ),
-                )
-              : Column(
-                  children: [
-                    Expanded(
-                      child: PDFView(
-                        filePath: widget.pdfPath,
-                        onRender: (pages) {
-                          logger
-                              .d("PDF rendered with $pages pages"); // Debug log
-                          setState(() {
-                            totalPages = pages!;
-                            isLoading = false;
-                          });
-                        },
-                        onError: (error) {
-                          logger.d("PDF load error: $error"); // Debug log
-                          setState(() {
-                            isLoading = false;
-                            errorMessage = "Failed to load PDF: $error";
-                          });
-                        },
-                        onViewCreated: (controller) {
-                          logger.d("PDF view created"); // Debug log
-                          setState(() {
-                            pdfViewController = controller;
-                          });
-                        },
-                        onPageChanged: (page, total) {
-                          logger.d("Page changed: $page/$total"); // Debug log
-                          setState(() {
-                            currentPage = page!;
-                          });
-                        },
-                      ),
-                    ),
-                    // Display current page / total pages at the bottom
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "Page ${currentPage + 1}/$totalPages",
-                            style: TextStyle(fontSize: 18, color: Colors.black),
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Navigation Controls (Next/Previous buttons)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        IconButton(
-                          icon: Icon(Icons.arrow_back),
-                          onPressed: currentPage > 0
-                              ? () async {
-                                  await pdfViewController
-                                      ?.setPage(currentPage - 1);
-                                }
-                              : null,
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.arrow_forward),
-                          onPressed: currentPage < totalPages - 1
-                              ? () async {
-                                  await pdfViewController
-                                      ?.setPage(currentPage + 1);
-                                }
-                              : null,
-                        ),
-                      ],
-                    ),
-                  ],
+      body: Stack(
+        children: [
+          // Wrap PDF widget inside a Container to avoid ParentDataWidget error
+          Container(
+            padding: EdgeInsets.all(8.0),
+            child: PDF(
+              fitPolicy: FitPolicy.WIDTH,
+              enableSwipe: true,
+              swipeHorizontal: true,
+              autoSpacing: false,
+              pageFling: false,
+              backgroundColor: Colors.grey,
+              onError: (error) {
+                print(error.toString());
+              },
+              onPageError: (page, error) {
+                print('$page: ${error.toString()}');
+              },
+            ).fromAsset('assets/documents/dummyPDF.pdf'),
+          ),
+
+          // Show button when the current page is the last page
+          if (currentPage == totalPages)
+            Positioned(
+              bottom: 20,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    print('Танилцаж дууссанг баталгаажуулах');
+                    widget.canProceed = true;
+                  },
+                  child: Text('Танилцаж дууссан'),
                 ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

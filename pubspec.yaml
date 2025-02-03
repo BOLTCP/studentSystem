@@ -34,6 +34,7 @@ dependencies:
   logger: ^1.1.0
   shared_preferences: ^2.4.0
   flutter_pdfview: ^1.4.0
+  flutter_cached_pdfview: ^0.4.3
   permission_handler: ^11.3.1
   pdfx: ^2.8.0
   path: ^1.8.0
@@ -46,6 +47,8 @@ dependencies:
   http: ^1.2.2
   provider: ^6.1.2
   passwordfield: ^0.2.0
+  signature: ^5.5.0
+  image_gallery_saver: ^2.0.3
 
 dev_dependencies:
   dependency_validator: ^3.0.0
@@ -73,7 +76,7 @@ flutter:
 
   assets:
     - assets/images/icons/
-    - assets/documents/Сургалтын_Журам.pdf
+    - assets/documents/dummyPDF.pdf
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

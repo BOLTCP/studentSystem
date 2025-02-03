@@ -198,7 +198,7 @@ class _RulesState extends State<Rules> {
                       size: 30,
                     ),
                     trailing: Icon(Icons.arrow_forward_ios, size: 18),
-                    onTap: () {
+                    /*onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -208,7 +208,7 @@ class _RulesState extends State<Rules> {
                           ),
                         ),
                       );
-                    },
+                    },*/
                   ),
                 );
               },
