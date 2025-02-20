@@ -1,0 +1,51 @@
+class Courses {
+  final List<Course> courses;
+
+  Courses({required this.courses});
+
+  // Factory constructor to create a Courses instance from JSON
+  factory Courses.fromJson(List<dynamic> json) {
+    List<Course> coursesList =
+        json.map((courseJson) => Course.fromJson(courseJson)).toList();
+    return Courses(courses: coursesList);
+  }
+}
+
+class Course {
+  final int courseId;
+  final String courseName;
+  final String courseCode;
+  final String courseType;
+  final String courseYear;
+  final int totalCredits;
+  final int majorId;
+  final String description;
+  final String courseSeason;
+
+  Course({
+    required this.courseId,
+    required this.courseName,
+    required this.courseCode,
+    required this.courseType,
+    required this.courseYear,
+    required this.totalCredits,
+    required this.majorId,
+    this.description = '*',
+    this.courseSeason = 'Намар, Өвөл, Хавар, Зун',
+  });
+
+  // Factory constructor to create a Course instance from JSON
+  factory Course.fromJson(Map<String, dynamic> json) {
+    return Course(
+      courseId: json['course_id'],
+      courseName: json['course_name'],
+      courseCode: json['course_code'],
+      courseType: json['course_type'],
+      courseYear: json['course_year'],
+      totalCredits: json['total_credits'],
+      majorId: json['major_id'],
+      description: json['description'] ?? '*',
+      courseSeason: json['course_season'] ?? 'Намар, Өвөл, Хавар, Зун',
+    );
+  }
+}
