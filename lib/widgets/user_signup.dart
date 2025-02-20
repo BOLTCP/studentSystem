@@ -22,17 +22,17 @@ class UserSignUp extends StatefulWidget {
 class _UserSignUpState extends State<UserSignUp> {
   String confirmPassword = '';
   final TextEditingController registryNumberContoller = TextEditingController();
-  late Future<User> user;
+  late Future<User?> user;
 
   final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
     super.initState();
-    user = fetchExam(registryNumberContoller.text);
+    user = fetchCitizenInfo(registryNumberContoller.text);
   }
 
-  Future<User> fetchExam(String registryNumberContoller) async {
+  Future<User?> fetchCitizenInfo(String registryNumberContoller) async {
     try {
       final response = await http.post(
         getApiUrl('/User/Staff/Signup/Validating'),
@@ -46,40 +46,48 @@ class _UserSignUpState extends State<UserSignUp> {
 
         if (responseJson.containsKey('user_json')) {
           final Map<String, dynamic> userJson = responseJson['user_json'];
-          user = User.fromJson(userJson) as Future<User>;
+          logger.d(userJson);
+          final user = User.fromJson(userJson);
+          logger.d(user);
+          return user;
         } else {
           logger.d('Error: No "user_json" in the response');
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Тамхи өгөгдлийг буруу авсан!')),
+            const SnackBar(
+                content: Text(
+                    'Регистрийн дугаар буруу эсвэл бүртгэл байхгүй байна!')),
           );
+          return null;
         }
-
-        logger.d(user.toString());
-        return user;
       } else {
         logger.d('Error: ${response.statusCode}');
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Сурагч шалгалт өгөөгүй байна!')),
+          const SnackBar(
+              content:
+                  Text('Регистрийн дугаар буруу эсвэл бүртгэл байхгүй байна!')),
         );
-        return user; // Returning the default user object in case of error
+        return null;
       }
     } catch (e) {
       logger.d('Error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Алдаа гарлаа, түр хүлээгээд дахин оролдоно уу.'),
-        ),
+            content: Text('Алдаа гарлаа, түр хүлээгээд дахин оролдоно уу.')),
       );
-      return user; // Return the default user object in case of error
+      return null;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.blue[50], // Blue background for the screen
+      backgroundColor: Colors.blue[50],
       appBar: AppBar(
-        title: Text('Ажилтны бүртгэл'),
+        title: const Text(
+          'Холбоо барих',
+          style: TextStyle(
+              color: Colors.white, fontSize: 24.0, fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.blue,
       ),
       body: Center(
@@ -197,13 +205,23 @@ class _UserSignUpState extends State<UserSignUp> {
                       ),
                       onPressed: () async {
                         if (_formKey.currentState?.validate() ?? false) {
-                          // If form is valid, proceed
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text('Түр хүлээнэ үү!')),
                           );
+
+                          try {
+                            final result = await fetchCitizenInfo(
+                                registryNumberContoller.text);
+
+                            if (result != null) {
+                              logger.d('User fetched successfully: $result');
+                            } else {
+                              logger.d('No user found');
+                            }
+                          } catch (e) {
+                            logger.d('Error during API call: $e');
+                          }
                         }
-                        final result =
-                            await fetchExam(registryNumberContoller.text);
                       },
                       child: Text('Бүртгүүлэх', style: TextStyle(fontSize: 18)),
                     ),

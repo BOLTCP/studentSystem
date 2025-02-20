@@ -109,7 +109,6 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                       'userRoleSpecification': 'Багш',
                     },
                   );
-                  _handleOptionSelection("Option 1");
                 },
               ),
               ListTile(
