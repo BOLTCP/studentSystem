@@ -21,7 +21,19 @@ class UserSignUp extends StatefulWidget {
 
 class _UserSignUpState extends State<UserSignUp> {
   String confirmPassword = '';
-  final TextEditingController registryNumberContoller = TextEditingController();
+  final TextEditingController userNameController =
+      TextEditingController(text: 'Мэдээлэллээ татна уу.');
+  final TextEditingController userSirNameController =
+      TextEditingController(text: 'Мэдээлэллээ татна уу.');
+  final TextEditingController registryNumberContoller =
+      TextEditingController(text: 'Мэдээлэллээ татна уу.');
+  final TextEditingController emailController =
+      TextEditingController(text: 'Мэдээлэллээ татна уу.');
+  final TextEditingController educationController =
+      TextEditingController(text: 'Мэдээлэллээ татна уу.');
+  final TextEditingController professionController =
+      TextEditingController(text: 'Мэдээлэллээ татна уу.');
+
   late Future<User?> user;
 
   final _formKey = GlobalKey<FormState>();
@@ -29,7 +41,6 @@ class _UserSignUpState extends State<UserSignUp> {
   @override
   void initState() {
     super.initState();
-    user = fetchCitizenInfo(registryNumberContoller.text);
   }
 
   Future<User?> fetchCitizenInfo(String registryNumberContoller) async {
@@ -49,6 +60,11 @@ class _UserSignUpState extends State<UserSignUp> {
           logger.d(userJson);
           final user = User.fromJson(userJson);
           logger.d(user);
+          userNameController.text = user.userName;
+          userSirNameController.text = user.userSirname;
+          emailController.text = user.email;
+          educationController.text = user.education!;
+          professionController.text = user.profession!;
           return user;
         } else {
           logger.d('Error: No "user_json" in the response');
@@ -192,7 +208,6 @@ class _UserSignUpState extends State<UserSignUp> {
                     ),
 
                      */
-                    SizedBox(height: 30),
                     // Submit Button
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
@@ -223,8 +238,89 @@ class _UserSignUpState extends State<UserSignUp> {
                           }
                         }
                       },
-                      child: Text('Бүртгүүлэх', style: TextStyle(fontSize: 18)),
+                      child: Text('Мэдээлэл авах',
+                          style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold)),
                     ),
+                    Padding(padding: EdgeInsets.all(12.0)),
+
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            readOnly: true,
+                            controller: userNameController,
+                            decoration: InputDecoration(
+                              labelText: 'Нэр',
+                              prefixIcon: Icon(Icons.person),
+                            ),
+                            keyboardType: TextInputType.text,
+                          ),
+                        ),
+                        Padding(padding: EdgeInsets.symmetric(horizontal: 3.0)),
+                        Expanded(
+                          child: TextField(
+                            readOnly: true,
+                            controller: userSirNameController,
+                            decoration: InputDecoration(
+                              labelText: 'Овог',
+                              prefixIcon: Icon(Icons.padding),
+                            ),
+                            keyboardType: TextInputType.text,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    Padding(padding: EdgeInsets.all(12.0)),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            readOnly: true,
+                            controller: emailController,
+                            decoration: InputDecoration(
+                              labelText: 'И-мэйл',
+                              prefixIcon: Icon(Icons.mail),
+                            ),
+                            keyboardType: TextInputType.text,
+                          ),
+                        ),
+                        Padding(padding: EdgeInsets.symmetric(horizontal: 3.0)),
+                        Expanded(
+                          child: TextField(
+                            readOnly: true,
+                            controller: educationController,
+                            decoration: InputDecoration(
+                              labelText: 'Боловсрол',
+                              prefixIcon: Icon(Icons.school),
+                            ),
+                            keyboardType: TextInputType.text,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    Padding(padding: EdgeInsets.all(12.0)),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            readOnly: true,
+                            controller: professionController,
+                            decoration: InputDecoration(
+                              labelText: 'Мэргэжил',
+                              prefixIcon: Icon(Icons.work),
+                            ),
+                            keyboardType: TextInputType.text,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    SizedBox(height: 20),
                   ],
                 ),
               ),
