@@ -13,23 +13,48 @@ import 'package:studentsystem/models/user.dart';
 var logger = Logger();
 
 class PersonalInfo extends StatefulWidget {
-  final String userRoleSpecification;
-  final User user;
-  final Major? major;
   const PersonalInfo({
     super.key,
     required this.user,
-    required this.major,
+    this.major,
     required this.userRoleSpecification,
   });
+
+  final Major? major;
+  final User user;
+  final String userRoleSpecification;
 
   @override
   _PersonalInfoState createState() => _PersonalInfoState();
 }
 
 class _PersonalInfoState extends State<PersonalInfo> {
-  Uint8List? signature;
+  final List<String> academicDegree = [
+    'Бакалавр',
+    'Магистр',
+    'Доктор',
+    '*',
+  ];
+
+  final TextEditingController additionalDescriptionController =
+      TextEditingController();
+
   String base64Signature = '';
+  final TextEditingController birthdayController = TextEditingController();
+  final List<String> blood = [
+    'O-',
+    'A-',
+    'B-',
+    'AB-',
+    'O+',
+    'A+',
+    'B+',
+    'AB+',
+  ];
+
+  String? bloodType;
+  bool canProceed = false;
+  final TextEditingController citizenshipController = TextEditingController();
   final controller = SignatureController(
     penColor: Colors.black,
     penStrokeWidth: 3,
@@ -37,69 +62,125 @@ class _PersonalInfoState extends State<PersonalInfo> {
     exportBackgroundColor: Colors.white,
   );
 
+  final List<String> countries = [
+    'Монгол',
+    'USA',
+    'Canada',
+    'Russia',
+    'India',
+    'China',
+  ];
+
+  int currentPage = 0;
+  final List<String> disability = [
+    'Тийм',
+    'Үгүй',
+  ];
+
+  String? disabled;
+  final TextEditingController driversCertificateNumberController =
+      TextEditingController();
+
+  final List<String> driversLicense = [
+    'A',
+    'B',
+    'C1',
+    'C1E',
+    'C',
+    'CE',
+    'D1',
+    'D1E',
+    'D',
+    'ME',
+    'M',
+  ];
+
+  String? driversLicenseType;
+  final List<String> educations = [
+    'Бага',
+    'Дунд',
+    'Ахлах',
+    'Дээд',
+    '*',
+  ];
+
+  String errorMessage = ''; // To show any error
+  final TextEditingController ethnicityController = TextEditingController();
+  final TextEditingController fPassportNumberController =
+      TextEditingController();
+
+  final TextEditingController familyTreeNamController = TextEditingController();
+  final formKey = GlobalKey<FormState>();
+  final TextEditingController homePhoneNumberController =
+      TextEditingController();
+
+  bool isLoading = true; // To show loading indicator while PDF is loading
+  bool isPDFvisible = false;
+  bool isPDFvisible1 = false;
+  final TextEditingController lnameController = TextEditingController();
+  String? married;
+  final List<String> marriedOrNot = [
+    'Гэрлэсэн',
+    'Гэрлээгүй',
+  ];
+
+  String? militaryService;
+  PDFViewController? pdfViewController; // Controller to interact with PDFView
+  final List<String> pension = [
+    'Тийм',
+    'Үгүй',
+  ];
+
+  String? pensionsEstablished;
+  final TextEditingController phoneNumberController = TextEditingController();
+  final TextEditingController phoneNumberEmergencyController =
+      TextEditingController();
+
+  final TextEditingController placeOfBirthContoller = TextEditingController();
+  final TextEditingController postalAddressController = TextEditingController();
+  late TextEditingController professionController = TextEditingController();
+
+  void updateProfession(String newProfession) {
+    professionController.text = widget.user.profession as String;
+  }
+
+  String? selectedAcademicDegree;
+  String? selectedCityOrState;
+  String? selectedCityOrStateLiving;
+  String? selectedCountry;
+  String? selectedDistrictOrTown;
+  String? selectedEducation;
+  String? selectedGender;
+  final List<String> served = [
+    'Тийм',
+    'Үгүй',
+  ];
+
+  Uint8List? signature;
+  final TextEditingController socialBackgroundController =
+      TextEditingController();
+
+  final TextEditingController stateCityOfBirthController =
+      TextEditingController();
+
+  int totalPages = 0;
+  final TextEditingController townDistrictOfBirthController =
+      TextEditingController();
+
+  final userRole = 'Оюутан';
+  final TextEditingController validAddress = TextEditingController();
+  final TextEditingController validAddressLiving = TextEditingController();
+
   @override
   void dispose() {
     controller.dispose();
     super.dispose();
   }
 
-  bool canProceed = false;
-  int currentPage = 0;
-  String errorMessage = ''; // To show any error
-  bool isLoading = true; // To show loading indicator while PDF is loading
-  PDFViewController? pdfViewController; // Controller to interact with PDFView
-  int totalPages = 0;
-  bool isPDFvisible = false;
-  bool isPDFvisible1 = false;
-  final userRole = 'Оюутан';
-  final TextEditingController additionalDescriptionController =
-      TextEditingController();
-
-  final TextEditingController birthdayController = TextEditingController();
-  final TextEditingController familyTreeNamController = TextEditingController();
-  final TextEditingController lnameController = TextEditingController();
-  final TextEditingController citizenshipController = TextEditingController();
-  final TextEditingController validAddress = TextEditingController();
-  final TextEditingController homePhoneNumberController =
-      TextEditingController();
-  final TextEditingController validAddressLiving = TextEditingController();
-  final TextEditingController postalAddressController = TextEditingController();
-  final TextEditingController phoneNumberController = TextEditingController();
-  final TextEditingController phoneNumberEmergencyController =
-      TextEditingController();
-  final TextEditingController placeOfBirthContoller = TextEditingController();
-  final TextEditingController socialBackgroundController =
-      TextEditingController();
-  final TextEditingController townDistrictOfBirthController =
-      TextEditingController();
-  final TextEditingController stateCityOfBirthController =
-      TextEditingController();
-  final TextEditingController ethnicityController = TextEditingController();
-  final TextEditingController professionController = TextEditingController();
-  final TextEditingController fPassportNumberController =
-      TextEditingController();
-  final TextEditingController driversCertificateNumberController =
-      TextEditingController();
-
-  final formKey = GlobalKey<FormState>();
-  String? selectedGender;
-  String? selectedCityOrState;
-  String? selectedDistrictOrTown;
-  String? selectedCountry;
-  String? selectedEducation;
-  String? selectedAcademicDegree;
-  String? militaryService;
-  String? bloodType;
-  String? driversLicenseType;
-  String? married;
-  String? pensionsEstablished;
-  String? disabled;
-  String? selectedCityOrStateLiving;
-
   @override
   void initState() {
     super.initState();
-
+    professionController = TextEditingController(text: widget.user.profession);
     selectedGender = null;
     selectedCityOrState = null;
     selectedDistrictOrTown = null;
@@ -115,72 +196,140 @@ class _PersonalInfoState extends State<PersonalInfo> {
     selectedCityOrStateLiving = null;
   }
 
-  final List<String> countries = [
-    'Монгол',
-    'USA',
-    'Canada',
-    'Russia',
-    'India',
-    'China',
-  ];
-  final List<String> educations = [
-    'Бага',
-    'Дунд',
-    'Ахлах',
-    'Дээд',
-    '*',
-  ];
-  final List<String> academicDegree = [
-    'Бакалавр',
-    'Магистр',
-    'Доктор',
-    '*',
-  ];
-  final List<String> served = [
-    'Тийм',
-    'Үгүй',
-  ];
-  final List<String> blood = [
-    'O-',
-    'A-',
-    'B-',
-    'AB-',
-    'O+',
-    'A+',
-    'B+',
-    'AB+',
-  ];
-  final List<String> driversLicense = [
-    'A',
-    'B',
-    'C1',
-    'C1E',
-    'C',
-    'CE',
-    'D1',
-    'D1E',
-    'D',
-    'ME',
-    'M',
-  ];
-  final List<String> marriedOrNot = [
-    'Гэрлэсэн',
-    'Гэрлээгүй',
-  ];
-  final List<String> pension = [
-    'Тийм',
-    'Үгүй',
-  ];
-  final List<String> disability = [
-    'Тийм',
-    'Үгүй',
-  ];
-
   String? requiredFieldValidator(String? value) {
     if (value == null || value.isEmpty) {
       return 'This field is required';
     }
     return null;
+  }
+
+  Future<List> getStudentInfo(String registryNumber) async {
+    try {
+      final response = await http.post(
+        getApiUrl('/Student/Signup/GetInfoOfRegistryNumber'),
+        body: json
+            .encode({'registryNumber': registryNumber, 'userRole': 'Оюутан'}),
+        headers: {'Content-Type': 'application/json'},
+      ).timeout(Duration(seconds: 30));
+
+      if (response.statusCode == 200) {
+        // If the request is successful (status code 200), decode the JSON response
+        final Map<String, dynamic> responseJson = jsonDecode(response.body);
+
+        // Extract the relevant data from the response
+        String message = responseJson['message'];
+        var receivedRegistryNumber = responseJson['registryNumber'];
+
+        // Optionally, log the received registry number
+        logger.d(receivedRegistryNumber);
+
+        // Return the relevant data in a list
+        return [message, receivedRegistryNumber];
+      } else if (response.statusCode == 400) {
+        // Handle bad request (status code 400)
+        final Map<String, dynamic> responseJson = jsonDecode(response.body);
+        String message = responseJson['message'];
+        return [message];
+      } else if (response.statusCode == 500) {
+        // Handle internal server error (status code 500)
+        final Map<String, dynamic> responseJson = jsonDecode(response.body);
+        String message = responseJson['message'];
+        return [message];
+      } else {
+        // Handle unexpected response status
+        return ['Unexpected response status: ${response.statusCode}'];
+      }
+    } catch (e) {
+      // If there is an error (e.g., network error), log it and show a message
+      logger.d('Error: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Алдаа гарлаа, түр хүлээгээд дахин оролдоно уу.'),
+        ),
+      );
+      return ['Error: $e'];
+    }
+  }
+
+  Future<List> createContract() async {
+    DateTime createdAt = DateTime.now();
+    String createdAtString = createdAt.toIso8601String();
+
+    try {
+      final response = await http.post(
+        getApiUrl('/User/Signup/Create/User'),
+        body: json.encode({
+          'registryNumber': widget.user.registryNumber,
+          'profile_picture': '',
+          'fname': widget.user.userName,
+          'lname': widget.user.userSirname,
+          'major': widget.major!,
+          'userRole': widget.userRoleSpecification,
+          'birthday': birthdayController.text,
+          'familyTreeName': familyTreeNamController.text,
+          'lastName': lnameController.text,
+          'citizenship': citizenshipController.text,
+          'validAddress': validAddress.text,
+          'homePhoneNumber': homePhoneNumberController.text,
+          'validAddressLiving': validAddressLiving.text,
+          'postalAddress': postalAddressController.text,
+          'phoneNumber': phoneNumberController.text,
+          'phoneNumberEmergency': phoneNumberEmergencyController.text,
+          'placeOfBirth': placeOfBirthContoller.text,
+          'socialBackground': socialBackgroundController.text,
+          'townDistrictOfBirth': townDistrictOfBirthController.text,
+          'stateCityOfBirth': stateCityOfBirthController.text,
+          'ethnicity': ethnicityController.text,
+          'profession': professionController.text,
+          'passportNumber': fPassportNumberController.text,
+          'driversCertificateNumber': driversCertificateNumberController.text,
+          'additionalDescription': additionalDescriptionController.text,
+          'selectedGender': selectedGender,
+          'selectedCityOrState': selectedCityOrState,
+          'selectedDistrictOrTown': selectedDistrictOrTown,
+          'selectedCountry': selectedCountry,
+          'selectedEducation': selectedEducation,
+          'selectedAcademicDegree': selectedAcademicDegree,
+          'militaryService': militaryService,
+          'bloodType': bloodType,
+          'driversLicenseType': driversLicenseType,
+          'married': married,
+          'pensionsEstablished': pensionsEstablished,
+          'disabled': disabled,
+          'createdAt': createdAtString,
+          'email': widget.user.email,
+          'signature': base64Signature
+        }),
+        headers: {'Content-Type': 'application/json'},
+      ).timeout(Duration(seconds: 30));
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseJson = jsonDecode(response.body);
+        String message = responseJson['message'];
+        var user = responseJson['user'];
+
+        return [message, user];
+      } else if (response.statusCode == 400) {
+        final Map<String, dynamic> responseJson = jsonDecode(response.body);
+        String message = responseJson['message'];
+
+        return [message];
+      } else if (response.statusCode == 500) {
+        final Map<String, dynamic> responseJson = jsonDecode(response.body);
+        String message = responseJson['message'];
+
+        return [message];
+      } else {
+        return ['Unexpected response status: ${response.statusCode}'];
+      }
+    } catch (e) {
+      logger.d('Error: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Алдаа гарлаа, түр хүлээгээд дахин оролдоно уу.')),
+      );
+      return ['Error: $e'];
+    }
   }
 
   void _showConfirmationDialog() {
@@ -274,137 +423,6 @@ class _PersonalInfoState extends State<PersonalInfo> {
     );
   }
 
-  Future<List> getInfo(String registryNumber) async {
-    try {
-      final response = await http.post(
-        getApiUrl(
-            '/Student/Signup/GetInfoOfRegistryNumber'), // Ensure the URL is correct
-        body: json
-            .encode({'registryNumber': registryNumber, 'userRole': 'Оюутан'}),
-        headers: {'Content-Type': 'application/json'},
-      ).timeout(
-          Duration(seconds: 30)); // Timeout in case the request takes too long
-
-      if (response.statusCode == 200) {
-        // If the request is successful (status code 200), decode the JSON response
-        final Map<String, dynamic> responseJson = jsonDecode(response.body);
-
-        // Extract the relevant data from the response
-        String message = responseJson['message'];
-        var receivedRegistryNumber = responseJson['registryNumber'];
-
-        // Optionally, log the received registry number
-        logger.d(receivedRegistryNumber);
-
-        // Return the relevant data in a list
-        return [message, receivedRegistryNumber];
-      } else if (response.statusCode == 400) {
-        // Handle bad request (status code 400)
-        final Map<String, dynamic> responseJson = jsonDecode(response.body);
-        String message = responseJson['message'];
-        return [message];
-      } else if (response.statusCode == 500) {
-        // Handle internal server error (status code 500)
-        final Map<String, dynamic> responseJson = jsonDecode(response.body);
-        String message = responseJson['message'];
-        return [message];
-      } else {
-        // Handle unexpected response status
-        return ['Unexpected response status: ${response.statusCode}'];
-      }
-    } catch (e) {
-      // If there is an error (e.g., network error), log it and show a message
-      logger.d('Error: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Алдаа гарлаа, түр хүлээгээд дахин оролдоно уу.'),
-        ),
-      );
-      return ['Error: $e'];
-    }
-  }
-
-  Future<List> createContract() async {
-    DateTime createdAt = DateTime.now();
-    String createdAtString = createdAt.toIso8601String();
-
-    try {
-      final response = await http.post(
-        getApiUrl('/User/Signup/Create/User'),
-        body: json.encode({
-          'registryNumber': widget.user.registryNumber,
-          'profile_picture': '',
-          'fname': widget.user.userName,
-          'lname': widget.user.userSirname,
-          'major': widget.major,
-          'userRole': widget.userRoleSpecification,
-          'birthday': birthdayController.text,
-          'familyTreeName': familyTreeNamController.text,
-          'lastName': lnameController.text,
-          'citizenship': citizenshipController.text,
-          'validAddress': validAddress.text,
-          'homePhoneNumber': homePhoneNumberController.text,
-          'validAddressLiving': validAddressLiving.text,
-          'postalAddress': postalAddressController.text,
-          'phoneNumber': phoneNumberController.text,
-          'phoneNumberEmergency': phoneNumberEmergencyController.text,
-          'placeOfBirth': placeOfBirthContoller.text,
-          'socialBackground': socialBackgroundController.text,
-          'townDistrictOfBirth': townDistrictOfBirthController.text,
-          'stateCityOfBirth': stateCityOfBirthController.text,
-          'ethnicity': ethnicityController.text,
-          'profession': professionController.text,
-          'passportNumber': fPassportNumberController.text,
-          'driversCertificateNumber': driversCertificateNumberController.text,
-          'additionalDescription': additionalDescriptionController.text,
-          'selectedGender': selectedGender,
-          'selectedCityOrState': selectedCityOrState,
-          'selectedDistrictOrTown': selectedDistrictOrTown,
-          'selectedCountry': selectedCountry,
-          'selectedEducation': selectedEducation,
-          'selectedAcademicDegree': selectedAcademicDegree,
-          'militaryService': militaryService,
-          'bloodType': bloodType,
-          'driversLicenseType': driversLicenseType,
-          'married': married,
-          'pensionsEstablished': pensionsEstablished,
-          'disabled': disabled,
-          'createdAt': createdAtString,
-          'email': widget.user.email,
-          'signature': base64Signature
-        }),
-        headers: {'Content-Type': 'application/json'},
-      ).timeout(Duration(seconds: 30));
-
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> responseJson = jsonDecode(response.body);
-        String message = responseJson['message'];
-        var user = responseJson['user'];
-
-        return [message, user];
-      } else if (response.statusCode == 400) {
-        final Map<String, dynamic> responseJson = jsonDecode(response.body);
-        String message = responseJson['message'];
-
-        return [message];
-      } else if (response.statusCode == 500) {
-        final Map<String, dynamic> responseJson = jsonDecode(response.body);
-        String message = responseJson['message'];
-
-        return [message];
-      } else {
-        return ['Unexpected response status: ${response.statusCode}'];
-      }
-    } catch (e) {
-      logger.d('Error: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Алдаа гарлаа, түр хүлээгээд дахин оролдоно уу.')),
-      );
-      return ['Error: $e'];
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -448,14 +466,29 @@ class _PersonalInfoState extends State<PersonalInfo> {
                         child: Column(
                           children: [
                             ListTile(
-                              title: Text(
-                                "Шалгуулагчийн мэдээлэл",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
+                                title: widget.userRoleSpecification == 'Оюутан'
+                                    ? Text(
+                                        "Шалгуулагчийн мэдээлэл",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      )
+                                    : widget.userRoleSpecification == 'Багш'
+                                        ? Text(
+                                            "Багшийн мэдээлэл",
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          )
+                                        : Text(
+                                            "Ажилчны мэдээлэл",
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          )),
                             Padding(
                               padding:
                                   const EdgeInsets.symmetric(vertical: 8.0),
@@ -471,16 +504,14 @@ class _PersonalInfoState extends State<PersonalInfo> {
                                         enabledBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
                                             color: Colors.black,
-                                          ), // Change border color
+                                          ),
                                         ),
                                         focusedBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                              color: Colors
-                                                  .blue), // Border color when focused
+                                          borderSide:
+                                              BorderSide(color: Colors.blue),
                                         ),
                                       ),
-                                      readOnly:
-                                          true, // Makes the field read-only but without gray shading
+                                      readOnly: true,
                                     ),
                                   ),
                                   SizedBox(width: 8),
@@ -494,16 +525,14 @@ class _PersonalInfoState extends State<PersonalInfo> {
                                         enabledBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
                                             color: Colors.black,
-                                          ), // Change border color
+                                          ),
                                         ),
                                         focusedBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                              color: Colors
-                                                  .blue), // Border color when focused
+                                          borderSide:
+                                              BorderSide(color: Colors.blue),
                                         ),
                                       ),
-                                      readOnly:
-                                          true, // Makes the field read-only but without gray shading
+                                      readOnly: true,
                                     ),
                                   ),
                                 ],
@@ -562,114 +591,120 @@ class _PersonalInfoState extends State<PersonalInfo> {
                                 ],
                               ),
                             ),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 8.0),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: TextField(
-                                      controller: TextEditingController(
-                                          text:
-                                              '${widget.user.exams?[0].examType}, ${widget.user.exams?[0].score}'),
-                                      decoration: InputDecoration(
-                                        labelText: 'Шалгалт 1',
-                                        border: OutlineInputBorder(),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                            color: Colors.black,
-                                          ), // Change border color
+                            widget.userRoleSpecification == 'Оюутан'
+                                ? Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 8.0),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child: TextField(
+                                            controller: TextEditingController(
+                                                text:
+                                                    '${widget.user.exams?[0].examType}, ${widget.user.exams?[0].score}'),
+                                            decoration: InputDecoration(
+                                              labelText: 'Шалгалт 1',
+                                              border: OutlineInputBorder(),
+                                              enabledBorder: OutlineInputBorder(
+                                                borderSide: BorderSide(
+                                                  color: Colors.black,
+                                                ), // Change border color
+                                              ),
+                                              focusedBorder: OutlineInputBorder(
+                                                borderSide: BorderSide(
+                                                    color: Colors
+                                                        .blue), // Border color when focused
+                                              ),
+                                            ),
+                                            readOnly:
+                                                true, // Makes the field read-only but without gray shading
+                                          ),
                                         ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                              color: Colors
-                                                  .blue), // Border color when focused
+                                        SizedBox(width: 8),
+                                        Expanded(
+                                          child: TextField(
+                                            controller: TextEditingController(
+                                                text:
+                                                    '${widget.user.exams?[1].examType}, ${widget.user.exams?[1].score}'),
+                                            decoration: InputDecoration(
+                                              labelText: 'Шалгалт 2',
+                                              border: OutlineInputBorder(),
+                                              enabledBorder: OutlineInputBorder(
+                                                borderSide: BorderSide(
+                                                  color: Colors.black,
+                                                ), // Change border color
+                                              ),
+                                              focusedBorder: OutlineInputBorder(
+                                                borderSide: BorderSide(
+                                                    color: Colors
+                                                        .blue), // Border color when focused
+                                              ),
+                                            ),
+                                            readOnly:
+                                                true, // Makes the field read-only but without gray shading
+                                          ),
                                         ),
-                                      ),
-                                      readOnly:
-                                          true, // Makes the field read-only but without gray shading
+                                      ],
                                     ),
-                                  ),
-                                  SizedBox(width: 8),
-                                  Expanded(
-                                    child: TextField(
-                                      controller: TextEditingController(
-                                          text:
-                                              '${widget.user.exams?[1].examType}, ${widget.user.exams?[1].score}'),
-                                      decoration: InputDecoration(
-                                        labelText: 'Шалгалт 2',
-                                        border: OutlineInputBorder(),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                            color: Colors.black,
-                                          ), // Change border color
+                                  )
+                                : SizedBox.shrink(),
+                            widget.userRoleSpecification == 'Оюутан'
+                                ? Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 8.0),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child: TextField(
+                                            controller: TextEditingController(
+                                                text:
+                                                    '${widget.user.createdAt}'),
+                                            decoration: InputDecoration(
+                                              labelText: 'Шалгалт өгсөн огноо',
+                                              border: OutlineInputBorder(),
+                                              enabledBorder: OutlineInputBorder(
+                                                borderSide: BorderSide(
+                                                  color: Colors.black,
+                                                ), // Change border color
+                                              ),
+                                              focusedBorder: OutlineInputBorder(
+                                                borderSide: BorderSide(
+                                                    color: Colors
+                                                        .blue), // Border color when focused
+                                              ),
+                                            ),
+                                            readOnly:
+                                                true, // Makes the field read-only but without gray shading
+                                          ),
                                         ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                              color: Colors
-                                                  .blue), // Border color when focused
+                                        SizedBox(width: 8),
+                                        Expanded(
+                                          child: TextField(
+                                            controller: TextEditingController(
+                                                text:
+                                                    '${widget.user.validUntil}'),
+                                            decoration: InputDecoration(
+                                              labelText: 'Хүчинтэй хугацаа',
+                                              border: OutlineInputBorder(),
+                                              enabledBorder: OutlineInputBorder(
+                                                borderSide: BorderSide(
+                                                  color: Colors.black,
+                                                ), // Change border color
+                                              ),
+                                              focusedBorder: OutlineInputBorder(
+                                                borderSide: BorderSide(
+                                                    color: Colors
+                                                        .blue), // Border color when focused
+                                              ),
+                                            ),
+                                            readOnly:
+                                                true, // Makes the field read-only but without gray shading
+                                          ),
                                         ),
-                                      ),
-                                      readOnly:
-                                          true, // Makes the field read-only but without gray shading
+                                      ],
                                     ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 8.0),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: TextField(
-                                      controller: TextEditingController(
-                                          text: '${widget.user.createdAt}'),
-                                      decoration: InputDecoration(
-                                        labelText: 'Шалгалт өгсөн огноо',
-                                        border: OutlineInputBorder(),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                            color: Colors.black,
-                                          ), // Change border color
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                              color: Colors
-                                                  .blue), // Border color when focused
-                                        ),
-                                      ),
-                                      readOnly:
-                                          true, // Makes the field read-only but without gray shading
-                                    ),
-                                  ),
-                                  SizedBox(width: 8),
-                                  Expanded(
-                                    child: TextField(
-                                      controller: TextEditingController(
-                                          text: '${widget.user.validUntil}'),
-                                      decoration: InputDecoration(
-                                        labelText: 'Хүчинтэй хугацаа',
-                                        border: OutlineInputBorder(),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                            color: Colors.black,
-                                          ), // Change border color
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                              color: Colors
-                                                  .blue), // Border color when focused
-                                        ),
-                                      ),
-                                      readOnly:
-                                          true, // Makes the field read-only but without gray shading
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
+                                  )
+                                : SizedBox.shrink(),
                           ],
                         ),
                       ),
@@ -688,13 +723,29 @@ class _PersonalInfoState extends State<PersonalInfo> {
                         child: Column(
                           children: [
                             ListTile(
-                              title: Text(
-                                "Элсэлтийн Дэлгэрэнгүй Анкет",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
+                              title: widget.userRoleSpecification == 'Оюутан'
+                                  ? Text(
+                                      "Элсэлтийн Дэлгэрэнгүй Анкет",
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    )
+                                  : widget.userRoleSpecification == 'Багш'
+                                      ? Text(
+                                          "Ажил горилогчийн Дэлгэрэнгүй Анкет",
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        )
+                                      : Text(
+                                          "Ажил горилогчийн Дэлгэрэнгүй Анкет",
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
                             ),
                             Padding(
                               padding:
@@ -702,27 +753,83 @@ class _PersonalInfoState extends State<PersonalInfo> {
                               child: Row(
                                 children: [
                                   Expanded(
-                                    child: TextFormField(
-                                      controller: TextEditingController(
-                                          text: widget.major?.majorName),
-                                      decoration: InputDecoration(
-                                        labelText: 'Хөтөлбөр',
-                                        border: OutlineInputBorder(),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                            color: Colors.black,
-                                          ), // Change border color
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                              color: Colors
-                                                  .black), // Border color when focused
-                                        ),
-                                      ),
-                                      readOnly:
-                                          true, // Makes the field read-only but without gray shading
-                                    ),
-                                  ),
+                                      child: widget.userRoleSpecification ==
+                                              'Оюутан'
+                                          ? TextFormField(
+                                              controller: TextEditingController(
+                                                  text:
+                                                      widget.major?.majorName),
+                                              decoration: InputDecoration(
+                                                labelText: 'Хөтөлбөр',
+                                                border: OutlineInputBorder(),
+                                                enabledBorder:
+                                                    OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                    color: Colors.black,
+                                                  ), // Change border color
+                                                ),
+                                                focusedBorder:
+                                                    OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      color: Colors
+                                                          .black), // Border color when focused
+                                                ),
+                                              ),
+                                              readOnly:
+                                                  true, // Makes the field read-only but without gray shading
+                                            )
+                                          : widget.userRoleSpecification ==
+                                                  'Багш'
+                                              ? TextFormField(
+                                                  controller: TextEditingController(
+                                                      text: widget
+                                                          .userRoleSpecification),
+                                                  decoration: InputDecoration(
+                                                    labelText:
+                                                        'Горилож буй ажил',
+                                                    border:
+                                                        OutlineInputBorder(),
+                                                    enabledBorder:
+                                                        OutlineInputBorder(
+                                                      borderSide: BorderSide(
+                                                        color: Colors.black,
+                                                      ), // Change border color
+                                                    ),
+                                                    focusedBorder:
+                                                        OutlineInputBorder(
+                                                      borderSide: BorderSide(
+                                                          color: Colors
+                                                              .black), // Border color when focused
+                                                    ),
+                                                  ),
+                                                  readOnly:
+                                                      true, // Makes the field read-only but without gray shading
+                                                )
+                                              : TextFormField(
+                                                  controller: TextEditingController(
+                                                      text: widget
+                                                          .userRoleSpecification),
+                                                  decoration: InputDecoration(
+                                                    labelText:
+                                                        'Горилож буй ажил',
+                                                    border:
+                                                        OutlineInputBorder(),
+                                                    enabledBorder:
+                                                        OutlineInputBorder(
+                                                      borderSide: BorderSide(
+                                                        color: Colors.black,
+                                                      ), // Change border color
+                                                    ),
+                                                    focusedBorder:
+                                                        OutlineInputBorder(
+                                                      borderSide: BorderSide(
+                                                          color: Colors
+                                                              .black), // Border color when focused
+                                                    ),
+                                                  ),
+                                                  readOnly:
+                                                      true, // Makes the field read-only but without gray shading
+                                                )),
                                 ],
                               ),
                             ),
@@ -751,7 +858,8 @@ class _PersonalInfoState extends State<PersonalInfo> {
                                   Expanded(
                                     child: ElevatedButton(
                                       onPressed: () {
-                                        getInfo(widget.user.registryNumber);
+                                        getStudentInfo(
+                                            widget.user.registryNumber);
                                       },
                                       child: Text(
                                         '${widget.user.registryNumber}  регистртэй хувийн мэдээллийг татах',
@@ -1845,63 +1953,193 @@ class _PersonalInfoState extends State<PersonalInfo> {
                                 children: [
                                   // Dropdown button wrapped with a Flexible widget to allow resizing
                                   Flexible(
-                                    child: DropdownButtonFormField<String>(
-                                      decoration: InputDecoration(
-                                        labelText: 'Боловсрол',
-                                        enabledBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                            color: Colors.black,
-                                          ), // Change border color
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                              color: Colors
-                                                  .blue), // Border color when focused
-                                        ),
-                                      ),
-                                      value: selectedEducation,
-                                      onChanged: (String? newValue) {
-                                        selectedEducation = newValue;
-                                      },
-                                      items:
-                                          educations.map((String educations) {
-                                        return DropdownMenuItem<String>(
-                                          value: educations,
-                                          child: Text(educations),
-                                        );
-                                      }).toList(),
-                                    ),
-                                  ),
+                                      child: widget.userRoleSpecification ==
+                                              'Оюутан'
+                                          ? DropdownButtonFormField<String>(
+                                              decoration: InputDecoration(
+                                                labelText: 'Боловсрол',
+                                                enabledBorder:
+                                                    OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                    color: Colors.black,
+                                                  ), // Change border color
+                                                ),
+                                                focusedBorder:
+                                                    OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      color: Colors
+                                                          .blue), // Border color when focused
+                                                ),
+                                              ),
+                                              value: selectedEducation,
+                                              onChanged: (String? newValue) {
+                                                selectedEducation = newValue;
+                                              },
+                                              items: educations
+                                                  .map((String educations) {
+                                                return DropdownMenuItem<String>(
+                                                  value: educations,
+                                                  child: Text(educations),
+                                                );
+                                              }).toList(),
+                                            )
+                                          : widget.userRoleSpecification ==
+                                                  'Багш'
+                                              ? DropdownButtonFormField<String>(
+                                                  decoration: InputDecoration(
+                                                    labelText: 'Боловсрол',
+                                                    enabledBorder:
+                                                        OutlineInputBorder(
+                                                      borderSide: BorderSide(
+                                                        color: Colors.black,
+                                                      ), // Change border color
+                                                    ),
+                                                    focusedBorder:
+                                                        OutlineInputBorder(
+                                                      borderSide: BorderSide(
+                                                          color: Colors
+                                                              .blue), // Border color when focused
+                                                    ),
+                                                  ),
+                                                  value: selectedEducation =
+                                                      widget.user.education,
+                                                  onChanged: null,
+                                                  items: educations
+                                                      .map((String educations) {
+                                                    return DropdownMenuItem<
+                                                        String>(
+                                                      value: educations,
+                                                      child: Text(educations),
+                                                    );
+                                                  }).toList(),
+                                                )
+                                              : DropdownButtonFormField<String>(
+                                                  decoration: InputDecoration(
+                                                    labelText: 'Боловсрол',
+                                                    enabledBorder:
+                                                        OutlineInputBorder(
+                                                      borderSide: BorderSide(
+                                                        color: Colors.black,
+                                                      ), // Change border color
+                                                    ),
+                                                    focusedBorder:
+                                                        OutlineInputBorder(
+                                                      borderSide: BorderSide(
+                                                          color: Colors
+                                                              .blue), // Border color when focused
+                                                    ),
+                                                  ),
+                                                  value: selectedEducation =
+                                                      educations[3],
+                                                  onChanged: null,
+                                                  items: educations
+                                                      .map((String educations) {
+                                                    return DropdownMenuItem<
+                                                        String>(
+                                                      value: educations,
+                                                      child: Text(educations),
+                                                    );
+                                                  }).toList(),
+                                                )),
                                   SizedBox(width: 8),
                                   // TextFormField inside Expanded widget
                                   Flexible(
-                                    child: DropdownButtonFormField<String>(
-                                      decoration: InputDecoration(
-                                        labelText: 'Эрдмийн зэрэг',
-                                        enabledBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                            color: Colors.black,
-                                          ), // Change border color
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                              color: Colors
-                                                  .blue), // Border color when focused
-                                        ),
-                                      ),
-                                      value: selectedAcademicDegree,
-                                      onChanged: (String? newValue) {
-                                        selectedAcademicDegree = newValue;
-                                      },
-                                      items: academicDegree
-                                          .map((String academicDegree) {
-                                        return DropdownMenuItem<String>(
-                                          value: academicDegree,
-                                          child: Text(academicDegree),
-                                        );
-                                      }).toList(),
-                                    ),
-                                  ),
+                                      child: widget.userRoleSpecification ==
+                                              'Оюутан'
+                                          ? DropdownButtonFormField<String>(
+                                              decoration: InputDecoration(
+                                                labelText: 'Эрдмийн зэрэг',
+                                                enabledBorder:
+                                                    OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                    color: Colors.black,
+                                                  ), // Change border color
+                                                ),
+                                                focusedBorder:
+                                                    OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      color: Colors
+                                                          .blue), // Border color when focused
+                                                ),
+                                              ),
+                                              value: selectedAcademicDegree,
+                                              onChanged: (String? newValue) {
+                                                selectedAcademicDegree =
+                                                    newValue;
+                                              },
+                                              items: academicDegree
+                                                  .map((String academicDegree) {
+                                                return DropdownMenuItem<String>(
+                                                  value: academicDegree,
+                                                  child: Text(academicDegree),
+                                                );
+                                              }).toList(),
+                                            )
+                                          : widget.userRoleSpecification ==
+                                                  'Багш'
+                                              ? DropdownButtonFormField<String>(
+                                                  decoration: InputDecoration(
+                                                    labelText: 'Эрдмийн зэрэг',
+                                                    enabledBorder:
+                                                        OutlineInputBorder(
+                                                      borderSide: BorderSide(
+                                                        color: Colors.black,
+                                                      ), // Change border color
+                                                    ),
+                                                    focusedBorder:
+                                                        OutlineInputBorder(
+                                                      borderSide: BorderSide(
+                                                          color: Colors
+                                                              .blue), // Border color when focused
+                                                    ),
+                                                  ),
+                                                  value:
+                                                      selectedAcademicDegree =
+                                                          widget.user
+                                                              .academicDegree,
+                                                  onChanged: null,
+                                                  items: academicDegree.map(
+                                                      (String academicDegree) {
+                                                    return DropdownMenuItem<
+                                                        String>(
+                                                      value: academicDegree,
+                                                      child:
+                                                          Text(academicDegree),
+                                                    );
+                                                  }).toList(),
+                                                )
+                                              : DropdownButtonFormField<String>(
+                                                  decoration: InputDecoration(
+                                                    labelText: 'Эрдмийн зэрэг',
+                                                    enabledBorder:
+                                                        OutlineInputBorder(
+                                                      borderSide: BorderSide(
+                                                        color: Colors.black,
+                                                      ), // Change border color
+                                                    ),
+                                                    focusedBorder:
+                                                        OutlineInputBorder(
+                                                      borderSide: BorderSide(
+                                                          color: Colors
+                                                              .blue), // Border color when focused
+                                                    ),
+                                                  ),
+                                                  value: selectedAcademicDegree,
+                                                  onChanged:
+                                                      (String? newValue) {
+                                                    selectedAcademicDegree =
+                                                        newValue;
+                                                  },
+                                                  items: academicDegree.map(
+                                                      (String academicDegree) {
+                                                    return DropdownMenuItem<
+                                                        String>(
+                                                      value: academicDegree,
+                                                      child:
+                                                          Text(academicDegree),
+                                                    );
+                                                  }).toList(),
+                                                )),
                                 ],
                               ),
                             ),
@@ -1911,25 +2149,79 @@ class _PersonalInfoState extends State<PersonalInfo> {
                               child: Row(
                                 children: [
                                   Expanded(
-                                    child: TextFormField(
-                                      controller: professionController,
-                                      maxLength: 100,
-                                      decoration: InputDecoration(
-                                        labelText: 'Мэргэжил',
-                                        hintText: 'Заавал бөглөх шаардлагагүй',
-                                        enabledBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                            color: Colors.black,
-                                          ), // Change border color
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                              color: Colors
-                                                  .blue), // Border color when focused
-                                        ),
-                                      ),
-                                      keyboardType: TextInputType.text,
-                                    ),
+                                    child: widget.userRoleSpecification ==
+                                            'Оюутан'
+                                        ? TextFormField(
+                                            controller: professionController,
+                                            maxLength: 100,
+                                            decoration: InputDecoration(
+                                              labelText: 'Мэргэжил',
+                                              hintText:
+                                                  'Заавал бөглөх шаардлагагүй',
+                                              enabledBorder: OutlineInputBorder(
+                                                borderSide: BorderSide(
+                                                  color: Colors.black,
+                                                ), // Change border color
+                                              ),
+                                              focusedBorder: OutlineInputBorder(
+                                                borderSide: BorderSide(
+                                                    color: Colors
+                                                        .blue), // Border color when focused
+                                              ),
+                                            ),
+                                            keyboardType: TextInputType.text,
+                                          )
+                                        : widget.userRoleSpecification == 'Багш'
+                                            ? TextFormField(
+                                                controller:
+                                                    professionController,
+                                                maxLength: 100,
+                                                decoration: InputDecoration(
+                                                  labelText: 'Мэргэжил',
+                                                  hintText:
+                                                      'Заавал бөглөх шаардлагагүй',
+                                                  enabledBorder:
+                                                      OutlineInputBorder(
+                                                    borderSide: BorderSide(
+                                                      color: Colors.black,
+                                                    ), // Change border color
+                                                  ),
+                                                  focusedBorder:
+                                                      OutlineInputBorder(
+                                                    borderSide: BorderSide(
+                                                        color: Colors
+                                                            .blue), // Border color when focused
+                                                  ),
+                                                ),
+                                                readOnly: true,
+                                                keyboardType:
+                                                    TextInputType.text,
+                                              )
+                                            : TextFormField(
+                                                controller:
+                                                    professionController,
+                                                maxLength: 100,
+                                                decoration: InputDecoration(
+                                                  labelText: 'Мэргэжил',
+                                                  hintText:
+                                                      'Заавал бөглөх шаардлагагүй',
+                                                  enabledBorder:
+                                                      OutlineInputBorder(
+                                                    borderSide: BorderSide(
+                                                      color: Colors.black,
+                                                    ), // Change border color
+                                                  ),
+                                                  focusedBorder:
+                                                      OutlineInputBorder(
+                                                    borderSide: BorderSide(
+                                                        color: Colors
+                                                            .blue), // Border color when focused
+                                                  ),
+                                                ),
+                                                enabled: false,
+                                                keyboardType:
+                                                    TextInputType.text,
+                                              ),
                                   ),
                                 ],
                               ),
@@ -2240,8 +2532,7 @@ class _PersonalInfoState extends State<PersonalInfo> {
                     ElevatedButton(
                       onPressed: () {
                         setState(() {
-                          isPDFvisible =
-                              true; // Show the PDF when the button is pressed
+                          isPDFvisible = true;
                         });
                       },
                       child: Text('Сургалтын журамтай танилцах'),
@@ -2251,8 +2542,7 @@ class _PersonalInfoState extends State<PersonalInfo> {
                       onPressed: canProceed
                           ? () {
                               setState(() {
-                                isPDFvisible1 =
-                                    true; // Show the PDF when the button is pressed
+                                isPDFvisible1 = true;
                               });
                             }
                           : null,

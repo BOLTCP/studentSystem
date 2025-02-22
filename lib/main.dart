@@ -80,8 +80,8 @@ class MyApp extends StatelessWidget {
           final arguments = settings.arguments as Map<String, dynamic>?;
 
           if (arguments != null) {
-            User? user = arguments['user'] as User;
-            Major? major = arguments['major'] as Major;
+            User user = arguments['user'] as User;
+            Major? major = arguments['major'] as Major?;
             final String userRoleSpecification =
                 arguments['userRoleSpecification'];
 

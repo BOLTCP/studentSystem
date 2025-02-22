@@ -22,19 +22,20 @@ class UserSignUp extends StatefulWidget {
 class _UserSignUpState extends State<UserSignUp> {
   String confirmPassword = '';
   final TextEditingController userNameController =
-      TextEditingController(text: 'Мэдээлэллээ татна уу.');
+      TextEditingController(text: '-----');
   final TextEditingController userSirNameController =
-      TextEditingController(text: 'Мэдээлэллээ татна уу.');
-  final TextEditingController registryNumberContoller =
-      TextEditingController(text: 'Мэдээлэллээ татна уу.');
+      TextEditingController(text: '-----');
+  final TextEditingController registryNumberContoller = TextEditingController();
   final TextEditingController emailController =
-      TextEditingController(text: 'Мэдээлэллээ татна уу.');
+      TextEditingController(text: '-----');
   final TextEditingController educationController =
-      TextEditingController(text: 'Мэдээлэллээ татна уу.');
+      TextEditingController(text: '-----');
   final TextEditingController professionController =
-      TextEditingController(text: 'Мэдээлэллээ татна уу.');
+      TextEditingController(text: '-----');
+  final TextEditingController academicDegreeController =
+      TextEditingController(text: '-----');
 
-  late Future<User?> user;
+  late User userDetails;
 
   final _formKey = GlobalKey<FormState>();
 
@@ -53,18 +54,26 @@ class _UserSignUpState extends State<UserSignUp> {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseJson = jsonDecode(response.body);
-        logger.d(response.body);
 
         if (responseJson.containsKey('user_json')) {
           final Map<String, dynamic> userJson = responseJson['user_json'];
-          logger.d(userJson);
           final user = User.fromJson(userJson);
-          logger.d(user);
+          userDetails = user;
           userNameController.text = user.userName;
           userSirNameController.text = user.userSirname;
           emailController.text = user.email;
           educationController.text = user.education!;
           professionController.text = user.profession!;
+          academicDegreeController.text = user.academicDegree!;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                user.profession != null
+                    ? '${user.userSirname}, ${user.userName}, ${user.profession} - г амжилттай татлаа!'
+                    : 'Регистрийн дугаар буруу эсвэл бүртгэл байхгүй байна!',
+              ),
+            ),
+          );
           return user;
         } else {
           logger.d('Error: No "user_json" in the response');
@@ -135,6 +144,7 @@ class _UserSignUpState extends State<UserSignUp> {
                       controller: registryNumberContoller,
                       decoration: InputDecoration(
                         labelText: 'Регистрийн дугаар',
+                        hintText: 'Мэдээллээ татна уу.',
                         prefixIcon: Icon(Icons.numbers),
                       ),
                       keyboardType: TextInputType.text,
@@ -211,9 +221,10 @@ class _UserSignUpState extends State<UserSignUp> {
                     // Submit Button
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue, // Button color
+                        fixedSize: Size(250, 50),
+                        backgroundColor: Colors.blue,
                         padding:
-                            EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                            EdgeInsets.symmetric(horizontal: 35, vertical: 5),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
                         ),
@@ -221,7 +232,10 @@ class _UserSignUpState extends State<UserSignUp> {
                       onPressed: () async {
                         if (_formKey.currentState?.validate() ?? false) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Түр хүлээнэ үү!')),
+                            SnackBar(
+                              content: Text('Түр хүлээнэ үү!'),
+                              duration: Duration(seconds: 2),
+                            ),
                           );
 
                           try {
@@ -239,6 +253,7 @@ class _UserSignUpState extends State<UserSignUp> {
                         }
                       },
                       child: Text('Мэдээлэл авах',
+                          textAlign: TextAlign.center,
                           style: TextStyle(
                               fontSize: 18,
                               color: Colors.white,
@@ -266,7 +281,10 @@ class _UserSignUpState extends State<UserSignUp> {
                             controller: userSirNameController,
                             decoration: InputDecoration(
                               labelText: 'Овог',
-                              prefixIcon: Icon(Icons.padding),
+                              prefixIcon: Image.asset(
+                                  'assets/images/icons/userSirNameIcon.png',
+                                  scale: 2,
+                                  color: const Color.fromARGB(255, 56, 53, 62)),
                             ),
                             keyboardType: TextInputType.text,
                           ),
@@ -317,10 +335,63 @@ class _UserSignUpState extends State<UserSignUp> {
                             keyboardType: TextInputType.text,
                           ),
                         ),
+                        Padding(padding: EdgeInsets.symmetric(horizontal: 3.0)),
+                        Expanded(
+                          child: TextField(
+                            readOnly: true,
+                            controller: academicDegreeController,
+                            decoration: InputDecoration(
+                              labelText: 'Эрдмийн зэрэг',
+                              prefixIcon: Icon(Icons.work),
+                            ),
+                            keyboardType: TextInputType.text,
+                          ),
+                        ),
                       ],
                     ),
 
                     SizedBox(height: 20),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        fixedSize: Size(320, 50),
+                        backgroundColor: Colors.blue,
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 35, vertical: 5),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                      onPressed: () {
+                        logger.d(userDetails);
+                        Navigator.pushNamed(
+                          context,
+                          '/personal_info',
+                          arguments: {
+                            'user': userDetails,
+                            'major': null,
+                            'userRoleSpecification':
+                                widget.userRoleSpecification
+                          },
+                        );
+                      },
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Хувийн мэдээлэл бөглөх',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(width: 10),
+                          Icon(Icons.arrow_forward_ios,
+                              color: Colors.white, size: 18),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),

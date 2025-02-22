@@ -36,6 +36,7 @@ class User {
   String email;
   String? education;
   String? profession;
+  String? academicDegree;
   List<Exam>? exams;
   DateTime createdAt;
   DateTime validUntil;
@@ -48,6 +49,7 @@ class User {
     required this.email,
     this.education,
     this.profession,
+    this.academicDegree,
     this.exams,
     required this.createdAt,
     required this.validUntil,
@@ -66,6 +68,7 @@ class User {
         email: json['email'] ?? 'No email provided',
         education: json['education'] ?? 'Unknown',
         profession: json['profession'] ?? 'Unknown',
+        academicDegree: json['academic_degree'] ?? 'Unknown',
         exams: [], // No exams for this user
         createdAt: DateTime.parse(
             json['created_at'] ?? DateTime.now().toIso8601String()),
@@ -83,6 +86,7 @@ class User {
         email: 'No email provided',
         education: 'Unknown',
         profession: 'Unknown',
+        academicDegree: 'Unknown',
         exams: [],
         createdAt: DateTime.now(),
         validUntil: DateTime.now(),
@@ -100,6 +104,7 @@ class User {
       'email': email,
       'education': education,
       'profession': profession,
+      'academicDegree': academicDegree,
       'exams': exams?.map((e) => e.toJson()).toList(),
       'created_at': createdAt.toIso8601String(),
       'valid_until': validUntil.toIso8601String(),
@@ -108,6 +113,6 @@ class User {
 
   @override
   String toString() {
-    return 'User(userName: $userName, userSirname: $userSirname, registryNumber: $registryNumber, examCode: $examCode, email: $email, education: $education, profession: $profession, exams: $exams, createdAt: $createdAt, validUntil: $validUntil)';
+    return 'User(userName: $userName, userSirname: $userSirname, registryNumber: $registryNumber, examCode: $examCode, email: $email, education: $education, profession: $profession, academicDegree: $academicDegree, exams: $exams, createdAt: $createdAt, validUntil: $validUntil)';
   }
 }
