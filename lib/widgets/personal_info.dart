@@ -53,6 +53,25 @@ class _PersonalInfoState extends State<PersonalInfo> {
   ];
 
   String? bloodType;
+  final List<String> branchSchool = [
+    'Бизнесийн удирдлагын тэнхим',
+    'Компьютерийн ухааны тэнхим',
+    'Олон улс, нийгэм судлалын тэнхим',
+    'Гадаад хэлний тэнхим',
+    'Санхүү, эдийн засгийн тэнхим',
+    'Сэтгүүл медиа, технологийн тэнхим',
+    'Сэтгэл судлалын тэнхим',
+    'Англи хэлний тэнхим',
+    '*',
+  ];
+
+  final List<String> departmentOfEducation = [
+    "Мэдээлэл, харилцааны менежментийн сургууль",
+    "Хэл, соёлын сургууль",
+    "Олон улсын харилцаа, нийгэм судлалын сургууль",
+    "Бизнесийн сургууль",
+  ];
+
   bool canProceed = false;
   final TextEditingController citizenshipController = TextEditingController();
   final controller = SignatureController(
@@ -117,6 +136,17 @@ class _PersonalInfoState extends State<PersonalInfo> {
   bool isLoading = true; // To show loading indicator while PDF is loading
   bool isPDFvisible = false;
   bool isPDFvisible1 = false;
+  final List<String> jobPost = [
+    'Тэнхимийн эрхлэгч',
+    'Ахлах багш',
+    'Багш',
+    'Лабораторийн эрхлэгч',
+    'Сургагч багш',
+    'Профессор',
+    'Дэд профессор',
+    '*',
+  ];
+
   final TextEditingController lnameController = TextEditingController();
   String? married;
   final List<String> marriedOrNot = [
@@ -133,24 +163,24 @@ class _PersonalInfoState extends State<PersonalInfo> {
 
   String? pensionsEstablished;
   final TextEditingController phoneNumberController = TextEditingController();
+  late TextEditingController departmentOfEducationController =
+      TextEditingController();
   final TextEditingController phoneNumberEmergencyController =
       TextEditingController();
 
   final TextEditingController placeOfBirthContoller = TextEditingController();
   final TextEditingController postalAddressController = TextEditingController();
   late TextEditingController professionController = TextEditingController();
-
-  void updateProfession(String newProfession) {
-    professionController.text = widget.user.profession as String;
-  }
-
   String? selectedAcademicDegree;
+  String? selectedBranchSchool;
   String? selectedCityOrState;
   String? selectedCityOrStateLiving;
   String? selectedCountry;
   String? selectedDistrictOrTown;
   String? selectedEducation;
   String? selectedGender;
+  String? selectedJobPost;
+  String? selectedDepartmentOfEducation;
   final List<String> served = [
     'Тийм',
     'Үгүй',
@@ -194,6 +224,13 @@ class _PersonalInfoState extends State<PersonalInfo> {
     pensionsEstablished = null;
     disabled = null;
     selectedCityOrStateLiving = null;
+    selectedBranchSchool = '*';
+    selectedDepartmentOfEducation = '*';
+    departmentOfEducationController.text = 'lol';
+  }
+
+  void updateProfession(String newProfession) {
+    professionController.text = widget.user.profession as String;
   }
 
   String? requiredFieldValidator(String? value) {
@@ -254,16 +291,21 @@ class _PersonalInfoState extends State<PersonalInfo> {
   Future<List> createContract() async {
     DateTime createdAt = DateTime.now();
     String createdAtString = createdAt.toIso8601String();
-
+    String apiUserCreationStringStudent = '/User/Signup/Create/User';
+    if (widget.userRoleSpecification == 'Багш') {
+      apiUserCreationStringStudent = '/User/Signup/Create/User/Teacher';
+    }
+    logger.d(departmentOfEducationController.text, 'mt');
+    logger.d(departmentOfEducation);
     try {
       final response = await http.post(
-        getApiUrl('/User/Signup/Create/User'),
+        getApiUrl(apiUserCreationStringStudent),
         body: json.encode({
           'registryNumber': widget.user.registryNumber,
           'profile_picture': '',
           'fname': widget.user.userName,
           'lname': widget.user.userSirname,
-          'major': widget.major!,
+          'major': widget.major ?? 'Default Major',
           'userRole': widget.userRoleSpecification,
           'birthday': birthdayController.text,
           'familyTreeName': familyTreeNamController.text,
@@ -298,7 +340,9 @@ class _PersonalInfoState extends State<PersonalInfo> {
           'disabled': disabled,
           'createdAt': createdAtString,
           'email': widget.user.email,
-          'signature': base64Signature
+          'signature': base64Signature,
+          'branchSchool': selectedBranchSchool,
+          'jobPost': selectedJobPost,
         }),
         headers: {'Content-Type': 'application/json'},
       ).timeout(Duration(seconds: 30));
@@ -381,7 +425,6 @@ class _PersonalInfoState extends State<PersonalInfo> {
                 controller.clear();
                 Navigator.of(context).pop();
                 if (formKey.currentState?.validate() ?? false) {
-                  logger.d("correct");
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Та түр хүлээнэ үү!')),
                   );
@@ -750,86 +793,291 @@ class _PersonalInfoState extends State<PersonalInfo> {
                             Padding(
                               padding:
                                   const EdgeInsets.symmetric(vertical: 8.0),
-                              child: Row(
+                              child: Column(
                                 children: [
-                                  Expanded(
-                                      child: widget.userRoleSpecification ==
-                                              'Оюутан'
-                                          ? TextFormField(
-                                              controller: TextEditingController(
-                                                  text:
-                                                      widget.major?.majorName),
-                                              decoration: InputDecoration(
-                                                labelText: 'Хөтөлбөр',
-                                                border: OutlineInputBorder(),
-                                                enabledBorder:
-                                                    OutlineInputBorder(
-                                                  borderSide: BorderSide(
-                                                    color: Colors.black,
-                                                  ), // Change border color
-                                                ),
-                                                focusedBorder:
-                                                    OutlineInputBorder(
-                                                  borderSide: BorderSide(
-                                                      color: Colors
-                                                          .black), // Border color when focused
-                                                ),
-                                              ),
-                                              readOnly:
-                                                  true, // Makes the field read-only but without gray shading
-                                            )
-                                          : widget.userRoleSpecification ==
-                                                  'Багш'
-                                              ? TextFormField(
-                                                  controller: TextEditingController(
-                                                      text: widget
-                                                          .userRoleSpecification),
-                                                  decoration: InputDecoration(
-                                                    labelText:
-                                                        'Горилож буй ажил',
-                                                    border:
-                                                        OutlineInputBorder(),
-                                                    enabledBorder:
-                                                        OutlineInputBorder(
-                                                      borderSide: BorderSide(
-                                                        color: Colors.black,
-                                                      ), // Change border color
-                                                    ),
-                                                    focusedBorder:
-                                                        OutlineInputBorder(
-                                                      borderSide: BorderSide(
-                                                          color: Colors
-                                                              .black), // Border color when focused
-                                                    ),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: widget.userRoleSpecification ==
+                                                'Оюутан'
+                                            ? TextFormField(
+                                                controller:
+                                                    TextEditingController(
+                                                        text: widget
+                                                            .major?.majorName),
+                                                decoration: InputDecoration(
+                                                  labelText: 'Хөтөлбөр',
+                                                  border: OutlineInputBorder(),
+                                                  enabledBorder:
+                                                      OutlineInputBorder(
+                                                    borderSide: BorderSide(
+                                                      color: Colors.black,
+                                                    ), // Change border color
                                                   ),
-                                                  readOnly:
-                                                      true, // Makes the field read-only but without gray shading
-                                                )
-                                              : TextFormField(
-                                                  controller: TextEditingController(
-                                                      text: widget
-                                                          .userRoleSpecification),
-                                                  decoration: InputDecoration(
-                                                    labelText:
-                                                        'Горилож буй ажил',
-                                                    border:
-                                                        OutlineInputBorder(),
-                                                    enabledBorder:
-                                                        OutlineInputBorder(
-                                                      borderSide: BorderSide(
-                                                        color: Colors.black,
-                                                      ), // Change border color
-                                                    ),
-                                                    focusedBorder:
-                                                        OutlineInputBorder(
-                                                      borderSide: BorderSide(
-                                                          color: Colors
-                                                              .black), // Border color when focused
-                                                    ),
+                                                  focusedBorder:
+                                                      OutlineInputBorder(
+                                                    borderSide: BorderSide(
+                                                        color: Colors
+                                                            .black), // Border color when focused
                                                   ),
-                                                  readOnly:
-                                                      true, // Makes the field read-only but without gray shading
-                                                )),
+                                                ),
+                                                readOnly:
+                                                    true, // Makes the field read-only but without gray shading
+                                              )
+                                            : widget.userRoleSpecification ==
+                                                    'Багш'
+                                                ? TextFormField(
+                                                    controller:
+                                                        TextEditingController(
+                                                            text: widget
+                                                                .userRoleSpecification),
+                                                    decoration: InputDecoration(
+                                                      labelText:
+                                                          'Горилож буй ажил',
+                                                      border:
+                                                          OutlineInputBorder(),
+                                                      enabledBorder:
+                                                          OutlineInputBorder(
+                                                        borderSide: BorderSide(
+                                                          color: Colors.black,
+                                                        ), // Change border color
+                                                      ),
+                                                      focusedBorder:
+                                                          OutlineInputBorder(
+                                                        borderSide: BorderSide(
+                                                            color: Colors
+                                                                .black), // Border color when focused
+                                                      ),
+                                                    ),
+                                                    readOnly:
+                                                        true, // Makes the field read-only but without gray shading
+                                                  )
+                                                : TextFormField(
+                                                    controller:
+                                                        TextEditingController(
+                                                            text: widget
+                                                                .userRoleSpecification),
+                                                    decoration: InputDecoration(
+                                                      labelText:
+                                                          'Горилож буй ажил',
+                                                      border:
+                                                          OutlineInputBorder(),
+                                                      enabledBorder:
+                                                          OutlineInputBorder(
+                                                        borderSide: BorderSide(
+                                                          color: Colors.black,
+                                                        ), // Change border color
+                                                      ),
+                                                      focusedBorder:
+                                                          OutlineInputBorder(
+                                                        borderSide: BorderSide(
+                                                            color: Colors
+                                                                .black), // Border color when focused
+                                                      ),
+                                                    ),
+                                                    readOnly:
+                                                        true, // Makes the field read-only but without gray shading
+                                                  ),
+                                      ),
+                                    ],
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 8.0),
+                                  ),
+                                  Column(
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child:
+                                                widget.userRoleSpecification ==
+                                                        'Багш'
+                                                    ? DropdownButtonFormField<
+                                                        String>(
+                                                        decoration:
+                                                            InputDecoration(
+                                                          labelText:
+                                                              'Салбар сургууль',
+                                                          enabledBorder:
+                                                              OutlineInputBorder(
+                                                            borderSide:
+                                                                BorderSide(
+                                                              color:
+                                                                  Colors.black,
+                                                            ),
+                                                          ),
+                                                          focusedBorder:
+                                                              OutlineInputBorder(
+                                                            borderSide:
+                                                                BorderSide(
+                                                                    color: Colors
+                                                                        .black),
+                                                          ),
+                                                        ),
+                                                        value:
+                                                            selectedBranchSchool,
+                                                        onChanged:
+                                                            (String? newValue) {
+                                                          setState(() {
+                                                            selectedBranchSchool =
+                                                                newValue;
+
+                                                            if (selectedBranchSchool ==
+                                                                    'Олон Улс, Нийгэм Судлалын Тэнхим' ||
+                                                                selectedBranchSchool ==
+                                                                    'Сэтгэл Судлалын Тэнхим') {
+                                                              departmentOfEducationController
+                                                                      .text =
+                                                                  departmentOfEducation[
+                                                                      2];
+                                                            } else if (selectedBranchSchool ==
+                                                                    'Бизнесийн Удирдлагын Тэнхим' ||
+                                                                selectedBranchSchool ==
+                                                                    'Санхүү, Эдийн Засгийн Тэнхим') {
+                                                              departmentOfEducationController
+                                                                      .text =
+                                                                  departmentOfEducation[
+                                                                      3];
+                                                            } else if (selectedBranchSchool ==
+                                                                    'Компьютерийн Ухааны Тэнхим' ||
+                                                                selectedBranchSchool ==
+                                                                    'Сэтгүүл Медиа Технологийн Тэнхим') {
+                                                              departmentOfEducationController
+                                                                      .text =
+                                                                  departmentOfEducation[
+                                                                      0];
+                                                            } else if (selectedBranchSchool ==
+                                                                    'Англи Хэлний Тэнхим' ||
+                                                                selectedBranchSchool ==
+                                                                    'Хэл Судлалын Тэнхим') {
+                                                              departmentOfEducationController
+                                                                      .text =
+                                                                  departmentOfEducation[
+                                                                      1];
+                                                            } else {
+                                                              departmentOfEducationController
+                                                                  .text = '';
+                                                            }
+
+                                                            ScaffoldMessenger
+                                                                    .of(context)
+                                                                .showSnackBar(
+                                                              SnackBar(
+                                                                content: Text(
+                                                                    'Selected branch: ${departmentOfEducationController.text}'),
+                                                              ),
+                                                            );
+                                                          });
+                                                        },
+                                                        items: branchSchool.map(
+                                                            (String
+                                                                branchSchool) {
+                                                          return DropdownMenuItem<
+                                                              String>(
+                                                            value: branchSchool,
+                                                            child: Text(
+                                                                branchSchool),
+                                                          );
+                                                        }).toList(),
+                                                      )
+                                                    : SizedBox.shrink(),
+                                          ),
+                                        ],
+                                      ),
+                                      Padding(
+                                        padding:
+                                            EdgeInsets.symmetric(vertical: 8.0),
+                                      ),
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child:
+                                                widget.userRoleSpecification ==
+                                                        'Багш'
+                                                    ? TextField(
+                                                        controller:
+                                                            departmentOfEducationController,
+                                                        decoration:
+                                                            InputDecoration(
+                                                          labelText:
+                                                              'Тэнхим анги',
+                                                          enabledBorder:
+                                                              OutlineInputBorder(
+                                                            borderSide:
+                                                                BorderSide(
+                                                              color:
+                                                                  Colors.black,
+                                                            ),
+                                                          ),
+                                                          focusedBorder:
+                                                              OutlineInputBorder(
+                                                            borderSide:
+                                                                BorderSide(
+                                                                    color: Colors
+                                                                        .black),
+                                                          ),
+                                                        ),
+                                                        readOnly: true,
+                                                      )
+                                                    : SizedBox.shrink(),
+                                          ),
+                                        ],
+                                      ),
+                                      Padding(
+                                        padding:
+                                            EdgeInsets.symmetric(vertical: 8.0),
+                                      ),
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child:
+                                                widget.userRoleSpecification ==
+                                                        'Багш'
+                                                    ? DropdownButtonFormField<
+                                                        String>(
+                                                        decoration:
+                                                            InputDecoration(
+                                                          labelText:
+                                                              'Ажлын байр',
+                                                          enabledBorder:
+                                                              OutlineInputBorder(
+                                                            borderSide:
+                                                                BorderSide(
+                                                              color:
+                                                                  Colors.black,
+                                                            ),
+                                                          ),
+                                                          focusedBorder:
+                                                              OutlineInputBorder(
+                                                            borderSide:
+                                                                BorderSide(
+                                                                    color: Colors
+                                                                        .black),
+                                                          ),
+                                                        ),
+                                                        value: selectedJobPost,
+                                                        onChanged:
+                                                            (String? newValue) {
+                                                          selectedJobPost =
+                                                              newValue;
+                                                        },
+                                                        items: jobPost.map(
+                                                            (String jobPost) {
+                                                          return DropdownMenuItem<
+                                                              String>(
+                                                            value: jobPost,
+                                                            child:
+                                                                Text(jobPost),
+                                                          );
+                                                        }).toList(),
+                                                      )
+                                                    : SizedBox.shrink(),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ],
                               ),
                             ),
@@ -2535,7 +2783,11 @@ class _PersonalInfoState extends State<PersonalInfo> {
                           isPDFvisible = true;
                         });
                       },
-                      child: Text('Сургалтын журамтай танилцах'),
+                      child: widget.userRoleSpecification == 'Оюутан'
+                          ? Text('Сургалтын журамтай танилцах')
+                          : widget.userRoleSpecification == 'Багш'
+                              ? Text('Ажилтаны журамтай танилцах')
+                              : Text('Сургалтын журамтай танилцах'),
                     ),
                     SizedBox(height: 20),
                     ElevatedButton(
@@ -2546,7 +2798,11 @@ class _PersonalInfoState extends State<PersonalInfo> {
                               });
                             }
                           : null,
-                      child: Text('Сургалтын гэрээтэй танилцах'),
+                      child: widget.userRoleSpecification == 'Оюутан'
+                          ? Text('Сургалтын гэрээтэй танилцах')
+                          : widget.userRoleSpecification == 'Багш'
+                              ? Text('Ажилтаны гэрээтэй танилцах')
+                              : Text('Ажилтаны гэрээтэй танилцах'),
                     ),
                   ],
                 ),
