@@ -53,19 +53,19 @@ class _PersonalInfoState extends State<PersonalInfo> {
   ];
 
   String? bloodType;
-  final List<String> branchSchool = [
-    'Бизнесийн удирдлагын тэнхим',
-    'Компьютерийн ухааны тэнхим',
-    'Олон улс, нийгэм судлалын тэнхим',
-    'Гадаад хэлний тэнхим',
-    'Санхүү, эдийн засгийн тэнхим',
-    'Сэтгүүл медиа, технологийн тэнхим',
-    'Сэтгэл судлалын тэнхим',
-    'Англи хэлний тэнхим',
+  final List<String> departmentOfEducation = [
+    'Бизнесийн Удирдлагын Тэнхим',
+    'Компьютерийн Ухааны Тэнхим',
+    'Олон Улс, Нийгэм Судлалын Тэнхим',
+    'Гадаад Хэлний Тэнхим',
+    'Санхүү, Эдийн Засгийн Тэнхим',
+    'Сэтгүүл Медиа, Технологийн Тэнхим',
+    'Сэтгэл Судлалын Тэнхим',
+    'Англи Хэлний Тэнхим',
     '*',
   ];
 
-  final List<String> departmentOfEducation = [
+  final List<String> branchSchool = [
     "Мэдээлэл, харилцааны менежментийн сургууль",
     "Хэл, соёлын сургууль",
     "Олон улсын харилцаа, нийгэм судлалын сургууль",
@@ -163,7 +163,9 @@ class _PersonalInfoState extends State<PersonalInfo> {
 
   String? pensionsEstablished;
   final TextEditingController phoneNumberController = TextEditingController();
-  late TextEditingController departmentOfEducationController =
+  late TextEditingController departmentsOfEducationController =
+      TextEditingController();
+  late TextEditingController selectedBranchSchoolController =
       TextEditingController();
   final TextEditingController phoneNumberEmergencyController =
       TextEditingController();
@@ -172,7 +174,6 @@ class _PersonalInfoState extends State<PersonalInfo> {
   final TextEditingController postalAddressController = TextEditingController();
   late TextEditingController professionController = TextEditingController();
   String? selectedAcademicDegree;
-  String? selectedBranchSchool;
   String? selectedCityOrState;
   String? selectedCityOrStateLiving;
   String? selectedCountry;
@@ -224,9 +225,9 @@ class _PersonalInfoState extends State<PersonalInfo> {
     pensionsEstablished = null;
     disabled = null;
     selectedCityOrStateLiving = null;
-    selectedBranchSchool = '*';
+    selectedBranchSchoolController = TextEditingController();
     selectedDepartmentOfEducation = '*';
-    departmentOfEducationController.text = 'lol';
+    departmentsOfEducationController = TextEditingController();
   }
 
   void updateProfession(String newProfession) {
@@ -295,8 +296,7 @@ class _PersonalInfoState extends State<PersonalInfo> {
     if (widget.userRoleSpecification == 'Багш') {
       apiUserCreationStringStudent = '/User/Signup/Create/User/Teacher';
     }
-    logger.d(departmentOfEducationController.text, 'mt');
-    logger.d(departmentOfEducation);
+    logger.d(departmentsOfEducationController.text);
     try {
       final response = await http.post(
         getApiUrl(apiUserCreationStringStudent),
@@ -341,7 +341,8 @@ class _PersonalInfoState extends State<PersonalInfo> {
           'createdAt': createdAtString,
           'email': widget.user.email,
           'signature': base64Signature,
-          'branchSchool': selectedBranchSchool,
+          'branchSchool': selectedBranchSchoolController.text,
+          'departmenstOfEducation': selectedDepartmentOfEducation,
           'jobPost': selectedJobPost,
         }),
         headers: {'Content-Type': 'application/json'},
@@ -898,7 +899,7 @@ class _PersonalInfoState extends State<PersonalInfo> {
                                                         decoration:
                                                             InputDecoration(
                                                           labelText:
-                                                              'Салбар сургууль',
+                                                              'Тэнхим анги',
                                                           enabledBorder:
                                                               OutlineInputBorder(
                                                             borderSide:
@@ -916,47 +917,47 @@ class _PersonalInfoState extends State<PersonalInfo> {
                                                           ),
                                                         ),
                                                         value:
-                                                            selectedBranchSchool,
+                                                            selectedDepartmentOfEducation,
                                                         onChanged:
                                                             (String? newValue) {
                                                           setState(() {
-                                                            selectedBranchSchool =
+                                                            selectedDepartmentOfEducation =
                                                                 newValue;
 
-                                                            if (selectedBranchSchool ==
+                                                            if (selectedDepartmentOfEducation ==
                                                                     'Олон Улс, Нийгэм Судлалын Тэнхим' ||
-                                                                selectedBranchSchool ==
+                                                                selectedDepartmentOfEducation ==
                                                                     'Сэтгэл Судлалын Тэнхим') {
-                                                              departmentOfEducationController
+                                                              selectedBranchSchoolController
                                                                       .text =
-                                                                  departmentOfEducation[
+                                                                  branchSchool[
                                                                       2];
-                                                            } else if (selectedBranchSchool ==
+                                                            } else if (selectedDepartmentOfEducation ==
                                                                     'Бизнесийн Удирдлагын Тэнхим' ||
-                                                                selectedBranchSchool ==
+                                                                selectedDepartmentOfEducation ==
                                                                     'Санхүү, Эдийн Засгийн Тэнхим') {
-                                                              departmentOfEducationController
+                                                              selectedBranchSchoolController
                                                                       .text =
-                                                                  departmentOfEducation[
+                                                                  branchSchool[
                                                                       3];
-                                                            } else if (selectedBranchSchool ==
+                                                            } else if (selectedDepartmentOfEducation ==
                                                                     'Компьютерийн Ухааны Тэнхим' ||
-                                                                selectedBranchSchool ==
+                                                                selectedDepartmentOfEducation ==
                                                                     'Сэтгүүл Медиа Технологийн Тэнхим') {
-                                                              departmentOfEducationController
+                                                              selectedBranchSchoolController
                                                                       .text =
-                                                                  departmentOfEducation[
+                                                                  branchSchool[
                                                                       0];
-                                                            } else if (selectedBranchSchool ==
+                                                            } else if (selectedDepartmentOfEducation ==
                                                                     'Англи Хэлний Тэнхим' ||
-                                                                selectedBranchSchool ==
+                                                                selectedDepartmentOfEducation ==
                                                                     'Хэл Судлалын Тэнхим') {
-                                                              departmentOfEducationController
+                                                              selectedBranchSchoolController
                                                                       .text =
-                                                                  departmentOfEducation[
+                                                                  branchSchool[
                                                                       1];
                                                             } else {
-                                                              departmentOfEducationController
+                                                              departmentsOfEducationController
                                                                   .text = '';
                                                             }
 
@@ -965,19 +966,20 @@ class _PersonalInfoState extends State<PersonalInfo> {
                                                                 .showSnackBar(
                                                               SnackBar(
                                                                 content: Text(
-                                                                    'Selected branch: ${departmentOfEducationController.text}'),
+                                                                    'Selected branch: ${departmentsOfEducationController.text}'),
                                                               ),
                                                             );
                                                           });
                                                         },
-                                                        items: branchSchool.map(
-                                                            (String
-                                                                branchSchool) {
+                                                        items: departmentOfEducation
+                                                            .map((String
+                                                                departmentOfEducation) {
                                                           return DropdownMenuItem<
                                                               String>(
-                                                            value: branchSchool,
+                                                            value:
+                                                                departmentOfEducation,
                                                             child: Text(
-                                                                branchSchool),
+                                                                departmentOfEducation),
                                                           );
                                                         }).toList(),
                                                       )
@@ -997,7 +999,7 @@ class _PersonalInfoState extends State<PersonalInfo> {
                                                         'Багш'
                                                     ? TextField(
                                                         controller:
-                                                            departmentOfEducationController,
+                                                            selectedBranchSchoolController,
                                                         decoration:
                                                             InputDecoration(
                                                           labelText:
@@ -1006,9 +1008,8 @@ class _PersonalInfoState extends State<PersonalInfo> {
                                                               OutlineInputBorder(
                                                             borderSide:
                                                                 BorderSide(
-                                                              color:
-                                                                  Colors.black,
-                                                            ),
+                                                                    color: Colors
+                                                                        .black),
                                                           ),
                                                           focusedBorder:
                                                               OutlineInputBorder(
@@ -1019,6 +1020,8 @@ class _PersonalInfoState extends State<PersonalInfo> {
                                                           ),
                                                         ),
                                                         readOnly: true,
+                                                        minLines: 1,
+                                                        maxLines: null,
                                                       )
                                                     : SizedBox.shrink(),
                                           ),
