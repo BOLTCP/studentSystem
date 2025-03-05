@@ -19,7 +19,6 @@ class StudentUser {
   int majorId;
   DateTime createdAt;
   Map<String, dynamic>? contracts; // Nullable
-  String? studentActiveNote; // Nullable
 
   // Constructor
   StudentUser({
@@ -39,11 +38,10 @@ class StudentUser {
     required this.majorId,
     required this.createdAt,
     this.contracts,
-    this.studentActiveNote,
   });
 
   // fromJson method
-  factory StudentUser.fromJson(Map<String, dynamic> json) {
+  factory StudentUser.fromJsonStudentUser(Map<String, dynamic> json) {
     return StudentUser(
       studentId: json['student_id'] ?? 0, // Default to 0 if null
       userId: json['user_id'] ?? 0, // Default to 0 if null
@@ -69,7 +67,6 @@ class StudentUser {
           ? DateTime.parse(json['created_at'])
           : DateTime.now(), // Parse the date or use current date
       contracts: json['contracts'], // Nullable
-      studentActiveNote: json['student_active_note'], // Nullable
     );
   }
 
@@ -92,7 +89,6 @@ class StudentUser {
       'major_id': majorId,
       'created_at': createdAt.toIso8601String(),
       'contracts': contracts,
-      'student_active_note': studentActiveNote,
     };
   }
 
@@ -115,7 +111,6 @@ class StudentUser {
     logger.d('  majorId: $majorId');
     logger.d('  createdAt: $createdAt');
     logger.d('  contracts: $contracts');
-    logger.d('  student_active_note: $studentActiveNote');
     logger.d('}');
   }
 }

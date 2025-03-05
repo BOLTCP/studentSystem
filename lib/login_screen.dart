@@ -56,7 +56,7 @@ class _LoginScreenState extends State<LoginScreen> {
           logger.d('Login successful!');
           final decodedJson = json.decode(response.body);
           logger.d(decodedJson);
-          final user = AuthUser.fromJson(decodedJson['user']);
+          final user = AuthUser.fromJsonAuthUser(decodedJson['user']);
 
           if (_rememberMe) {
             _saveCredentials(loginName, passwordHash);
@@ -132,114 +132,152 @@ class _LoginScreenState extends State<LoginScreen> {
       backgroundColor: Colors.blue[50],
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Card(
-                elevation: 12.0,
-                shadowColor: Colors.blue.shade900,
-                color: const Color(0xFFFFFFFF),
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    children: [
-                      TextFormField(
-                        controller: _loginNameController,
-                        decoration: const InputDecoration(
-                          labelText: 'Нэвтрэх нэр : ',
-                          border: OutlineInputBorder(),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter your login name';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _passwordController,
-                        obscureText:
-                            !_isPasswordVisible, // Toggle password visibility
-                        decoration: InputDecoration(
-                          labelText: 'Нууц код : ',
-                          border: const OutlineInputBorder(),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _isPasswordVisible
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
+        child: Center(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Card(
+                  elevation: 12.0,
+                  shadowColor: Colors.blue.shade900,
+                  color: const Color(0xFFFFFFFF),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: SizedBox(
+                      width: 550,
+                      child: Column(
+                        children: [
+                          TextFormField(
+                            controller: _loginNameController,
+                            decoration: const InputDecoration(
+                              labelText: 'Нэвтрэх нэр : ',
+                              border: OutlineInputBorder(),
                             ),
-                            onPressed: () {
-                              setState(() {
-                                _isPasswordVisible = !_isPasswordVisible;
-                              });
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter your login name';
+                              }
+                              return null;
                             },
                           ),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Нууц үгээ оруулна уу!';
-                          }
-                          return null;
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16.0),
-              Row(
-                children: <Widget>[
-                  Checkbox(
-                    checkColor: Colors.white,
-                    value: _rememberMe,
-                    onChanged: (value) {
-                      setState(() {
-                        _rememberMe = value!;
-                      });
-                    },
-                  ),
-                  const Text(
-                    'Намайг санах',
-                    style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 16.0,
-                        fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24.0),
-              _isLoading
-                  ? CircularProgressIndicator()
-                  : ElevatedButton(
-                      onPressed: _login,
-                      child: const Text(
-                        'Нэвтрэх',
-                        style: TextStyle(fontSize: 20.0),
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: _passwordController,
+                            obscureText:
+                                !_isPasswordVisible, // Toggle password visibility
+                            decoration: InputDecoration(
+                              labelText: 'Нууц код : ',
+                              border: const OutlineInputBorder(),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _isPasswordVisible
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _isPasswordVisible = !_isPasswordVisible;
+                                  });
+                                },
+                              ),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Нууц үгээ оруулна уу!';
+                              }
+                              return null;
+                            },
+                          ),
+                          Padding(padding: EdgeInsets.symmetric(vertical: 5.0)),
+                          Row(
+                            children: <Widget>[
+                              Checkbox(
+                                checkColor: Colors.white,
+                                value: _rememberMe,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _rememberMe = value!;
+                                  });
+                                },
+                              ),
+                              const Text(
+                                'Намайг санах',
+                                style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 16.0,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 5.0),
+                              ),
+                              const SizedBox(height: 12.0),
+                              _isLoading
+                                  ? CircularProgressIndicator()
+                                  : ElevatedButton.icon(
+                                      icon: Icon(Icons.login),
+                                      label: Text(
+                                        'Нэвтрэх',
+                                        style: TextStyle(fontSize: 20.0),
+                                      ),
+                                      onPressed: _login,
+                                    ),
+                              const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 5.0),
+                              ),
+                              const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 5.0),
+                              ),
+                              ElevatedButton.icon(
+                                onPressed: () {
+                                  Navigator.pushNamed(context, '/contact_us');
+                                },
+                                icon: Icon(Icons.phone),
+                                label: Text(
+                                  'Холбогдох',
+                                  style: TextStyle(fontSize: 20.0),
+                                ),
+                              ),
+                              const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 5.0),
+                              ),
+                            ],
+                          ),
+                          Padding(padding: EdgeInsets.symmetric(vertical: 8.0)),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              ElevatedButton.icon(
+                                onPressed: () {
+                                  Navigator.pushNamed(
+                                      context, '/admission_courses');
+                                },
+                                icon: Image.asset(
+                                    'assets/images/icons/student_signup.png',
+                                    width: 20,
+                                    height: 20,
+                                    color:
+                                        const Color.fromRGBO(83, 58, 147, 0.9)),
+                                label: Text(
+                                  'Хөтөлбөрт бүртгүүлэх',
+                                  style: TextStyle(fontSize: 20.0),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/contact_us');
-                },
-                child: const Text(
-                  'Холбоо барих',
-                  style: TextStyle(fontSize: 20.0),
+                  ),
                 ),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/admission_courses');
-                },
-                child: const Text(
-                  'Хөтөлбөрт бүртгүүлэх',
-                  style: TextStyle(fontSize: 20.0),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

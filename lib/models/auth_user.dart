@@ -96,7 +96,7 @@ class AuthUser {
   });
 
   // From JSON
-  factory AuthUser.fromJson(Map<String, dynamic> json) {
+  factory AuthUser.fromJsonAuthUser(Map<String, dynamic> json) {
     try {
       return AuthUser(
         userId: json['user_id'] ?? 0, // Provide default value if missing

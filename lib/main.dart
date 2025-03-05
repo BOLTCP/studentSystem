@@ -7,7 +7,6 @@ import 'login_screen.dart';
 import 'package:studentsystem/models/major.dart';
 import 'package:studentsystem/widgets/personal_info.dart';
 import 'package:studentsystem/models/user.dart';
-import 'package:studentsystem/widgets/pdf_viewer_screen.dart';
 import 'package:studentsystem/widgets/courses_screen.dart';
 import 'package:studentsystem/widgets/courses_default.dart';
 import 'package:studentsystem/models/user_details.dart';
@@ -42,10 +41,6 @@ class MyApp extends StatelessWidget {
         '/admission_courses': (context) => AdmissionCourses(),
         '/user_signup': (context) => UserSignUp(
               userRoleSpecification: 'Багш',
-            ),
-        '/pdf_viewer_screen': (context) => PdfViewerScreen(
-              isAsset: true,
-              canProceed: false,
             ),
       },
       onGenerateRoute: (settings) {

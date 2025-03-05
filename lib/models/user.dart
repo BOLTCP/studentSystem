@@ -8,7 +8,7 @@ class Exam {
 
   Exam({required this.examType, required this.score});
 
-  factory Exam.fromJson(Map<String, dynamic> json) {
+  factory Exam.fromJsonExams(Map<String, dynamic> json) {
     return Exam(
       examType: json['exam_type'] ?? 'Unknown',
       score: json['score'] != null ? (json['score'] as num).toDouble() : 0.0,
@@ -31,7 +31,7 @@ class Exam {
 class User {
   String userName;
   String userSirname;
-  String registryNumber; // Changed from 'resgistryNumber' to 'registryNumber'
+  String registryNumber;
   String? examCode;
   String email;
   String? education;
@@ -58,25 +58,25 @@ class User {
   // From JSON with error handling and type checking
   factory User.fromJson(Map<String, dynamic> json) {
     try {
-      // Directly extract values from the JSON if they exist
       return User(
         userName: json['user_name'] ?? 'Unknown',
         userSirname: json['user_sirname'] ?? 'Unknown',
         registryNumber: json['registry_number'] ?? 'Unknown',
-        examCode:
-            null, // Default to null since there's no exam code for this user type
+        examCode: json['exam_code'], // Safely handle the null or missing value
         email: json['email'] ?? 'No email provided',
-        education: json['education'] ?? 'Unknown',
-        profession: json['profession'] ?? 'Unknown',
-        academicDegree: json['academic_degree'] ?? 'Unknown',
-        exams: [], // No exams for this user
+        education: json['education'],
+        profession: json['profession'],
+        academicDegree: json['academic_degree'],
+        exams: json['exams'] != null
+            ? (json['exams'] as List).map((e) => Exam.fromJsonExams(e)).toList()
+            : [], // Handle case where exams might be missing or empty
         createdAt: DateTime.parse(
             json['created_at'] ?? DateTime.now().toIso8601String()),
         validUntil: DateTime.parse(
             json['valid_until'] ?? DateTime.now().toIso8601String()),
       );
     } catch (e) {
-      logger.d("Error parsing user: $e");
+      logger.e("Error parsing user: $e", e);
       // Return a default user in case of an error
       return User(
         userName: 'Unknown',
@@ -99,12 +99,12 @@ class User {
     return {
       'user_name': userName,
       'user_sirname': userSirname,
-      'registry_number': registryNumber, // Corrected the typo
-      'examCode': examCode,
+      'registry_number': registryNumber,
+      'exam_code': examCode,
       'email': email,
       'education': education,
       'profession': profession,
-      'academicDegree': academicDegree,
+      'academic_degree': academicDegree,
       'exams': exams?.map((e) => e.toJson()).toList(),
       'created_at': createdAt.toIso8601String(),
       'valid_until': validUntil.toIso8601String(),

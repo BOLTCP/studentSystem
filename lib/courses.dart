@@ -39,7 +39,7 @@ class _CoursesIntroductionState extends State<CoursesIntroduction> {
       logger.d('Response status: ${response.statusCode}');
       if (response.statusCode == 200) {
         final decodedJson = json.decode(response.body);
-        Major majors = Major.fromJson(decodedJson['major']);
+        Major majors = Major.fromJsonMajor(decodedJson['major']);
 
         return majors;
       } else {
@@ -89,44 +89,48 @@ class _CoursesIntroductionState extends State<CoursesIntroduction> {
 
                       return SingleChildScrollView(
                         padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            ..._buildCourseDetails(majors),
-                            SizedBox(height: 20),
-                            ElevatedButton(
-                              style: majors.signUps == 'бүртгэл нээлттэй'
-                                  ? ElevatedButton.styleFrom(
-                                      padding: EdgeInsets.symmetric(
-                                          vertical: 12, horizontal: 30),
-                                      backgroundColor: Colors.blue,
-                                      textStyle: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold),
-                                    )
-                                  : null,
-                              onPressed: majors.signUps == 'бүртгэл нээлттэй'
-                                  ? () {
-                                      Navigator.pushNamed(
-                                        context,
-                                        '/student_signup',
-                                        arguments: majors,
-                                      );
-                                    }
-                                  : null,
-                              child: majors.signUps == 'бүртгэл нээлттэй'
-                                  ? Text(
-                                      'Хөтөлбөрт бүртгүүлэх',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(color: Colors.black),
-                                    )
-                                  : Text(
-                                      'Хөтөлбөрт хаагдсан',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(color: Colors.black),
-                                    ),
-                            ),
-                          ],
+                        child: Center(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ..._buildCourseDetails(majors),
+                              SizedBox(height: 20),
+                              ElevatedButton(
+                                style: majors.signUps == 'бүртгэл нээлттэй'
+                                    ? ElevatedButton.styleFrom(
+                                        padding: EdgeInsets.symmetric(
+                                            vertical: 12, horizontal: 30),
+                                        backgroundColor: Colors.blue,
+                                        textStyle: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold),
+                                      )
+                                    : null,
+                                onPressed: majors.signUps == 'бүртгэл нээлттэй'
+                                    ? () {
+                                        Navigator.pushNamed(
+                                          context,
+                                          '/student_signup',
+                                          arguments: majors,
+                                        );
+                                      }
+                                    : null,
+                                child: majors.signUps == 'бүртгэл нээлттэй'
+                                    ? Text(
+                                        'Хөтөлбөрт бүртгүүлэх',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(color: Colors.black),
+                                      )
+                                    : Text(
+                                        'Хөтөлбөрт хаагдсан',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(color: Colors.black),
+                                      ),
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     }
@@ -195,37 +199,40 @@ class _CoursesIntroductionState extends State<CoursesIntroduction> {
       displayValue = value.toString();
     }
 
-    return Card(
-      elevation: 6.0,
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      color: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          children: [
-            Text(
-              label,
-              softWrap: true,
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blueAccent),
-            ),
-            SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                displayValue,
-                style: TextStyle(fontSize: 16, color: Colors.black87),
+    return SizedBox(
+      width: 350,
+      child: Card(
+        elevation: 6.0,
+        margin: const EdgeInsets.symmetric(vertical: 8.0),
+        color: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12.0),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              Text(
+                label,
+                softWrap: true,
+                maxLines: 10,
                 overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blueAccent),
               ),
-            ),
-          ],
+              SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  displayValue,
+                  style: TextStyle(fontSize: 16, color: Colors.black87),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

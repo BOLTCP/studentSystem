@@ -55,11 +55,13 @@ class _StudentDashboardState extends State<StudentDashboard> {
 
       if (response.statusCode == 200) {
         final decodedJson = json.decode(response.body);
-        AuthUser user = AuthUser.fromJson(decodedJson['user']);
-        StudentUser student = StudentUser.fromJson(decodedJson['student']);
-        Major major = Major.fromJson(decodedJson['major']);
+        AuthUser user = AuthUser.fromJsonAuthUser(decodedJson['user']);
+        StudentUser student =
+            StudentUser.fromJsonStudentUser(decodedJson['student']);
+        Major major = Major.fromJsonMajor(decodedJson['major']);
         major = major;
-        Department department = Department.fromJson(decodedJson['department']);
+        Department department =
+            Department.fromJsonDepartment(decodedJson['department']);
 
         logger.d('User fetched: $user');
         logger.d('Student fetched: $student');

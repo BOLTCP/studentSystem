@@ -55,13 +55,15 @@ class _StudentDashboardState extends State<StudentDashboard> {
 
       if (response.statusCode == 200) {
         final decodedJson = json.decode(response.body);
-        AuthUser user = AuthUser.fromJson(decodedJson['user']);
-        StudentUser student = StudentUser.fromJson(decodedJson['student']);
-        Major major = Major.fromJson(decodedJson['major']);
+        AuthUser user = AuthUser.fromJsonAuthUser(decodedJson['user']);
+        StudentUser student =
+            StudentUser.fromJsonStudentUser(decodedJson['student']);
+        Major major = Major.fromJsonMajor(decodedJson['major']);
         major = major;
-        Department department = Department.fromJson(decodedJson['department']);
+        Department department =
+            Department.fromJsonDepartment(decodedJson['department']);
 
-        logger.d('User fetched: $user');
+        logger.d('User fetchedr: $user');
         logger.d('Student fetched: $student');
         logger.d('Major fetched: $major');
         logger.d('Department fetched: $department');
@@ -200,12 +202,21 @@ class _StudentDashboardState extends State<StudentDashboard> {
             final userDetails = snapshot.data!;
 
             return SingleChildScrollView(
-              child: Column(
-                children: _buildUserDetails(
-                    userDetails.user,
-                    userDetails.student,
-                    userDetails.major,
-                    userDetails.department),
+              child: Center(
+                child: SizedBox(
+                  width: 550,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: _buildUserDetails(
+                      userDetails.user,
+                      userDetails.student,
+                      userDetails.major,
+                      userDetails.department,
+                    ),
+                  ),
+                ),
               ),
             );
           }

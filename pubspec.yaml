@@ -36,7 +36,6 @@ dependencies:
   flutter_pdfview: ^1.4.0
   flutter_cached_pdfview: ^0.4.3
   permission_handler: ^11.3.1
-  pdfx: ^2.8.0
   path: ^1.8.0
   external_path: ^2.0.1
   

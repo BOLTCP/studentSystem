@@ -53,7 +53,7 @@ class Major {
         'Qualifications: $qualifications, Qualifications1: $qualifications1, Qualifications2: $qualifications2';
   }
 
-  factory Major.fromJson(Map<String, dynamic> json) {
+  factory Major.fromJsonMajor(Map<String, dynamic> json) {
     return Major(
       majorId: json['major_id'],
       majorName: json['major_name'],

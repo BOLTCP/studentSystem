@@ -206,178 +206,180 @@ class _AdmissionCoursesState extends State<AdmissionCourses> {
         ],
       ),
       backgroundColor: Colors.blue[50],
-      body: Column(
-        children: [
-          Center(
-            child: SizedBox(
-              height: 340.0,
-              child: Card(
-                elevation: 20.0,
-                shadowColor: Colors.blue.shade900,
-                margin: const EdgeInsets.all(20.0),
-                color: Colors.blue,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: const Text(
-                              'Хөтөлбөрүүд',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(right: 10.0),
-                            child: Icon(
-                              Icons.school,
-                              size: 40.0,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Center(
-                        child: Wrap(
-                          spacing: 8.0,
-                          runSpacing: 4.0,
+      body: Center(
+        child: SizedBox(
+          width: 550,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Center(
+                child: Card(
+                  elevation: 20.0,
+                  shadowColor: Colors.blue.shade900,
+                  margin: const EdgeInsets.all(20.0),
+                  color: Colors.blue,
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
                           children: [
-                            // Use ActionChip directly without InkWell
-                            ActionChip(
-                              backgroundColor: Colors.white,
-                              avatar: Icon(
-                                selectedChipIndex == 0
-                                    ? Icons.circle_rounded
-                                    : Icons.circle_outlined,
-                                fill: 0.5,
-                                color: Colors.black,
+                            Expanded(
+                              child: const Text(
+                                'Хөтөлбөрүүд',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                              label: const Text('Бакалавр',
-                                  style:
-                                      TextStyle(fontWeight: FontWeight.bold)),
-                              labelStyle: TextStyle(fontSize: 24.0),
-                              onPressed: () {
-                                setState(() {
-                                  selectedChipIndex = 0;
-                                  _getCourses(selectedChipIndex!);
-                                });
-                              },
                             ),
-                            ActionChip(
-                              backgroundColor: Colors.white,
-                              avatar: Icon(
-                                selectedChipIndex == 1
-                                    ? Icons.circle_rounded
-                                    : Icons.circle_outlined,
-                                fill: 0.5,
-                                color: Colors.black,
+                            Padding(
+                              padding: const EdgeInsets.only(right: 10.0),
+                              child: Icon(
+                                Icons.school,
+                                size: 40.0,
+                                color: Colors.white,
                               ),
-                              label: const Text(
-                                'Бакалавр / Орой',
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              labelStyle: TextStyle(fontSize: 24.0),
-                              onPressed: () {
-                                setState(() {
-                                  selectedChipIndex = 1;
-                                  _getCourses(selectedChipIndex!);
-                                });
-                              },
-                            ),
-                            ActionChip(
-                              backgroundColor: Colors.white,
-                              avatar: Icon(
-                                selectedChipIndex == 2
-                                    ? Icons.circle_rounded
-                                    : Icons.circle_outlined,
-                                fill: 0.5,
-                                color: Colors.black,
-                              ),
-                              label: const Text(
-                                'Магистр',
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              labelStyle: TextStyle(fontSize: 24.0),
-                              onPressed: () {
-                                setState(() {
-                                  selectedChipIndex = 2;
-                                  _getCourses(selectedChipIndex!);
-                                });
-                              },
-                            ),
-                            ActionChip(
-                              backgroundColor: Colors.white,
-                              avatar: Icon(
-                                selectedChipIndex == 3
-                                    ? Icons.circle_rounded
-                                    : Icons.circle_outlined,
-                                fill: 0.5,
-                                color: Colors.black,
-                              ),
-                              label: const Text(
-                                'Доктор',
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              labelStyle: TextStyle(fontSize: 24.0),
-                              onPressed: () {
-                                setState(() {
-                                  selectedChipIndex = 3;
-                                  _getCourses(selectedChipIndex!);
-                                });
-                              },
-                            ),
-                            ActionChip(
-                              backgroundColor: Colors.white,
-                              avatar: Icon(
-                                selectedChipIndex == 4
-                                    ? Icons.circle_rounded
-                                    : Icons.circle_outlined,
-                                fill: 0.5,
-                                color: Colors.black,
-                              ),
-                              label: const Text(
-                                'Шилжин Суралцах',
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              labelStyle: TextStyle(fontSize: 24.0),
-                              onPressed: () {
-                                setState(() {
-                                  selectedChipIndex = 4;
-                                  _getCourses(selectedChipIndex!);
-                                });
-                              },
                             ),
                           ],
                         ),
                       ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Center(
+                          child: Wrap(
+                            spacing: 8.0,
+                            runSpacing: 4.0,
+                            children: [
+                              // Use ActionChip directly without InkWell
+                              ActionChip(
+                                backgroundColor: Colors.white,
+                                avatar: Icon(
+                                  selectedChipIndex == 0
+                                      ? Icons.circle_rounded
+                                      : Icons.circle_outlined,
+                                  fill: 0.5,
+                                  color: Colors.black,
+                                ),
+                                label: const Text('Бакалавр',
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold)),
+                                labelStyle: TextStyle(fontSize: 24.0),
+                                onPressed: () {
+                                  setState(() {
+                                    selectedChipIndex = 0;
+                                    _getCourses(selectedChipIndex!);
+                                  });
+                                },
+                              ),
+                              ActionChip(
+                                backgroundColor: Colors.white,
+                                avatar: Icon(
+                                  selectedChipIndex == 1
+                                      ? Icons.circle_rounded
+                                      : Icons.circle_outlined,
+                                  fill: 0.5,
+                                  color: Colors.black,
+                                ),
+                                label: const Text(
+                                  'Бакалавр / Орой',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                labelStyle: TextStyle(fontSize: 24.0),
+                                onPressed: () {
+                                  setState(() {
+                                    selectedChipIndex = 1;
+                                    _getCourses(selectedChipIndex!);
+                                  });
+                                },
+                              ),
+                              ActionChip(
+                                backgroundColor: Colors.white,
+                                avatar: Icon(
+                                  selectedChipIndex == 2
+                                      ? Icons.circle_rounded
+                                      : Icons.circle_outlined,
+                                  fill: 0.5,
+                                  color: Colors.black,
+                                ),
+                                label: const Text(
+                                  'Магистр',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                labelStyle: TextStyle(fontSize: 24.0),
+                                onPressed: () {
+                                  setState(() {
+                                    selectedChipIndex = 2;
+                                    _getCourses(selectedChipIndex!);
+                                  });
+                                },
+                              ),
+                              ActionChip(
+                                backgroundColor: Colors.white,
+                                avatar: Icon(
+                                  selectedChipIndex == 3
+                                      ? Icons.circle_rounded
+                                      : Icons.circle_outlined,
+                                  fill: 0.5,
+                                  color: Colors.black,
+                                ),
+                                label: const Text(
+                                  'Доктор',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                labelStyle: TextStyle(fontSize: 24.0),
+                                onPressed: () {
+                                  setState(() {
+                                    selectedChipIndex = 3;
+                                    _getCourses(selectedChipIndex!);
+                                  });
+                                },
+                              ),
+                              ActionChip(
+                                backgroundColor: Colors.white,
+                                avatar: Icon(
+                                  selectedChipIndex == 4
+                                      ? Icons.circle_rounded
+                                      : Icons.circle_outlined,
+                                  fill: 0.5,
+                                  color: Colors.black,
+                                ),
+                                label: const Text(
+                                  'Шилжин Суралцах',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                labelStyle: TextStyle(fontSize: 24.0),
+                                onPressed: () {
+                                  setState(() {
+                                    selectedChipIndex = 4;
+                                    _getCourses(selectedChipIndex!);
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: SizedBox(
+                    child: Column(
+                      children: _buildMajorDetails(),
                     ),
-                  ],
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
-          Expanded(
-            child: SingleChildScrollView(
-              child: SizedBox(
-                child: Column(
-                  children: _buildMajorDetails(),
-                ),
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

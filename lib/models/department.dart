@@ -24,14 +24,14 @@ class Department {
   });
 
   // From JSON
-  factory Department.fromJson(Map<String, dynamic> json) {
+  factory Department.fromJsonDepartment(Map<String, dynamic> json) {
     try {
       return Department(
         departmentId: json['department_id'],
         departmentName: json['department_name'],
         departmentCode: json['department_code'],
         departmentEmail: json['department_email'],
-        numberOfStaff: json['number_of_staff'],
+        numberOfStaff: json['number_of_staff'] ?? 0,
         logo: json['logo'],
         createdAt: DateTime.parse(json['created_at']),
         departmentOfEduId: json['department_of_edu_id'],
