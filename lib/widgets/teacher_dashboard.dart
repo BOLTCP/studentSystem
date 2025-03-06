@@ -9,23 +9,23 @@ import 'package:logger/logger.dart';
 import 'package:studentsystem/models/department.dart';
 import 'package:studentsystem/models/student_user.dart';
 import 'package:studentsystem/models/major.dart';
+import 'package:studentsystem/models/teacher.dart';
 import 'package:studentsystem/models/user_details.dart';
 import 'package:studentsystem/widgets/courses_screen.dart';
 
 var logger = Logger();
 
-class StudentDashboard extends StatefulWidget {
-  const StudentDashboard({required this.userId, Key? key}) : super(key: key);
+class TeacherDashboard extends StatefulWidget {
+  const TeacherDashboard({required this.userId, Key? key}) : super(key: key);
 
   final int userId;
 
   @override
-  _StudentDashboardState createState() => _StudentDashboardState();
+  _TeacherDashboardState createState() => _TeacherDashboardState();
 }
 
-class _StudentDashboardState extends State<StudentDashboard> {
+class _TeacherDashboardState extends State<TeacherDashboard> {
   late Future<UserDetails> userDetails;
-
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<Widget> _screens = [];
   int _selectedIndex = 0;
@@ -33,8 +33,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
   @override
   void initState() {
     super.initState();
-    userDetails =
-        fetchUserDetails(); // This will now fetch the data when the screen loads
+    userDetails = fetchUserDetails();
     _screens = [
       _buildSettingsScreen(),
       _buildNotificationsScreen(),
@@ -45,7 +44,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
   Future<UserDetails> fetchUserDetails() async {
     try {
       final response = await http.post(
-        getApiUrl('/User/Login'),
+        getApiUrl('/User/Login/Teacher'),
         body: json.encode({'user_id': widget.userId}),
         headers: {'Content-Type': 'application/json'},
       ).timeout(Duration(seconds: 30));
@@ -56,20 +55,20 @@ class _StudentDashboardState extends State<StudentDashboard> {
       if (response.statusCode == 200) {
         final decodedJson = json.decode(response.body);
         AuthUser user = AuthUser.fromJsonAuthUser(decodedJson['user']);
-        StudentUser student =
-            StudentUser.fromJsonStudentUser(decodedJson['student']);
-        Major major = Major.fromJsonMajor(decodedJson['major']);
-        major = major;
+        TeacherUser teacher =
+            TeacherUser.fromJsonTeacher(decodedJson['teacher']);
         Department department =
             Department.fromJsonDepartment(decodedJson['department']);
 
         logger.d('User fetched: $user');
-        logger.d('Student fetched: $student');
-        logger.d('Major fetched: $major');
+        logger.d('Teacher fetched: $teacher');
         logger.d('Department fetched: $department');
 
         return UserDetails(
-            user: user, student: student, major: major, department: department);
+            user: user,
+            teacher: teacher,
+            student: null,
+            department: department);
       } else {
         logger.d('Error: ${response.statusCode}');
         throw Exception('User does not exist!');
@@ -116,23 +115,21 @@ class _StudentDashboardState extends State<StudentDashboard> {
    */
 
   List<Widget> _buildUserDetails(
-      AuthUser user, StudentUser student, Major major, Department department) {
+      AuthUser user, TeacherUser teacher, Department department) {
     return [
       _buildProfileCard('Нэр', '${user.fname} ${user.lname}'),
       _buildProfileCard('Хэрэглэгч нь: ', user.userRole),
-      _buildProfileCard('Хэрэглэгч / Оюутны нэр: ', student.studentCode),
+      _buildProfileCard('Хэрэглэгч / Багшийн код: ', teacher.teacherCode),
       _buildProfileCard('Хэрэглэгчийн И-мэйл', user.email),
-      _buildProfileCard('Түвшин', student.yearClassification),
+      _buildProfileCard('Түвшин', teacher.academicDegree),
       _buildProfileCard('Салбар сургууль', department.departmentName),
-      _buildProfileCard('Хөтөлбөр', major.majorName),
+      _buildProfileCard('Төлөв', teacher.isActive),
       _buildProfileCard('Хүйс', user.gender),
       _buildProfileCard('Регистрийн дугаар', user.registryNumber),
       _buildProfileCard(
           'Төрсөн өдөр', DateFormat('yyyy-MM-dd').format(user.birthday)),
       _buildProfileCard('Утасны дугаар', user.phoneNumber),
-      _buildProfileCard('Суралцаж буй эрдмийн зэрэг', major.academicDegree),
-      _buildProfileCard('Оюутны И-мэйл', student.studentEmail),
-      _buildProfileCard('Оюутны төлөв', student.isActive.toString()),
+      _buildProfileCard('Багшийн И-мэйл', teacher.teacherEmail),
       _buildProfileCard('Өмнөх боловсрол', user.education),
       _buildProfileCard('Created At', user.createdAt.toLocal().toString()),
     ];
@@ -172,7 +169,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
       appBar: AppBar(
         title: Center(
           child: Text(
-            'Сурагчийн Хянах Самбар',
+            'Багшийн Хянах Самбар',
             textAlign: TextAlign.center,
             style: TextStyle(
                 color: Colors.white,
@@ -202,12 +199,20 @@ class _StudentDashboardState extends State<StudentDashboard> {
             final userDetails = snapshot.data!;
 
             return SingleChildScrollView(
-              child: Column(
-                children: _buildUserDetails(
-                    userDetails.user,
-                    userDetails.student,
-                    userDetails.major,
-                    userDetails.department),
+              child: Center(
+                child: SizedBox(
+                  width: 550,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: _buildUserDetails(
+                      userDetails.user,
+                      userDetails.teacher!,
+                      userDetails.department,
+                    ),
+                  ),
+                ),
               ),
             );
           }

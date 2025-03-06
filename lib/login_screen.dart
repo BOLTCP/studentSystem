@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'api/get_api_url.dart';
 import 'package:studentsystem/widgets/student_dashboard.dart';
+import 'package:studentsystem/widgets/teacher_dashboard.dart';
 import 'package:studentsystem/models/auth_user.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:logger/logger.dart';
@@ -67,6 +68,13 @@ class _LoginScreenState extends State<LoginScreen> {
               context,
               MaterialPageRoute(
                 builder: (context) => StudentDashboard(userId: user.userId),
+              ),
+            );
+          } else if (user.userRole == 'Багш') {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => TeacherDashboard(userId: user.userId),
               ),
             );
           }

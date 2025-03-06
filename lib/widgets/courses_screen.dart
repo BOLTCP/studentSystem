@@ -33,7 +33,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
     try {
       final response = await http.post(
         getApiUrl('/Get/Student/Major/Courses/'),
-        body: json.encode({'major_id': widget.userDetails.major.majorId}),
+        body: json.encode({'major_id': widget.userDetails.major?.majorId}),
         headers: {'Content-Type': 'application/json'},
       ).timeout(Duration(seconds: 30));
       if (response.statusCode == 200) {
@@ -125,7 +125,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
                   style: TextStyle(color: Colors.white, fontSize: 18),
                 ),
                 subtitle: Text(
-                  widget.userDetails.major.majorName,
+                  widget.userDetails.major!.majorName,
                   style: TextStyle(color: Colors.white, fontSize: 24),
                 ),
               ),

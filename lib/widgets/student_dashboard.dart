@@ -45,7 +45,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
   Future<UserDetails> fetchUserDetails() async {
     try {
       final response = await http.post(
-        getApiUrl('/User/Login'),
+        getApiUrl('/User/Login/Student'),
         body: json.encode({'user_id': widget.userId}),
         headers: {'Content-Type': 'application/json'},
       ).timeout(Duration(seconds: 30));
@@ -211,8 +211,8 @@ class _StudentDashboardState extends State<StudentDashboard> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: _buildUserDetails(
                       userDetails.user,
-                      userDetails.student,
-                      userDetails.major,
+                      userDetails.student!,
+                      userDetails.major!,
                       userDetails.department,
                     ),
                   ),
