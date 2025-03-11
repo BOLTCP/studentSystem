@@ -92,22 +92,30 @@ class _CoursesScreenState extends State<CoursesScreen> {
             } else {
               final courses = snapshot.data!.courses;
 
-              return ListView.builder(
-                padding: EdgeInsets.all(10.0),
-                itemCount: courses.length,
-                itemBuilder: (context, index) {
-                  final course = courses[index];
-                  return Card(
-                    margin: EdgeInsets.symmetric(vertical: 8.0),
-                    elevation: 4.0,
-                    child: ListTile(
-                      title: Text('${course.courseName} ${course.courseYear}'),
-                      subtitle:
-                          Text('${course.courseCode} - ${course.courseType}'),
-                      trailing: Text('${course.totalCredits} credits'),
+              return Center(
+                child: SizedBox(
+                  width: 550,
+                  child: Center(
+                    child: ListView.builder(
+                      padding: EdgeInsets.all(10.0),
+                      itemCount: courses.length,
+                      itemBuilder: (context, index) {
+                        final course = courses[index];
+                        return Card(
+                          margin: EdgeInsets.symmetric(vertical: 8.0),
+                          elevation: 4.0,
+                          child: ListTile(
+                            title: Text(
+                                '${course.courseName} ${course.courseYear}'),
+                            subtitle: Text(
+                                '${course.courseCode} - ${course.courseType}'),
+                            trailing: Text('${course.totalCredits} credits'),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
+                  ),
+                ),
               );
             }
           },

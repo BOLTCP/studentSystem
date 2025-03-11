@@ -199,6 +199,19 @@ Widget _buildDrawer(context, userDetails) {
             );
           },
         ),
+        /*
+        ListTile(
+          title: Text('Хөтөлбөрийн хичээлүүд'),
+          onTap: () {
+            userDetails.then((details) {
+              Navigator.pushNamed(
+                context,
+                '/courses_screen',
+                arguments: details,
+              );
+            });
+          },
+        ),*/
         ListTile(
           title: Text('Багшийн заах хичээлүүд'),
           onTap: () {

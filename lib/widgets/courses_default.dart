@@ -61,7 +61,7 @@ class _CoursesDefaultState extends State<CoursesDefault> {
                             width: 2.0,
                           ),
                         ),
-                        columnSpacing: 15.0,
+                        columnSpacing: 18.0,
                         columns: [
                           DataColumn(label: Text('Төрөл')),
                           DataColumn(label: Text('Хөтөлбөрийн нэр')),
