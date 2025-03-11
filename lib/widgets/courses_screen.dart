@@ -58,15 +58,11 @@ class _CoursesScreenState extends State<CoursesScreen> {
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
-        title: Center(
-          child: Text(
-            'Сургалтын төлөвлөгөө',
-            textAlign: TextAlign.start,
-            style: TextStyle(
-                color: Colors.white,
-                fontSize: 24.0,
-                fontWeight: FontWeight.bold),
-          ),
+        title: Text(
+          'Сургалтын төлөвлөгөө',
+          textAlign: TextAlign.start,
+          style: TextStyle(
+              color: Colors.white, fontSize: 24.0, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.blue,
         leading: IconButton(

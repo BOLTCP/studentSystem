@@ -72,7 +72,11 @@ class _StudentSignupState extends State<StudentSignup> {
     return Scaffold(
       backgroundColor: Colors.blue[50], // Blue background for the screen
       appBar: AppBar(
-        title: Text('Элсэлтийн бүртгэл'),
+        title: Text(
+          'Элсэлтийн бүртгэл',
+          style: TextStyle(
+              color: Colors.white, fontSize: 24.0, fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.blue,
       ),
       body: Center(

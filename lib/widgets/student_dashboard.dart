@@ -147,15 +147,11 @@ class _StudentDashboardState extends State<StudentDashboard> {
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
-        title: Center(
-          child: Text(
-            'Сурагчийн Хянах Самбар',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-                color: Colors.white,
-                fontSize: 24.0,
-                fontWeight: FontWeight.bold),
-          ),
+        title: Text(
+          'Сурагчийн Хянах Самбар',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+              color: Colors.white, fontSize: 24.0, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.blue,
         leading: IconButton(

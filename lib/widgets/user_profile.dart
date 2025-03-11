@@ -26,12 +26,11 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Center(
-          child: Text(
-            'Хэрэглэгчийн мэдээлэл',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
-          ),
+        title: Text(
+          'Хэрэглэгчийн мэдээлэл',
+          textAlign: TextAlign.start,
+          style: TextStyle(
+              fontSize: 24.0, fontWeight: FontWeight.bold, color: Colors.white),
         ),
         backgroundColor: Colors.blue,
       ),
@@ -49,6 +48,7 @@ class ProfileScreen extends StatelessWidget {
             final userDetails = snapshot.data!;
             return userDetails.user.userRole == 'Багш'
                 ? SingleChildScrollView(
+                    padding: EdgeInsetsDirectional.only(top: 5.0, bottom: 80.0),
                     child: Center(
                       child: SizedBox(
                         width: 550,

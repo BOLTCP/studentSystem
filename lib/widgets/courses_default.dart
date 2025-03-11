@@ -17,7 +17,7 @@ class _CoursesDefaultState extends State<CoursesDefault> {
       appBar: AppBar(
         title: Text(
           'Хичээлүүд',
-          textAlign: TextAlign.start,
+          textAlign: TextAlign.center,
           style: TextStyle(
               color: Colors.white, fontSize: 24.0, fontWeight: FontWeight.bold),
         ),
@@ -61,7 +61,7 @@ class _CoursesDefaultState extends State<CoursesDefault> {
                             width: 2.0,
                           ),
                         ),
-                        columnSpacing: 18.0,
+                        columnSpacing: 15.0,
                         columns: [
                           DataColumn(label: Text('Төрөл')),
                           DataColumn(label: Text('Хөтөлбөрийн нэр')),

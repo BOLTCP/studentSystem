@@ -224,21 +224,25 @@ class _AdmissionCoursesState extends State<AdmissionCourses> {
                       Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Expanded(
-                              child: const Text(
-                                'Хөтөлбөрүүд',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
+                            Padding(
+                              padding: EdgeInsets.only(left: 5.0),
+                              child: Expanded(
+                                child: const Text(
+                                  'Хөтөлбөрүүд',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
                             ),
-                            Padding(
-                              padding: const EdgeInsets.only(right: 10.0),
+                            Padding(padding: EdgeInsets.only(left: 5.0)),
+                            Positioned(
                               child: Icon(
                                 Icons.school,
                                 size: 40.0,
