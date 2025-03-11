@@ -12,6 +12,7 @@ import 'package:studentsystem/models/major.dart';
 import 'package:studentsystem/models/teacher.dart';
 import 'package:studentsystem/models/user_details.dart';
 import 'package:studentsystem/widgets/courses_screen.dart';
+import 'package:studentsystem/widgets/user_profile.dart';
 
 var logger = Logger();
 
@@ -114,27 +115,6 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
 
    */
 
-  List<Widget> _buildUserDetails(
-      AuthUser user, TeacherUser teacher, Department department) {
-    return [
-      _buildProfileCard('Нэр', '${user.fname} ${user.lname}'),
-      _buildProfileCard('Хэрэглэгч нь: ', user.userRole),
-      _buildProfileCard('Хэрэглэгч / Багшийн код: ', teacher.teacherCode),
-      _buildProfileCard('Хэрэглэгчийн И-мэйл', user.email),
-      _buildProfileCard('Түвшин', teacher.academicDegree),
-      _buildProfileCard('Салбар сургууль', department.departmentName),
-      _buildProfileCard('Төлөв', teacher.isActive),
-      _buildProfileCard('Хүйс', user.gender),
-      _buildProfileCard('Регистрийн дугаар', user.registryNumber),
-      _buildProfileCard(
-          'Төрсөн өдөр', DateFormat('yyyy-MM-dd').format(user.birthday)),
-      _buildProfileCard('Утасны дугаар', user.phoneNumber),
-      _buildProfileCard('Багшийн И-мэйл', teacher.teacherEmail),
-      _buildProfileCard('Өмнөх боловсрол', user.education),
-      _buildProfileCard('Created At', user.createdAt.toLocal().toString()),
-    ];
-  }
-
   Widget _buildProfileCard(String label, String value) {
     return Card(
       elevation: 5.0,
@@ -186,172 +166,117 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
         ),
       ),
       backgroundColor: Colors.blue[50],
-      body: FutureBuilder<UserDetails>(
-        future: userDetails,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData) {
-            return Center(child: Text('No data found.'));
-          } else {
-            final userDetails = snapshot.data!;
-
-            return SingleChildScrollView(
-              child: Center(
-                child: SizedBox(
-                  width: 550,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: _buildUserDetails(
-                      userDetails.user,
-                      userDetails.teacher!,
-                      userDetails.department,
-                    ),
-                  ),
-                ),
-              ),
-            );
-          }
-        },
-      ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(color: Colors.blue),
-              child: Text('Profile',
-                  style: TextStyle(color: Colors.white, fontSize: 24)),
-            ),
-            ListTile(
-              title: Text('Profile'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ProfileScreen(
-                        user: userDetails.then(
-                            (value) => value.user)), // Passing AuthUser here
-                  ),
-                );
-              },
-            ),
-            ListTile(
-              title: Text('Хөтөлбөрийн төлөвлөгөө'),
-              onTap: () {
-                userDetails.then((details) {
-                  Navigator.pushNamed(
-                    context,
-                    '/courses_screen',
-                    arguments: details,
-                  );
-                });
-              },
-            ),
-            ListTile(
-              title: Text('Settings'),
-              onTap: () {
-                // Add settings page navigation if required
-              },
-            ),
-            ListTile(
-              title: Text('Logout'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        LoginScreen(), // Passing AuthUser here
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard),
-            label: 'Dashboard',
-            backgroundColor: Colors.blue,
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Settings',
-            backgroundColor: Colors.blue,
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: 'Notifications',
-            backgroundColor: Colors.blue,
-          ),
-          /**
-           BottomNavigationBarItem(
-            icon: Icon(Icons.exit_to_app),
-            label: 'Logout',
-            backgroundColor: Colors.blue,
-          ),
-           */
-        ],
-        currentIndex: _selectedIndex,
-        //onTap: _onItemTapped,
-      ),
+      drawer: _buildDrawer(context, userDetails),
+      body: _buildBody(userDetails),
     );
   }
 }
 
-class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key, required this.user});
+Widget _buildBody(userDetails) {
+  return Placeholder();
+}
 
-  final Future<AuthUser> user;
-
-  Widget _buildProfileCard(String label, String value) {
-    return Card(
-      elevation: 5.0,
-      margin: EdgeInsets.all(8.0),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10.0),
-      ),
-      child: ListTile(
-        title: Text(label,
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-        subtitle: Text(value, style: TextStyle(fontSize: 16)),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Profile Details")),
-      body: FutureBuilder<AuthUser>(
-        future: user,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData) {
-            return Center(child: Text('No data found.'));
-          } else {
-            final user = snapshot.data!;
-            return ListView(
-              children: [
-                _buildProfileCard('Name', '${user.fname} ${user.lname}'),
-                _buildProfileCard('Email', user.email),
-                _buildProfileCard('Gender', user.gender),
-                _buildProfileCard(
-                    'Birthday', DateFormat('yyyy-MM-dd').format(user.birthday)),
-              ],
+Widget _buildDrawer(context, userDetails) {
+  return Drawer(
+    child: ListView(
+      padding: EdgeInsets.zero,
+      children: [
+        DrawerHeader(
+          decoration: BoxDecoration(color: Colors.blue),
+          child: Text(
+            'Profile',
+            style: TextStyle(color: Colors.white, fontSize: 24),
+          ),
+        ),
+        ListTile(
+          title: Text('Багшийн бүртгэл'),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) =>
+                      ProfileScreen(userDetails: userDetails)),
             );
-          }
-        },
-      ),
-    );
-  }
+          },
+        ),
+        ListTile(
+          title: Text('Багшийн заах хичээлүүд'),
+          onTap: () {
+            userDetails.then((details) {
+              Navigator.pushNamed(
+                context,
+                '/teachers_courses',
+                arguments: details,
+              );
+            });
+          },
+        ),
+        ListTile(
+          title: Text('Календарь'),
+          onTap: () {
+            userDetails.then((details) {
+              Navigator.pushNamed(
+                context,
+                '/courses_screen',
+                arguments: details,
+              );
+            });
+          },
+        ),
+        ListTile(
+          title: Text('Клубууд'),
+          onTap: () {
+            userDetails.then((details) {
+              Navigator.pushNamed(
+                context,
+                '/courses_screen',
+                arguments: details,
+              );
+            });
+          },
+        ),
+        ListTile(
+          title: Text('Сонордуулага'),
+          onTap: () {
+            userDetails.then((details) {
+              Navigator.pushNamed(
+                context,
+                '/courses_screen',
+                arguments: details,
+              );
+            });
+          },
+        ),
+        ListTile(
+          title: Text('Мессежүүд'),
+          onTap: () {
+            userDetails.then((details) {
+              Navigator.pushNamed(
+                context,
+                '/courses_screen',
+                arguments: details,
+              );
+            });
+          },
+        ),
+        ListTile(
+          title: Text('Settings'),
+          onTap: () {
+            // Navigate to Settings
+          },
+        ),
+        ListTile(
+          title: Text('Logout'),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => LoginScreen(), // Passing AuthUser here
+              ),
+            );
+          },
+        ),
+      ],
+    ),
+  );
 }

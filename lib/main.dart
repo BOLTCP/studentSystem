@@ -58,7 +58,12 @@ class MyApp extends StatelessWidget {
             builder: (context) => StudentSignup(major: major),
           );
         }
-
+        if (settings.name == '/user_profile') {
+          final UserDetails userDetails = settings.arguments as UserDetails;
+          return MaterialPageRoute(
+            builder: (context) => CoursesDefault(userDetails: userDetails),
+          );
+        }
         if (settings.name == '/courses_screen') {
           final UserDetails userDetails = settings.arguments as UserDetails;
           return MaterialPageRoute(
