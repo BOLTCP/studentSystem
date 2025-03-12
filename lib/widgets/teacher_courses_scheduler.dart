@@ -1,3 +1,4 @@
+import 'package:studentsystem/widgets/teacher_dashboard.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 
 import 'package:flutter/material.dart';
@@ -12,6 +13,7 @@ import 'package:studentsystem/models/teacher.dart';
 import 'package:studentsystem/models/user_details.dart';
 import 'package:studentsystem/models/departments_of_education.dart';
 import 'package:studentsystem/widgets/user_profile.dart';
+import 'package:studentsystem/widgets/bottom_navigation.dart';
 
 var logger = Logger();
 
@@ -26,8 +28,10 @@ class TeacherCoursesScheduler extends StatefulWidget {
 }
 
 class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
-  late Future<UserDetails> userDetails;
+  //late Future<UserDetails> userDetails;
   late String departmentName = '';
+  late final Future<UserDetails> futureUserDetails;
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<Widget> _screens = [];
   int _selectedIndex = 0;
@@ -35,8 +39,24 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
   @override
   void initState() {
     super.initState();
-    userDetails = fetchUserDetails();
-    _screens = [];
+
+    _screens = [
+      TeacherDashboard(userId: widget.userDetails.user.userId),
+    ];
+    futureUserDetails = Future.value(widget.userDetails);
+  }
+
+  void onItemTappedTeacherDashboard(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    if (_selectedIndex == 0) {
+      Navigator.pushNamed(
+        context,
+        '/teacher_dashboard',
+        arguments: widget.userDetails,
+      );
+    }
   }
 
   Future<UserDetails> fetchUserDetails() async {
@@ -83,71 +103,34 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
     }
   }
 
-  /**
-   
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-      if (_selectedIndex == 3) {
-        _logout();
-      }
-    });
-  }
-
-  // Logout function
-  void _logout() {
-    setState(() {
-      // Reset user details or clear state, if necessary
-      userDetails = Future.value(UserDetails(
-          user: null,
-          student: null,
-          major: null)); // Resetting userDetails to a null state
-
-      // Clear any persistent data (SharedPreferences, tokens, etc.)
-      // SharedPreferences prefs = await SharedPreferences.getInstance();
-      // prefs.clear();
-
-      // Navigate to the login screen
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-            builder: (context) => LoginScreen()), // Navigate to login screen
-      );
-    });
-  }
-
-   */
-
   final List<String> _events = ['Meeting', 'Lunch', 'Workout'];
-  final List<String> _days = [
-    'Даваа',
-    'Мягмар',
-    'Лхагва',
-    'Пүрэв',
-    'Баасан',
-    'Бямба',
-    'Ням'
-  ];
+  final List<String> _days = ['Да', 'Мя', 'Лха', 'Пү', 'Ба', 'Бя', 'Ням'];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Center(
-          child: Text(
-            'Багшийн Хянах Самбар',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-                color: Colors.white,
-                fontSize: 24.0,
-                fontWeight: FontWeight.bold),
-          ),
+        title: Text(
+          'Багшийн Хичээлүүд',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+              color: Colors.white, fontSize: 24.0, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.blue,
       ),
       backgroundColor: Colors.blue[50],
-      body: Padding(
-        padding: EdgeInsets.only(top: 12.0, bottom: 80),
+      drawer: _buildDrawer(context, widget.userDetails),
+      body: _buildSingleChildScrollView(),
+      bottomNavigationBar:
+          buildBottomNavigation(_selectedIndex, onItemTappedTeacherDashboard),
+    );
+  }
+
+  Widget _buildSingleChildScrollView() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Padding(
+        padding: EdgeInsets.only(top: 12.0, bottom: 12.0),
         child: Center(
           child: SizedBox(
             width: 550,
@@ -165,10 +148,12 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
                               padding: EdgeInsets.all(8),
                               color: Colors.blue[100],
                               child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  Text(_days[index],
-                                      style: TextStyle(fontSize: 16)),
+                                  Text(
+                                    _days[index],
+                                    style: TextStyle(fontSize: 16),
+                                  ),
                                 ],
                               ),
                             );
@@ -212,6 +197,111 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildDrawer(context, userDetails) {
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          DrawerHeader(
+            decoration: BoxDecoration(color: Colors.blue),
+            child: Text(
+              'Profile',
+              style: TextStyle(color: Colors.white, fontSize: 24),
+            ),
+          ),
+          ListTile(
+            title: Text('Багшийн бүртгэл'),
+            onTap: () {
+              Navigator.pushNamed(
+                context,
+                '/user_profile',
+                arguments: futureUserDetails,
+              );
+            },
+          ),
+          ListTile(
+            title: Text('Багшийн хянах самбар'),
+            subtitle: Text(
+              widget.userDetails.departmentOfEducation!.edDepartmentName,
+            ),
+            onTap: () {
+              Navigator.pushNamed(
+                context,
+                '/teacher_dashboard',
+                arguments: widget.userDetails,
+              );
+            },
+          ),
+          ListTile(
+            title: Text('Календарь'),
+            onTap: () {
+              userDetails.then((details) {
+                Navigator.pushNamed(
+                  context,
+                  '/courses_screen',
+                  arguments: details,
+                );
+              });
+            },
+          ),
+          ListTile(
+            title: Text('Клубууд'),
+            onTap: () {
+              userDetails.then((details) {
+                Navigator.pushNamed(
+                  context,
+                  '/courses_screen',
+                  arguments: details,
+                );
+              });
+            },
+          ),
+          ListTile(
+            title: Text('Сонордуулага'),
+            onTap: () {
+              userDetails.then((details) {
+                Navigator.pushNamed(
+                  context,
+                  '/courses_screen',
+                  arguments: details,
+                );
+              });
+            },
+          ),
+          ListTile(
+            title: Text('Мессежүүд'),
+            onTap: () {
+              userDetails.then((details) {
+                Navigator.pushNamed(
+                  context,
+                  '/courses_screen',
+                  arguments: details,
+                );
+              });
+            },
+          ),
+          ListTile(
+            title: Text('Settings'),
+            onTap: () {
+              // Navigate to Settings
+            },
+          ),
+          ListTile(
+            title: Text('Logout'),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => LoginScreen(), // Passing AuthUser here
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }

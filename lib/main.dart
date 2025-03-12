@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:studentsystem/widgets/student_signup.dart';
+import 'package:studentsystem/widgets/teacher_dashboard.dart';
+import 'package:studentsystem/widgets/user_profile.dart';
 import 'admission_courses.dart';
 import 'courses.dart';
 import 'login_screen.dart';
@@ -60,15 +62,23 @@ class MyApp extends StatelessWidget {
           );
         }
         if (settings.name == '/user_profile') {
-          final UserDetails userDetails = settings.arguments as UserDetails;
+          final Future<UserDetails> userDetails =
+              settings.arguments as Future<UserDetails>;
           return MaterialPageRoute(
-            builder: (context) => CoursesDefault(userDetails: userDetails),
+            builder: (context) => ProfileScreen(userDetails: userDetails),
           );
         }
         if (settings.name == '/courses_screen') {
           final UserDetails userDetails = settings.arguments as UserDetails;
           return MaterialPageRoute(
             builder: (context) => CoursesScreen(userDetails: userDetails),
+          );
+        }
+        if (settings.name == '/teacher_dashboard') {
+          final UserDetails userDetails = settings.arguments as UserDetails;
+          return MaterialPageRoute(
+            builder: (context) =>
+                TeacherDashboard(userId: userDetails.user.userId),
           );
         }
         if (settings.name == '/teacher_courses_scheduler') {

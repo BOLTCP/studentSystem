@@ -163,6 +163,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               labelText: 'Нэвтрэх нэр : ',
                               border: OutlineInputBorder(),
                             ),
+                            keyboardType: TextInputType.text,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Please enter your login name';
