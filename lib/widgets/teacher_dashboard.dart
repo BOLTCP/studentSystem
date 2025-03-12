@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:intl/intl.dart';
 import 'dart:convert';
 import 'package:studentsystem/models/auth_user.dart';
 import 'package:studentsystem/login_screen.dart';
 import 'package:studentsystem/api/get_api_url.dart'; // Import the login screen
 import 'package:logger/logger.dart';
 import 'package:studentsystem/models/department.dart';
-import 'package:studentsystem/models/student_user.dart';
-import 'package:studentsystem/models/major.dart';
 import 'package:studentsystem/models/teacher.dart';
 import 'package:studentsystem/models/user_details.dart';
-import 'package:studentsystem/widgets/courses_screen.dart';
+import 'package:studentsystem/models/departments_of_education.dart';
 import 'package:studentsystem/widgets/user_profile.dart';
 
 var logger = Logger();
@@ -27,6 +24,7 @@ class TeacherDashboard extends StatefulWidget {
 
 class _TeacherDashboardState extends State<TeacherDashboard> {
   late Future<UserDetails> userDetails;
+  late String departmentName = '';
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<Widget> _screens = [];
   int _selectedIndex = 0;
@@ -58,18 +56,21 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
         AuthUser user = AuthUser.fromJsonAuthUser(decodedJson['user']);
         TeacherUser teacher =
             TeacherUser.fromJsonTeacher(decodedJson['teacher']);
-        Department department =
-            Department.fromJsonDepartment(decodedJson['department']);
+        DepartmentOfEducation departmentOdEducation =
+            DepartmentOfEducation.fromJsonDepartmentOfEducation(
+                decodedJson['department_of_edu_query']);
+        departmentName = departmentOdEducation.edDepartmentName;
 
         logger.d('User fetched: $user');
         logger.d('Teacher fetched: $teacher');
-        logger.d('Department fetched: $department');
+        logger.d('Department fetched: $departmentOdEducation');
 
         return UserDetails(
             user: user,
             teacher: teacher,
             student: null,
-            department: department);
+            department: null,
+            departmentOfEducation: departmentOdEducation);
       } else {
         logger.d('Error: ${response.statusCode}');
         throw Exception('User does not exist!');
@@ -208,16 +209,35 @@ Widget _buildDrawer(context, userDetails) {
             });
           },
         ),*/
-        ListTile(
-          title: Text('Багшийн заах хичээлүүд'),
-          onTap: () {
-            userDetails.then((details) {
-              Navigator.pushNamed(
-                context,
-                '/teachers_courses',
-                arguments: details,
+        FutureBuilder(
+          future: userDetails, // Assuming userDetails is a Future
+          builder: (context, AsyncSnapshot snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return ListTile(
+                title: Text('Loading...'),
               );
-            });
+            } else if (snapshot.hasError) {
+              return ListTile(
+                title: Text('Error: ${snapshot.error}'),
+              );
+            } else if (snapshot.hasData) {
+              var details = snapshot.data; // userDetails has resolved
+              return ListTile(
+                title:
+                    Text('${details.departmentOfEducation!.edDepartmentName}'),
+                onTap: () {
+                  Navigator.pushNamed(
+                    context,
+                    '/teachers_courses',
+                    arguments: details,
+                  );
+                },
+              );
+            } else {
+              return ListTile(
+                title: Text('No data available'),
+              );
+            }
           },
         ),
         ListTile(

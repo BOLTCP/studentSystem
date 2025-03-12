@@ -3,19 +3,22 @@ import 'package:studentsystem/models/major.dart';
 import 'package:studentsystem/models/student_user.dart';
 import 'package:studentsystem/models/department.dart';
 import 'package:studentsystem/models/teacher.dart';
+import 'package:studentsystem/models/departments_of_education.dart';
 
 class UserDetails {
   final AuthUser user;
   final TeacherUser? teacher;
   final StudentUser? student;
   final Major? major;
-  final Department department;
+  final Department? department;
+  final DepartmentOfEducation? departmentOfEducation;
 
   UserDetails({
     required this.user,
     this.teacher,
     this.student,
     this.major,
-    required this.department,
+    this.department,
+    this.departmentOfEducation,
   });
 }

@@ -60,4 +60,9 @@ class Department {
       rethrow;
     }
   }
+
+  @override
+  String toString() {
+    return 'Department(departmentId: $departmentId, departmentName: $departmentName, departmentCode: $departmentCode, departmentEmail: $departmentEmail, numberOfStaff: $numberOfStaff, logo: $logo, createdAt: $createdAt, departmentOfEduId: $departmentOfEduId)';
+  }
 }

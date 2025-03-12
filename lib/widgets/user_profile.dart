@@ -68,7 +68,7 @@ class ProfileScreen extends StatelessWidget {
                             _buildProfileCard(
                                 'Түвшин', userDetails.teacher!.academicDegree),
                             _buildProfileCard('Салбар сургууль',
-                                userDetails.department.departmentName),
+                                userDetails.department!.departmentName),
                             _buildProfileCard(
                                 'Төлөв', userDetails.teacher!.isActive),
                             _buildProfileCard('Хүйс', userDetails.user.gender),
@@ -115,7 +115,7 @@ class ProfileScreen extends StatelessWidget {
                                 _buildProfileCard('Түвшин',
                                     userDetails.student!.currentAcademicDegree),
                                 _buildProfileCard('Салбар сургууль',
-                                    userDetails.department.departmentName),
+                                    userDetails.department!.departmentName),
                                 _buildProfileCard(
                                     'Төлөв', userDetails.student!.isActive!),
                                 _buildProfileCard(
