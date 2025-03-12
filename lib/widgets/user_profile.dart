@@ -67,8 +67,10 @@ class ProfileScreen extends StatelessWidget {
                                 'Хэрэглэгчийн И-мэйл', userDetails.user.email),
                             _buildProfileCard(
                                 'Түвшин', userDetails.teacher!.academicDegree),
-                            _buildProfileCard('Салбар сургууль',
-                                userDetails.department!.departmentName),
+                            _buildProfileCard(
+                                'Салбар сургууль',
+                                userDetails
+                                    .departmentOfEducation!.edDepartmentName),
                             _buildProfileCard(
                                 'Төлөв', userDetails.teacher!.isActive),
                             _buildProfileCard('Хүйс', userDetails.user.gender),

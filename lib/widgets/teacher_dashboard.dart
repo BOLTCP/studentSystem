@@ -223,12 +223,12 @@ Widget _buildDrawer(context, userDetails) {
             } else if (snapshot.hasData) {
               var details = snapshot.data; // userDetails has resolved
               return ListTile(
-                title:
-                    Text('${details.departmentOfEducation!.edDepartmentName}'),
+                title: Text('Хичээлийн хуваарь сонгох'),
+                subtitle: Text(details.departmentOfEducation!.edDepartmentName),
                 onTap: () {
                   Navigator.pushNamed(
                     context,
-                    '/teachers_courses',
+                    '/teacher_courses_scheduler',
                     arguments: details,
                   );
                 },

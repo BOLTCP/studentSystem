@@ -12,6 +12,7 @@ import 'package:studentsystem/widgets/courses_default.dart';
 import 'package:studentsystem/models/user_details.dart';
 import 'package:studentsystem/widgets/contact_us.dart';
 import 'package:studentsystem/widgets/user_signup.dart';
+import 'package:studentsystem/widgets/teacher_courses_scheduler.dart';
 
 void main() {
   runApp(MyApp());
@@ -68,6 +69,13 @@ class MyApp extends StatelessWidget {
           final UserDetails userDetails = settings.arguments as UserDetails;
           return MaterialPageRoute(
             builder: (context) => CoursesScreen(userDetails: userDetails),
+          );
+        }
+        if (settings.name == '/teacher_courses_scheduler') {
+          final UserDetails userDetails = settings.arguments as UserDetails;
+          return MaterialPageRoute(
+            builder: (context) =>
+                TeacherCoursesScheduler(userDetails: userDetails),
           );
         }
         if (settings.name == '/courses_default') {
