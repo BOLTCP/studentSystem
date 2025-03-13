@@ -113,243 +113,114 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
     }
   }
 
-  final List<String> _periods = [
-    '1-р цаг',
-    '2-р цаг',
-    '3-р цаг',
-    '4-р цаг',
-    '5-р цаг',
-    '6-р цаг',
-    '7-р цаг',
-    '8-р цаг',
-    '9-р цаг',
-    '10-р цаг'
+  final int rows = 5;
+  final int columns = 5;
+
+  // This stores the list of draggable items (simple text here for demo purposes)
+  List<String> draggableItems = [
+    'Circle',
+    'Square',
+    'Triangle',
+    'Rectangle',
+    'Star'
   ];
-  final List<String> _days = ['Да', 'Мя', 'Лха', 'Пү', 'Ба', 'Бя', 'Ням'];
+
+  // Define the positions of the items (initially not placed in any cell)
+  List<int?> itemPositions = [null, null, null, null, null];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Багшийн Хичээлүүд',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-              color: Colors.white, fontSize: 24.0, fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.blue,
+        title: Text('Flutter Scheduler with Draggable Items'),
       ),
-      backgroundColor: Colors.blue[50],
-      drawer: _buildDrawer(context, widget.userDetails),
-      body: _buildSingleChildScrollView(),
-      bottomNavigationBar:
-          buildBottomNavigation(_selectedIndex, onItemTappedTeacherDashboard),
-    );
-  }
-
-  Widget _buildSingleChildScrollView() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.vertical,
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            children: [
-              Table(
-                border: TableBorder.all(),
-                children: [
-                  TableRow(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text('Өдөр',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(fontWeight: FontWeight.bold)),
-                      ),
-                      ..._days.map((day) {
-                        return Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(day,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(fontWeight: FontWeight.bold)),
-                        );
-                      }),
-                    ],
-                  ),
-                  for (var period in _periods)
-                    TableRow(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(period, textAlign: TextAlign.center),
-                        ),
-                        ..._days.map((day) {
-                          return DragTarget<String>(
-                            builder: (context, candidateData, rejectedData) {
-                              return Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Container(
-                                  color: day == currentDayOfWeek
-                                      ? Colors.blueAccent
-                                      : Colors.transparent,
-                                  /*
-                                  
-                                  child: Center(
-                                    child: Text(
-                                      _periods[event] == day ? event : '',
-                                      style: TextStyle(color: Colors.white),
-                                    ),
-                                  ),
-
-                                   */
-                                ),
-                              );
-                            },
-                            onAcceptWithDetails: (receivedEvent) {
-                              setState(() {
-                                _periods[int.parse(receivedEvent.data)] = day;
-                              });
-                            },
-                          );
-                        }).toList(),
-                      ],
-                    ),
-                ],
-              ),
-              SizedBox(height: 20),
-              Column(
-                children: _days.map((event) {
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            // Draggable objects section
+            Container(
+              height: 100,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: draggableItems.length,
+                itemBuilder: (context, index) {
                   return Draggable<String>(
-                    data: event,
+                    data: draggableItems[index],
+                    child: _buildDraggableWidget(draggableItems[index]),
                     feedback: Material(
                       color: Colors.transparent,
-                      child: Text(event,
-                          style: TextStyle(
-                              fontSize: 18,
-                              color: const Color.fromARGB(255, 222, 81, 81))),
+                      child: _buildDraggableWidget(draggableItems[index]),
                     ),
                     childWhenDragging: Container(),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Container(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        color: Colors.blue,
-                        child:
-                            Text(event, style: TextStyle(color: Colors.white)),
-                      ),
-                    ),
                   );
-                }).toList(),
+                },
               ),
-            ],
-          ),
+            ),
+            SizedBox(height: 20),
+            // Grid of cells for dropping items
+            Expanded(
+              child: GridView.builder(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: columns,
+                  childAspectRatio: 1.0,
+                  crossAxisSpacing: 8.0,
+                  mainAxisSpacing: 8.0,
+                ),
+                itemCount: rows * columns,
+                itemBuilder: (context, index) {
+                  return DragTarget<String>(
+                    onAccept: (receivedItem) {
+                      setState(() {
+                        // Find the index of the received item and update its position
+                        int itemIndex = draggableItems.indexOf(receivedItem);
+                        itemPositions[itemIndex] =
+                            index; // Snap item into the cell
+                      });
+                    },
+                    builder: (context, candidateData, rejectedData) {
+                      return Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: Colors.black38,
+                            width: 1,
+                          ),
+                          color: itemPositions.contains(index)
+                              ? Colors.lightGreen
+                              : Colors.white,
+                        ),
+                        child: Center(
+                          child: itemPositions.indexOf(index) != -1
+                              ? Text(
+                                  draggableItems[itemPositions.indexOf(index)!])
+                              : null,
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildDrawer(context, userDetails) {
-    return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          DrawerHeader(
-            decoration: BoxDecoration(color: Colors.blue),
-            child: Text(
-              'Profile',
-              style: TextStyle(color: Colors.white, fontSize: 24),
-            ),
-          ),
-          ListTile(
-            title: Text('Багшийн бүртгэл'),
-            onTap: () {
-              Navigator.pushNamed(
-                context,
-                '/user_profile',
-                arguments: futureUserDetails,
-              );
-            },
-          ),
-          ListTile(
-            title: Text('Багшийн хянах самбар'),
-            subtitle: Text(
-              widget.userDetails.departmentOfEducation!.edDepartmentName,
-            ),
-            onTap: () {
-              Navigator.pushNamed(
-                context,
-                '/teacher_dashboard',
-                arguments: widget.userDetails,
-              );
-            },
-          ),
-          ListTile(
-            title: Text('Календарь'),
-            onTap: () {
-              userDetails.then((details) {
-                Navigator.pushNamed(
-                  context,
-                  '/courses_screen',
-                  arguments: details,
-                );
-              });
-            },
-          ),
-          ListTile(
-            title: Text('Клубууд'),
-            onTap: () {
-              userDetails.then((details) {
-                Navigator.pushNamed(
-                  context,
-                  '/courses_screen',
-                  arguments: details,
-                );
-              });
-            },
-          ),
-          ListTile(
-            title: Text('Сонордуулага'),
-            onTap: () {
-              userDetails.then((details) {
-                Navigator.pushNamed(
-                  context,
-                  '/courses_screen',
-                  arguments: details,
-                );
-              });
-            },
-          ),
-          ListTile(
-            title: Text('Мессежүүд'),
-            onTap: () {
-              userDetails.then((details) {
-                Navigator.pushNamed(
-                  context,
-                  '/courses_screen',
-                  arguments: details,
-                );
-              });
-            },
-          ),
-          ListTile(
-            title: Text('Settings'),
-            onTap: () {
-              // Navigate to Settings
-            },
-          ),
-          ListTile(
-            title: Text('Logout'),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => LoginScreen(), // Passing AuthUser here
-                ),
-              );
-            },
-          ),
-        ],
+  // Helper method to create draggable widgets
+  Widget _buildDraggableWidget(String label) {
+    return Container(
+      width: 80,
+      height: 80,
+      decoration: BoxDecoration(
+        color: Colors.blueAccent,
+        shape: BoxShape.circle,
+      ),
+      child: Center(
+        child: Text(
+          label,
+          style: TextStyle(color: Colors.white),
+        ),
       ),
     );
   }
