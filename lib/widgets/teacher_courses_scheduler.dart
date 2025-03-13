@@ -30,8 +30,9 @@ class TeacherCoursesScheduler extends StatefulWidget {
 class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
   //late Future<UserDetails> userDetails;
   late String departmentName = '';
+  List<String> weekdays = [];
+  late String currentDayOfWeek = '';
   late final Future<UserDetails> futureUserDetails;
-
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<Widget> _screens = [];
   int _selectedIndex = 0;
@@ -44,6 +45,15 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
       TeacherDashboard(userId: widget.userDetails.user.userId),
     ];
     futureUserDetails = Future.value(widget.userDetails);
+    _generateWeekdays();
+  }
+
+  void _generateWeekdays() {
+    DateTime now = DateTime.now();
+    int currentDay = now.weekday;
+
+    List<String> allWeekdays = ['Да', 'Мя', 'Лха', 'Пү', 'Ба', 'Бя', 'Ням'];
+    currentDayOfWeek = allWeekdays[currentDay];
   }
 
   void onItemTappedTeacherDashboard(int index) {
@@ -103,7 +113,18 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
     }
   }
 
-  final List<String> _events = ['Meeting', 'Lunch', 'Workout'];
+  final List<String> _periods = [
+    '1-р цаг',
+    '2-р цаг',
+    '3-р цаг',
+    '4-р цаг',
+    '5-р цаг',
+    '6-р цаг',
+    '7-р цаг',
+    '8-р цаг',
+    '9-р цаг',
+    '10-р цаг'
+  ];
   final List<String> _days = ['Да', 'Мя', 'Лха', 'Пү', 'Ба', 'Бя', 'Ням'];
 
   @override
@@ -128,73 +149,100 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
 
   Widget _buildSingleChildScrollView() {
     return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Padding(
-        padding: EdgeInsets.only(top: 12.0, bottom: 12.0),
-        child: Center(
-          child: SizedBox(
-            width: 550,
-            child: Column(
-              children: [
-                // Week view with draggable events
-                Expanded(
-                  child: Row(
-                    children: List.generate(7, (index) {
-                      return Expanded(
-                        child: DragTarget<String>(
-                          builder: (context, candidateData, rejectedData) {
-                            return Container(
-                              margin: EdgeInsets.all(4),
-                              padding: EdgeInsets.all(8),
-                              color: Colors.blue[100],
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    _days[index],
-                                    style: TextStyle(fontSize: 16),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                      );
-                    }),
-                  ),
-                ),
-                // Bottom section with draggable events
-                Container(
-                  height: 60,
-                  color: Colors.blue[100],
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    children: _events.map((event) {
-                      return Padding(
+      scrollDirection: Axis.vertical,
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            children: [
+              Table(
+                border: TableBorder.all(),
+                children: [
+                  TableRow(
+                    children: [
+                      Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child: Draggable<String>(
-                          data: event,
-                          feedback: Material(
-                            color: Colors.transparent,
-                            child: Container(
-                              padding: EdgeInsets.all(8),
-                              color: Colors.orange,
-                              child: Text(event),
-                            ),
-                          ),
-                          childWhenDragging: Container(),
-                          child: Container(
-                            padding: EdgeInsets.all(8),
-                            color: Colors.orange,
-                            child: Text(event),
-                          ),
-                        ),
-                      );
-                    }).toList(),
+                        child: Text('Өдөр',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+                      ),
+                      ..._days.map((day) {
+                        return Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(day,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontWeight: FontWeight.bold)),
+                        );
+                      }),
+                    ],
                   ),
-                ),
-              ],
-            ),
+                  for (var period in _periods)
+                    TableRow(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(period, textAlign: TextAlign.center),
+                        ),
+                        ..._days.map((day) {
+                          return DragTarget<String>(
+                            builder: (context, candidateData, rejectedData) {
+                              return Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Container(
+                                  color: day == currentDayOfWeek
+                                      ? Colors.blueAccent
+                                      : Colors.transparent,
+                                  /*
+                                  
+                                  child: Center(
+                                    child: Text(
+                                      _periods[event] == day ? event : '',
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                  ),
+
+                                   */
+                                ),
+                              );
+                            },
+                            onAcceptWithDetails: (receivedEvent) {
+                              setState(() {
+                                _periods[int.parse(receivedEvent.data)] = day;
+                              });
+                            },
+                          );
+                        }).toList(),
+                      ],
+                    ),
+                ],
+              ),
+              SizedBox(height: 20),
+              Column(
+                children: _days.map((event) {
+                  return Draggable<String>(
+                    data: event,
+                    feedback: Material(
+                      color: Colors.transparent,
+                      child: Text(event,
+                          style: TextStyle(
+                              fontSize: 18,
+                              color: const Color.fromARGB(255, 222, 81, 81))),
+                    ),
+                    childWhenDragging: Container(),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        color: Colors.blue,
+                        child:
+                            Text(event, style: TextStyle(color: Colors.white)),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
           ),
         ),
       ),
