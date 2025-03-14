@@ -1,19 +1,15 @@
 import 'package:studentsystem/widgets/teacher_dashboard.dart';
-import 'package:syncfusion_flutter_calendar/calendar.dart';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:studentsystem/models/auth_user.dart';
-import 'package:studentsystem/login_screen.dart';
-import 'package:studentsystem/api/get_api_url.dart'; // Import the login screen
+import 'package:studentsystem/api/get_api_url.dart';
 import 'package:logger/logger.dart';
-import 'package:studentsystem/models/department.dart';
 import 'package:studentsystem/models/teacher.dart';
 import 'package:studentsystem/models/user_details.dart';
 import 'package:studentsystem/models/departments_of_education.dart';
-import 'package:studentsystem/widgets/user_profile.dart';
 import 'package:studentsystem/widgets/bottom_navigation.dart';
+import 'package:studentsystem/widgets/drawer.dart';
 
 var logger = Logger();
 
@@ -32,7 +28,7 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
   late String departmentName = '';
   List<String> weekdays = [];
   late String currentDayOfWeek = '';
-  late final Future<UserDetails> futureUserDetails;
+  late Future<UserDetails> futureUserDetails;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<Widget> _screens = [];
   int _selectedIndex = 0;
@@ -40,7 +36,6 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
   @override
   void initState() {
     super.initState();
-
     _screens = [
       TeacherDashboard(userId: widget.userDetails.user.userId),
     ];
@@ -80,9 +75,6 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
         headers: {'Content-Type': 'application/json'},
       ).timeout(Duration(seconds: 30));
 
-      logger.d('Response status: ${response.statusCode}');
-      logger.d('Response body: ${response.body}');
-
       if (response.statusCode == 200) {
         final decodedJson = json.decode(response.body);
         AuthUser user = AuthUser.fromJsonAuthUser(decodedJson['user']);
@@ -92,10 +84,6 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
             DepartmentOfEducation.fromJsonDepartmentOfEducation(
                 decodedJson['department_of_edu_query']);
         departmentName = departmentOdEducation.edDepartmentName;
-
-        logger.d('User fetched: $user');
-        logger.d('Teacher fetched: $teacher');
-        logger.d('Department fetched: $departmentOdEducation');
 
         return UserDetails(
             user: user,
@@ -113,101 +101,212 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
     }
   }
 
-  final int rows = 5;
-  final int columns = 5;
+  final int rows = 7;
+  final int cols = 7;
 
-  // This stores the list of draggable items (simple text here for demo purposes)
+  Map<int, String> itemPositions = {};
+  Set<String> placedItems = {}; // Tracks placed items
+
   List<String> draggableItems = [
     'Circle',
     'Square',
     'Triangle',
     'Rectangle',
-    'Star'
+    'Star',
+    'Hexagon',
+    'Pentagon'
   ];
-
-  // Define the positions of the items (initially not placed in any cell)
-  List<int?> itemPositions = [null, null, null, null, null];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Flutter Scheduler with Draggable Items'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          children: [
-            // Draggable objects section
-            Container(
-              height: 100,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: draggableItems.length,
-                itemBuilder: (context, index) {
-                  return Draggable<String>(
-                    data: draggableItems[index],
-                    child: _buildDraggableWidget(draggableItems[index]),
-                    feedback: Material(
-                      color: Colors.transparent,
-                      child: _buildDraggableWidget(draggableItems[index]),
-                    ),
-                    childWhenDragging: Container(),
-                  );
-                },
-              ),
-            ),
-            SizedBox(height: 20),
-            // Grid of cells for dropping items
-            Expanded(
-              child: GridView.builder(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: columns,
-                  childAspectRatio: 1.0,
-                  crossAxisSpacing: 8.0,
-                  mainAxisSpacing: 8.0,
-                ),
-                itemCount: rows * columns,
-                itemBuilder: (context, index) {
-                  return DragTarget<String>(
-                    onAccept: (receivedItem) {
-                      setState(() {
-                        // Find the index of the received item and update its position
-                        int itemIndex = draggableItems.indexOf(receivedItem);
-                        itemPositions[itemIndex] =
-                            index; // Snap item into the cell
-                      });
-                    },
-                    builder: (context, candidateData, rejectedData) {
-                      return Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: Colors.black38,
-                            width: 1,
-                          ),
-                          color: itemPositions.contains(index)
-                              ? Colors.lightGreen
-                              : Colors.white,
-                        ),
-                        child: Center(
-                          child: itemPositions.indexOf(index) != -1
-                              ? Text(
-                                  draggableItems[itemPositions.indexOf(index)!])
-                              : null,
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
-            ),
-          ],
+        title: Text(
+          'Хуваарь гаргах',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+              color: Colors.white, fontSize: 24.0, fontWeight: FontWeight.bold),
         ),
+        backgroundColor: Colors.blue,
+      ),
+      backgroundColor: Colors.blue[50],
+      drawer: buildDrawer(context, futureUserDetails),
+      bottomNavigationBar:
+          buildBottomNavigation(_selectedIndex, onItemTappedTeacherDashboard),
+      body: _buildBody(),
+    );
+  }
+
+  Widget _buildBody() {
+    List<String> weekDays = [
+      'Даваа',
+      'Мягмар',
+      'Лхагва',
+      'Пүрэв',
+      'Баасан',
+      'Бямба',
+      'Ням'
+    ];
+
+    return Padding(
+      padding: const EdgeInsets.all(12.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Draggable Items
+          SizedBox(
+            height: 100,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: draggableItems.map((item) {
+                return placedItems.contains(item)
+                    ? Opacity(
+                        opacity: 0.3,
+                        child: _buildDraggableWidget(item),
+                      )
+                    : Draggable<String>(
+                        data: item,
+                        feedback: Material(
+                          color: Colors.transparent,
+                          child: _buildDraggableWidget(item),
+                        ),
+                        childWhenDragging: Opacity(
+                          opacity: 0.5,
+                          child: _buildDraggableWidget(item),
+                        ),
+                        child: _buildDraggableWidget(item),
+                      );
+              }).toList(),
+            ),
+          ),
+
+          SizedBox(height: 10), // Reduced spacing to fix gap
+
+          // Timetable with Headers
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(width: 50),
+                    ...weekDays.map(
+                      (day) => Container(
+                        width: 100,
+                        height: 50,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.black38, width: 1),
+                          color: Colors.grey[300],
+                        ),
+                        child: Text(day,
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                  ],
+                ),
+
+                // Time Slots & Drag Targets
+                Column(
+                  children: List.generate(rows, (rowIndex) {
+                    return Row(
+                      children: [
+                        // Time Labels
+                        Container(
+                          width: 50,
+                          height: 60,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.black38, width: 1),
+                            color: Colors.grey[200],
+                          ),
+                          child: Text("${rowIndex + 1}"),
+                        ),
+
+                        ...List.generate(cols, (colIndex) {
+                          int index = rowIndex * cols + colIndex;
+
+                          return DragTarget<String>(
+                            onWillAcceptWithDetails: (receivedItem) {
+                              // Ensure we can accept only if item is not placed already
+                              return !placedItems.contains(receivedItem.data);
+                            },
+                            onAcceptWithDetails: (receivedItem) {
+                              setState(() {
+                                // Remove from the previous position if the item is already placed elsewhere
+                                if (itemPositions
+                                    .containsValue(receivedItem.data)) {
+                                  itemPositions.removeWhere((key, value) =>
+                                      value == receivedItem.data);
+                                  placedItems.remove(receivedItem.data);
+                                }
+
+                                // Place item in the new position
+                                itemPositions[index] = receivedItem.data;
+                                placedItems
+                                    .add(receivedItem.data); // Mark as placed
+                                draggableItems.remove(receivedItem
+                                    .data); // Remove from draggableItems
+                              });
+                            },
+                            onLeave: (receivedItem) {
+                              // When a dragged item leaves the timetable area, reactivate it
+                              if (!itemPositions.containsKey(index)) {
+                                setState(() {
+                                  // Reactivate the shape to the draggableItems list
+                                  if (!draggableItems.contains(receivedItem)) {
+                                    draggableItems.add(receivedItem!);
+                                    placedItems.remove(receivedItem);
+                                  }
+                                });
+                              }
+                            },
+                            builder: (context, candidateData, rejectedData) {
+                              return Container(
+                                width: 100,
+                                height: 60,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                      color: Colors.black38, width: 1),
+                                  color: itemPositions.containsKey(index)
+                                      ? Colors.lightGreen[200]
+                                      : Colors.white,
+                                ),
+                                child: itemPositions[index] != null
+                                    ? Draggable<String>(
+                                        data: itemPositions[index]!,
+                                        feedback: Material(
+                                          color: Colors.transparent,
+                                          child: _buildDraggableWidget(
+                                              itemPositions[index]!),
+                                        ),
+                                        childWhenDragging: Opacity(
+                                          opacity: 0.5,
+                                          child: _buildDraggableWidget(
+                                              itemPositions[index]!),
+                                        ),
+                                        child: _buildDraggableWidget(
+                                            itemPositions[index]!),
+                                      )
+                                    : null,
+                              );
+                            },
+                          );
+                        }),
+                      ],
+                    );
+                  }),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  // Helper method to create draggable widgets
   Widget _buildDraggableWidget(String label) {
     return Container(
       width: 80,

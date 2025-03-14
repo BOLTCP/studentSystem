@@ -81,41 +81,6 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     }
   }
 
-  /**
-   
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-      if (_selectedIndex == 3) {
-        _logout();
-      }
-    });
-  }
-
-  // Logout function
-  void _logout() {
-    setState(() {
-      // Reset user details or clear state, if necessary
-      userDetails = Future.value(UserDetails(
-          user: null,
-          student: null,
-          major: null)); // Resetting userDetails to a null state
-
-      // Clear any persistent data (SharedPreferences, tokens, etc.)
-      // SharedPreferences prefs = await SharedPreferences.getInstance();
-      // prefs.clear();
-
-      // Navigate to the login screen
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-            builder: (context) => LoginScreen()), // Navigate to login screen
-      );
-    });
-  }
-
-   */
-
   Widget _buildProfileCard(String label, String value) {
     return Card(
       elevation: 5.0,
