@@ -105,7 +105,7 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
   final int cols = 7;
 
   Map<int, String> itemPositions = {};
-  Set<String> placedItems = {}; // Tracks placed items
+  Set<String> placedItems = {};
 
   List<String> draggableItems = [
     'Circle',
@@ -180,9 +180,8 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
             ),
           ),
 
-          SizedBox(height: 10), // Reduced spacing to fix gap
+          SizedBox(height: 10),
 
-          // Timetable with Headers
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Column(
@@ -206,13 +205,10 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
                     ),
                   ],
                 ),
-
-                // Time Slots & Drag Targets
                 Column(
                   children: List.generate(rows, (rowIndex) {
                     return Row(
                       children: [
-                        // Time Labels
                         Container(
                           width: 50,
                           height: 60,
@@ -223,18 +219,20 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
                           ),
                           child: Text("${rowIndex + 1}"),
                         ),
-
                         ...List.generate(cols, (colIndex) {
                           int index = rowIndex * cols + colIndex;
 
                           return DragTarget<String>(
                             onWillAcceptWithDetails: (receivedItem) {
-                              // Ensure we can accept only if item is not placed already
                               return !placedItems.contains(receivedItem.data);
                             },
                             onAcceptWithDetails: (receivedItem) {
                               setState(() {
-                                // Remove from the previous position if the item is already placed elsewhere
+                                if (itemPositions
+                                    .containsValue(receivedItem.data)) {
+                                  return;
+                                }
+
                                 if (itemPositions
                                     .containsValue(receivedItem.data)) {
                                   itemPositions.removeWhere((key, value) =>
@@ -242,25 +240,25 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
                                   placedItems.remove(receivedItem.data);
                                 }
 
-                                // Place item in the new position
                                 itemPositions[index] = receivedItem.data;
-                                placedItems
-                                    .add(receivedItem.data); // Mark as placed
-                                draggableItems.remove(receivedItem
-                                    .data); // Remove from draggableItems
+                                placedItems.add(receivedItem.data);
+                                draggableItems.remove(receivedItem.data);
                               });
                             },
                             onLeave: (receivedItem) {
-                              // When a dragged item leaves the timetable area, reactivate it
-                              if (!itemPositions.containsKey(index)) {
+                              if (itemPositions.containsValue(receivedItem)) {
                                 setState(() {
-                                  // Reactivate the shape to the draggableItems list
-                                  if (!draggableItems.contains(receivedItem)) {
-                                    draggableItems.add(receivedItem!);
-                                    placedItems.remove(receivedItem);
-                                  }
+                                  itemPositions.removeWhere(
+                                      (key, value) => value == receivedItem);
+                                  placedItems.remove(receivedItem);
                                 });
                               }
+
+                              setState(() {
+                                if (!draggableItems.contains(receivedItem)) {
+                                  draggableItems.add(receivedItem!);
+                                }
+                              });
                             },
                             builder: (context, candidateData, rejectedData) {
                               return Container(
