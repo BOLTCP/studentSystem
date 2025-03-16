@@ -29,6 +29,15 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
   List<String> weekdays = [];
   late String currentDayOfWeek = '';
   late Future<UserDetails> futureUserDetails;
+  final List<String> allWeekdays = [
+    'Даваа',
+    'Мягмар',
+    'Лхагва',
+    'Пүрэв',
+    'Баасан',
+    'Бямба',
+    'Ням'
+  ];
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<Widget> _screens = [];
   int _selectedIndex = 0;
@@ -41,27 +50,6 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
     ];
     futureUserDetails = Future.value(widget.userDetails);
     _generateWeekdays();
-  }
-
-  void _generateWeekdays() {
-    DateTime now = DateTime.now();
-    int currentDay = now.weekday;
-
-    List<String> allWeekdays = ['Да', 'Мя', 'Лха', 'Пү', 'Ба', 'Бя', 'Ням'];
-    currentDayOfWeek = allWeekdays[currentDay];
-  }
-
-  void onItemTappedTeacherDashboard(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-    if (_selectedIndex == 0) {
-      Navigator.pushNamed(
-        context,
-        '/teacher_dashboard',
-        arguments: widget.userDetails,
-      );
-    }
   }
 
   Future<UserDetails> fetchUserDetails() async {
@@ -101,7 +89,50 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
     }
   }
 
-  final int rows = 7;
+  void _generateWeekdays() {
+    DateTime now = DateTime.now();
+    int currentDay = now.weekday - 1;
+    currentDayOfWeek = allWeekdays[currentDay];
+  }
+
+  void onItemTappedTeacherDashboard(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    if (_selectedIndex == 0) {
+      Navigator.pushNamed(
+        context,
+        '/teacher_dashboard',
+        arguments: widget.userDetails,
+      );
+    }
+  }
+
+//${allWeekdays.elementAt(((dayIndex + 1) % 7) - 1)}
+  void _existingScheduleError(int dayIndex, receivedItem) {
+    double index = dayIndex.toDouble();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Алдаа!", style: TextStyle(fontWeight: FontWeight.bold)),
+          content: Text(
+              "${allWeekdays[((index + 1) - (((index + 1) / 7).toInt() * 7) - 1).toInt() == -1 ? 6 : ((index + 1) - (((index + 1) / 7).toInt() * 7) - 1).toInt()]} гарагт ${((index + 1) / 7).toDouble().ceil()} цагт хичээлийн хуваарь байрлаж байна! Өөр хуваарь сонгох эсвэл байгаа хуваарийг өөрчилнө үү!"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text("Ойлоглоо"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  final int rows = 8;
   final int cols = 7;
 
   Map<int, String> itemPositions = {};
@@ -114,7 +145,28 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
     'Rectangle',
     'Star',
     'Hexagon',
-    'Pentagon'
+    'Pentagon',
+    'Circle',
+    'Square',
+    'Triangle',
+    'Rectangle',
+    'Star',
+    'Hexagon',
+    'Pentagon',
+    'Circle',
+    'Square',
+    'Triangle',
+    'Rectangle',
+    'Star',
+    'Hexagon',
+    'Pentagon',
+    'Circle',
+    'Square',
+    'Triangle',
+    'Rectangle',
+    'Star',
+    'Hexagon',
+    'Pentagon',
   ];
 
   @override
@@ -149,39 +201,12 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
     ];
 
     return Padding(
-      padding: const EdgeInsets.all(12.0),
+      padding:
+          const EdgeInsets.only(top: 4.0, bottom: 4.0, right: 8.0, left: 8.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Draggable Items
-          SizedBox(
-            height: 100,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              children: draggableItems.map((item) {
-                return placedItems.contains(item)
-                    ? Opacity(
-                        opacity: 0.3,
-                        child: _buildDraggableWidget(item),
-                      )
-                    : Draggable<String>(
-                        data: item,
-                        feedback: Material(
-                          color: Colors.transparent,
-                          child: _buildDraggableWidget(item),
-                        ),
-                        childWhenDragging: Opacity(
-                          opacity: 0.5,
-                          child: _buildDraggableWidget(item),
-                        ),
-                        child: _buildDraggableWidget(item),
-                      );
-              }).toList(),
-            ),
-          ),
-
           SizedBox(height: 10),
-
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Column(
@@ -223,22 +248,16 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
                           int index = rowIndex * cols + colIndex;
 
                           return DragTarget<String>(
-                            onWillAcceptWithDetails: (receivedItem) {
-                              return !placedItems.contains(receivedItem.data);
-                            },
                             onAcceptWithDetails: (receivedItem) {
                               setState(() {
-                                if (itemPositions
-                                    .containsValue(receivedItem.data)) {
+                                if (itemPositions.containsKey(index)) {
+                                  _existingScheduleError(index, receivedItem);
                                   return;
                                 }
 
-                                if (itemPositions
-                                    .containsValue(receivedItem.data)) {
-                                  itemPositions.removeWhere((key, value) =>
-                                      value == receivedItem.data);
-                                  placedItems.remove(receivedItem.data);
-                                }
+                                itemPositions.removeWhere(
+                                    (key, value) => value == receivedItem.data);
+                                placedItems.remove(receivedItem.data);
 
                                 itemPositions[index] = receivedItem.data;
                                 placedItems.add(receivedItem.data);
@@ -269,7 +288,7 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
                                   border: Border.all(
                                       color: Colors.black38, width: 1),
                                   color: itemPositions.containsKey(index)
-                                      ? Colors.lightGreen[200]
+                                      ? Colors.blueAccent
                                       : Colors.white,
                                 ),
                                 child: itemPositions[index] != null
@@ -300,23 +319,85 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
               ],
             ),
           ),
+          SizedBox(
+            width: 500,
+            height: 198,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  double itemWidth = 80;
+                  int itemsPerRow = (constraints.maxWidth / itemWidth).floor();
+
+                  List<List<String>> rows = [];
+                  for (int i = 0; i < draggableItems.length; i += itemsPerRow) {
+                    rows.add(draggableItems.sublist(
+                        i,
+                        i + itemsPerRow > draggableItems.length
+                            ? draggableItems.length
+                            : i + itemsPerRow));
+                  }
+
+                  return SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
+                    child: Column(
+                      children: rows.map((rowItems) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: SizedBox(
+                            height: 80,
+                            child: ListView(
+                              scrollDirection: Axis.horizontal,
+                              children: rowItems.map((item) {
+                                return placedItems.contains(item)
+                                    ? Opacity(
+                                        opacity: 0.3,
+                                        child: _buildDraggableWidget(item),
+                                      )
+                                    : Draggable<String>(
+                                        data: item,
+                                        feedback: Material(
+                                          color: Colors.transparent,
+                                          child: _buildDraggableWidget(item),
+                                        ),
+                                        childWhenDragging: Opacity(
+                                          opacity: 0.5,
+                                          child: _buildDraggableWidget(item),
+                                        ),
+                                        child: _buildDraggableWidget(item),
+                                      );
+                              }).toList(),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  );
+                },
+              ),
+            ),
+          )
         ],
       ),
     );
   }
 
   Widget _buildDraggableWidget(String label) {
-    return Container(
-      width: 80,
-      height: 80,
-      decoration: BoxDecoration(
-        color: Colors.blueAccent,
-        shape: BoxShape.circle,
-      ),
-      child: Center(
-        child: Text(
-          label,
-          style: TextStyle(color: Colors.white),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+      child: Container(
+        width: 80,
+        height: 80,
+        decoration: BoxDecoration(
+          color: Colors.blueAccent,
+          shape: BoxShape.rectangle,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: TextStyle(color: Colors.white),
+          ),
         ),
       ),
     );
