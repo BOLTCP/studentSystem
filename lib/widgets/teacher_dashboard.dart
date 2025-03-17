@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:studentsystem/models/auth_user.dart';
-import 'package:studentsystem/login_screen.dart';
 import 'package:studentsystem/api/get_api_url.dart'; // Import the login screen
 import 'package:logger/logger.dart';
 import 'package:studentsystem/models/department.dart';
 import 'package:studentsystem/models/teacher.dart';
 import 'package:studentsystem/models/user_details.dart';
 import 'package:studentsystem/models/departments_of_education.dart';
-import 'package:studentsystem/widgets/user_profile.dart';
+import 'package:studentsystem/widgets/teacher_drawer.dart';
 
 var logger = Logger();
 
@@ -58,18 +57,21 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
             TeacherUser.fromJsonTeacher(decodedJson['teacher']);
         DepartmentOfEducation departmentOdEducation =
             DepartmentOfEducation.fromJsonDepartmentOfEducation(
-                decodedJson['department_of_edu_query']);
+                decodedJson['dept_of_edu']);
+        Department department =
+            Department.fromJsonDepartment(decodedJson['dep']);
         departmentName = departmentOdEducation.edDepartmentName;
 
         logger.d('User fetched: $user');
         logger.d('Teacher fetched: $teacher');
-        logger.d('Department fetched: $departmentOdEducation');
+        logger.d('Department fetched: $department');
+        logger.d('Department Of Education fetched: $departmentOdEducation');
 
         return UserDetails(
             user: user,
             teacher: teacher,
             student: null,
-            department: null,
+            department: department,
             departmentOfEducation: departmentOdEducation);
       } else {
         logger.d('Error: ${response.statusCode}');
@@ -128,7 +130,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
         ),
       ),
       backgroundColor: Colors.blue[50],
-      drawer: _buildDrawer(context, userDetails),
+      drawer: buildDrawer(context, userDetails),
       body: _buildBody(userDetails),
     );
   }
@@ -136,141 +138,4 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
 
 Widget _buildBody(userDetails) {
   return Placeholder();
-}
-
-Widget _buildDrawer(context, userDetails) {
-  return Drawer(
-    child: ListView(
-      padding: EdgeInsets.zero,
-      children: [
-        DrawerHeader(
-          decoration: BoxDecoration(color: Colors.blue),
-          child: Text(
-            'Profile',
-            style: TextStyle(color: Colors.white, fontSize: 24),
-          ),
-        ),
-        ListTile(
-          title: Text('Багшийн бүртгэл'),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) =>
-                      ProfileScreen(userDetails: userDetails)),
-            );
-          },
-        ),
-        /*
-        ListTile(
-          title: Text('Хөтөлбөрийн хичээлүүд'),
-          onTap: () {
-            userDetails.then((details) {
-              Navigator.pushNamed(
-                context,
-                '/courses_screen',
-                arguments: details,
-              );
-            });
-          },
-        ),*/
-        FutureBuilder(
-          future: userDetails, // Assuming userDetails is a Future
-          builder: (context, AsyncSnapshot snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return ListTile(
-                title: Text('Loading...'),
-              );
-            } else if (snapshot.hasError) {
-              return ListTile(
-                title: Text('Error: ${snapshot.error}'),
-              );
-            } else if (snapshot.hasData) {
-              var details = snapshot.data; // userDetails has resolved
-              return ListTile(
-                title: Text('Хичээлийн хуваарь сонгох'),
-                subtitle: Text(details.departmentOfEducation!.edDepartmentName),
-                onTap: () {
-                  Navigator.pushNamed(
-                    context,
-                    '/teacher_courses_scheduler',
-                    arguments: details,
-                  );
-                },
-              );
-            } else {
-              return ListTile(
-                title: Text('No data available'),
-              );
-            }
-          },
-        ),
-        ListTile(
-          title: Text('Календарь'),
-          onTap: () {
-            userDetails.then((details) {
-              Navigator.pushNamed(
-                context,
-                '/courses_screen',
-                arguments: details,
-              );
-            });
-          },
-        ),
-        ListTile(
-          title: Text('Клубууд'),
-          onTap: () {
-            userDetails.then((details) {
-              Navigator.pushNamed(
-                context,
-                '/courses_screen',
-                arguments: details,
-              );
-            });
-          },
-        ),
-        ListTile(
-          title: Text('Сонордуулага'),
-          onTap: () {
-            userDetails.then((details) {
-              Navigator.pushNamed(
-                context,
-                '/courses_screen',
-                arguments: details,
-              );
-            });
-          },
-        ),
-        ListTile(
-          title: Text('Мессежүүд'),
-          onTap: () {
-            userDetails.then((details) {
-              Navigator.pushNamed(
-                context,
-                '/courses_screen',
-                arguments: details,
-              );
-            });
-          },
-        ),
-        ListTile(
-          title: Text('Settings'),
-          onTap: () {
-            // Navigate to Settings
-          },
-        ),
-        ListTile(
-          title: Text('Logout'),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => LoginScreen(), // Passing AuthUser here
-              ),
-            );
-          },
-        ),
-      ],
-    ),
-  );
 }

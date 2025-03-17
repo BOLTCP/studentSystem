@@ -9,7 +9,7 @@ import 'package:studentsystem/models/teacher.dart';
 import 'package:studentsystem/models/user_details.dart';
 import 'package:studentsystem/models/departments_of_education.dart';
 import 'package:studentsystem/widgets/bottom_navigation.dart';
-import 'package:studentsystem/widgets/drawer.dart';
+import 'package:studentsystem/widgets/teacher_drawer.dart';
 
 var logger = Logger();
 
@@ -55,7 +55,7 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
   Future<UserDetails> fetchUserDetails() async {
     try {
       final response = await http.post(
-        getApiUrl('Get/allMajor/Of/Course/Teacher'),
+        getApiUrl('Get/allCourses/Of/Major/Teacher'),
         body: json.encode({
           'user_id':
               widget.userDetails.departmentOfEducation!.departmentsOfEducationId
@@ -185,7 +185,11 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
       drawer: buildDrawer(context, futureUserDetails),
       bottomNavigationBar:
           buildBottomNavigation(_selectedIndex, onItemTappedTeacherDashboard),
-      body: _buildBody(),
+      body: Padding(
+        padding:
+            const EdgeInsets.only(left: 8.0, right: 8.0, top: 8.0, bottom: 8.0),
+        child: _buildBody(),
+      ),
     );
   }
 
@@ -202,7 +206,7 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
 
     return Padding(
       padding:
-          const EdgeInsets.only(top: 4.0, bottom: 4.0, right: 8.0, left: 8.0),
+          const EdgeInsets.only(top: 4.0, bottom: 0.0, right: 8.0, left: 8.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -321,7 +325,7 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
           ),
           SizedBox(
             width: 500,
-            height: 198,
+            height: 198 - 12,
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: LayoutBuilder(

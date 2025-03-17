@@ -22,6 +22,7 @@ class Major {
   final String? qualifications1;
   final String? qualifications2;
   final String signUps;
+  final int departmentId;
 
   Major({
     required this.majorId,
@@ -43,6 +44,7 @@ class Major {
     this.qualifications1,
     this.qualifications2,
     required this.signUps,
+    required this.departmentId,
   });
 
   @override
@@ -50,7 +52,7 @@ class Major {
     return 'Major: $majorName, Year: $majorsYear, Type: $majorsType, Credit Unit Rate: $creditUnitRate, Major Tuition: $majorTuition, Academic Degree: $academicDegree, '
         'Total Years: $totalYears, Total Credits per Year: $totalCreditsPerYear, Created At: $createdAt, '
         'Exam1: $exam1, Exam2: $exam2, Description: $majorsDescription, Brief Description: $descriptionBrief, '
-        'Qualifications: $qualifications, Qualifications1: $qualifications1, Qualifications2: $qualifications2';
+        'Qualifications: $qualifications, Qualifications1: $qualifications1, Qualifications2: $qualifications2, DepartmentId: $departmentId';
   }
 
   factory Major.fromJsonMajor(Map<String, dynamic> json) {
@@ -76,6 +78,7 @@ class Major {
       qualifications1: json['qualifications1'],
       qualifications2: json['qualifications2'],
       signUps: json['sign_ups'],
+      departmentId: json['department_id'],
     );
   }
 
@@ -110,6 +113,7 @@ class Major {
       'qualifications1': qualifications1,
       'qualifications2': qualifications2,
       'sign_ups': signUps,
+      'department_id': departmentId
     };
   }
 }
