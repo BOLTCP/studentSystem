@@ -102,10 +102,10 @@ class _TeachersCoursesState extends State<TeachersCourses> {
     }
   }
 
-  Future<void> _addMajorToTeacher(Major major) async {
+  Future<void> _addMajorToTeacher(BuildContext context, Major major) async {
     DateTime currentTime = DateTime.now();
     String createdAtString = currentTime.toIso8601String();
-    logger.d(major);
+
     try {
       final response = await http.post(
         getApiUrl('/Add/Major/To/Teacher'),
@@ -124,14 +124,27 @@ class _TeachersCoursesState extends State<TeachersCourses> {
       ).timeout(Duration(seconds: 30));
 
       if (response.statusCode == 200) {
-        final decodedJson = json.decode(response.body);
-        List<Major> majors = (decodedJson['courses'] as List)
-            .map((major) => Major.fromJsonMajor(major))
-            .toList();
+        return showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('Сонгосон хөтөлбөр амжилттай нэмэгдлээ'),
+              content: Text('Хөтөлбөр ${major.majorName} нэмэгдлээ'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _teachersCurrentMajors(
+                        widget.userDetails.teacher!.teacherId, major.majorId);
+                  },
+                  child: Text('Буцах'),
+                ),
+              ],
+            );
+          },
+        );
       } else {
-        logger.d('Error: ${response.statusCode}');
-        throw Exception(
-            'Majors of ${widget.userDetails.teacher!.departmentsOfEducationId} does not exist!');
+        throw Exception('Failed to add major');
       }
     } catch (e) {
       logger.d('Error: $e');
@@ -178,35 +191,52 @@ class _TeachersCoursesState extends State<TeachersCourses> {
         }),
         headers: {'Content-Type': 'application/json'},
       ).timeout(Duration(seconds: 30));
-
+      final decodedJson = json.decode(response.body);
       if (response.statusCode == 200) {
-        final decodedJson = json.decode(response.body);
         List<TeachersMajorPlanning> majors =
             (decodedJson['current_majors'] as List)
                 .map((major) =>
                     TeachersMajorPlanning.fromJsonTeachersMajorPlanning(major))
                 .toList();
-
         Major major = Major.fromJsonMajor(decodedJson['a_major_to_be_added']);
 
         return showDialog(
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: Text(
-                '${widget.userDetails.user.fname}, ${widget.userDetails.user.userRole}, ${widget.userDetails.teacher!.jobTitle}, ${widget.userDetails.departmentOfEducation!.edDepartmentName}',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              title: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Одоогоор Багшийн нэр ${widget.userDetails.user.fname}, ${widget.userDetails.user.userRole}, ${widget.userDetails.teacher!.jobTitle}, ${widget.userDetails.departmentOfEducation!.edDepartmentName}',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                    ),
+                  ),
+                  Icon(Icons.warning, color: Colors.blue, size: 28),
+                ],
               ),
-              content: majors.isNotEmpty
-                  ? Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: majors
-                          .map((major) => Text(
-                              'Одоогоор ${major.majorName} (${major.majorId} ба нийт ${majors.length} хөтөлбөр сонгосон байна.'))
-                          .toList(),
-                    )
-                  : Text(
-                      'Одоогоор Багшийн нэр дээр сонгосон хөтөлбөр байхгүй байна.'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ...majors.map((major) => RichText(
+                        text: TextSpan(
+                          children: [
+                            TextSpan(
+                                text: '${major.majorName}, ',
+                                style: TextStyle(color: Colors.purple)),
+                            TextSpan(
+                                text: 'ID: ${major.majorId}, ',
+                                style: TextStyle(color: Colors.pink)),
+                          ],
+                        ),
+                      )),
+                  Text('Сонгосон хөтөлбөрүүдийн тоо: ${majors.length}'),
+                ],
+              ),
               actions: [
                 TextButton(
                   onPressed: () {
@@ -216,7 +246,8 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                 ),
                 TextButton(
                   onPressed: () {
-                    _addMajorToTeacher(major);
+                    _addMajorToTeacher(context, major);
+                    Navigator.of(context).pop();
                   },
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -232,16 +263,27 @@ class _TeachersCoursesState extends State<TeachersCourses> {
             );
           },
         );
-      } else if (response.statusCode == 401) {
-        final decodedJson = json.decode(response.body);
+      } else if (response.statusCode == 201) {
         Major major = Major.fromJsonMajor(decodedJson['a_major_to_be_added']);
+
         return showDialog(
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: Text(
-                '${widget.userDetails.user.fname}, ${widget.userDetails.user.userRole}, ${widget.userDetails.teacher!.jobTitle}, ${widget.userDetails.departmentOfEducation!.edDepartmentName}',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              title: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Одоогоор Багшийн нэр ${widget.userDetails.user.fname}, ${widget.userDetails.user.userRole}, ${widget.userDetails.teacher!.jobTitle}, ${widget.userDetails.departmentOfEducation!.edDepartmentName}',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                    ),
+                  ),
+                  Icon(Icons.warning, color: Colors.blue, size: 28),
+                ],
               ),
               content: Text(
                   'Одоогоор Багшийн нэр дээр сонгосон хөтөлбөр байхгүй байна.'),
@@ -254,14 +296,15 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                 ),
                 TextButton(
                   onPressed: () {
-                    _addMajorToTeacher(major);
+                    _addMajorToTeacher(context, major);
+                    Navigator.of(context).pop();
                   },
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(Icons.add, color: Colors.green),
                       SizedBox(width: 8),
-                      Text('Хөтөлбөрийг нэмэх',
+                      Text("Хөтөлбөрийг нэмэх",
                           style: TextStyle(color: Colors.green)),
                     ],
                   ),
@@ -270,6 +313,10 @@ class _TeachersCoursesState extends State<TeachersCourses> {
             );
           },
         );
+      } else {
+        logger.d('Error: ${response.statusCode}');
+        throw Exception(
+            'Majors of ${widget.userDetails.teacher!.departmentsOfEducationId} does not exist!');
       }
     } catch (e) {
       logger.d('Error: $e');
@@ -332,76 +379,83 @@ class _TeachersCoursesState extends State<TeachersCourses> {
 
           String departmentName = departments[0].departmentName;
 
-          return SizedBox(
-            width: 550,
-            height: 350,
-            child: Scrollbar(
-              thickness: 4.0,
-              trackVisibility: true,
-              thumbVisibility: true,
-              child: CustomScrollView(
-                slivers: [
-                  SliverToBoxAdapter(
-                    child: Container(
-                      padding: EdgeInsets.all(16.0),
-                      color: Colors.blue[100],
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Flexible(
-                            child: Text(
-                              '$departmentName - н хөтөлбөрүүд',
-                              maxLines: 2,
-                              textAlign: TextAlign.center,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 18.0,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        Major major = majors[index];
-                        return Container(
-                          color: Colors.white,
-                          child: ListTile(
-                            title: Text(major.majorName),
-                            subtitle: Text(major.majorsType),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
+          return Column(
+            children: [
+              Center(
+                child: SizedBox(
+                  width: 550,
+                  height: 350,
+                  child: Scrollbar(
+                    thickness: 4.0,
+                    trackVisibility: true,
+                    thumbVisibility: true,
+                    child: CustomScrollView(
+                      slivers: [
+                        SliverToBoxAdapter(
+                          child: Container(
+                            padding: EdgeInsets.all(16.0),
+                            color: Colors.blue[100],
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                IconButton(
-                                  icon: Icon(Icons.add),
-                                  onPressed: () {
-                                    _teachersCurrentMajors(
-                                        widget.userDetails.teacher!.teacherId,
-                                        major.majorId);
-                                  },
-                                ),
-                                IconButton(
-                                  icon: Icon(Icons.delete),
-                                  onPressed: () {
-                                    _removeFromMajorTeacher(
-                                        widget.userDetails.teacher!.teacherId);
-                                  },
+                                Flexible(
+                                  child: Text(
+                                    '$departmentName - н хөтөлбөрүүд',
+                                    maxLines: 2,
+                                    textAlign: TextAlign.center,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 18.0,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
                           ),
-                        );
-                      },
-                      childCount: majors.length,
+                        ),
+                        SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                              Major major = majors[index];
+                              return Container(
+                                color: Colors.white,
+                                child: ListTile(
+                                  title: Text(major.majorName),
+                                  subtitle: Text(major.majorsType),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: Icon(Icons.add),
+                                        onPressed: () {
+                                          _teachersCurrentMajors(
+                                              widget.userDetails.teacher!
+                                                  .teacherId,
+                                              major.majorId);
+                                        },
+                                      ),
+                                      IconButton(
+                                        icon: Icon(Icons.delete),
+                                        onPressed: () {
+                                          _removeFromMajorTeacher(widget
+                                              .userDetails.teacher!.teacherId);
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                            childCount: majors.length,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
+                ),
               ),
-            ),
+            ],
           );
         } else {
           return Center(child: Text('No majors available.'));
