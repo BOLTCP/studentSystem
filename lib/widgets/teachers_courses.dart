@@ -152,33 +152,44 @@ class _TeachersCoursesState extends State<TeachersCourses> {
     }
   }
 
-  Future<void> _removeFromMajorTeacher(teacher_id) async {
-    DateTime currentTime = DateTime.now();
-    String createdAtString = currentTime.toIso8601String();
-    logger.d(teacher_id);
+  Future<void> _removeFromMajorTeacher(teacherId, majorId) async {
+    logger.d(teacherId, majorId);
     try {
       final response = await http.post(
         getApiUrl('/Remove/Major/From/Teacher'),
         body: json.encode({
-          'teacher_id': widget.userDetails.teacher!.teacherId,
+          'teacher_id': teacherId,
+          'majorId': majorId,
         }),
         headers: {'Content-Type': 'application/json'},
       ).timeout(Duration(seconds: 30));
 
       if (response.statusCode == 200) {
         final decodedJson = json.decode(response.body);
-        List<Major> majors = (decodedJson['courses'] as List)
-            .map((major) => Major.fromJsonMajor(major))
-            .toList();
+        logger.d(decodedJson);
+        final deleteMessage = decodedJson['message'];
+        final deletedMajor = deleteMessage['deleted_major'];
+        return showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('$deleteMessage'),
+              content: Text('${deletedMajor.major_name}'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text('Буцах'),
+                ),
+              ],
+            );
+          },
+        );
       } else {
-        logger.d('Error: ${response.statusCode}');
-        throw Exception(
-            'Majors of ${widget.userDetails.teacher!.departmentsOfEducationId} does not exist!');
+        throw Exception('Failed to add major');
       }
-    } catch (e) {
-      logger.d('Error: $e');
-      throw Exception('An error occurred. Please try again.');
-    }
+    } catch (e) {}
   }
 
   Future<void> _teachersCurrentMajors(int userId, int majorId) async {
@@ -229,7 +240,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                                 text: '${major.majorName}, ',
                                 style: TextStyle(color: Colors.purple)),
                             TextSpan(
-                                text: 'ID: ${major.majorId}, ',
+                                text: 'Зэрэг: ${major.academicDegree}, ',
                                 style: TextStyle(color: Colors.pink)),
                           ],
                         ),
@@ -438,8 +449,10 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                                       IconButton(
                                         icon: Icon(Icons.delete),
                                         onPressed: () {
-                                          _removeFromMajorTeacher(widget
-                                              .userDetails.teacher!.teacherId);
+                                          _removeFromMajorTeacher(
+                                              widget.userDetails.teacher!
+                                                  .teacherId,
+                                              major.majorId);
                                         },
                                       ),
                                     ],
