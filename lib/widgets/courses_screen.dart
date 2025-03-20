@@ -40,7 +40,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
         final decodedJson = json.decode(response.body);
 
         List<dynamic> coursesList = decodedJson['majors_courses'];
-        Courses courses = Courses.fromJson(coursesList);
+        Courses courses = Courses.fromJsonCourses(coursesList);
         logger.d(courses);
 
         return courses;

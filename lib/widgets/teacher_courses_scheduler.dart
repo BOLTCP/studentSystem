@@ -8,6 +8,7 @@ import 'package:studentsystem/api/get_api_url.dart';
 import 'package:logger/logger.dart';
 import 'package:studentsystem/models/teacher.dart';
 import 'package:studentsystem/models/user_details.dart';
+import 'package:studentsystem/models/courses.dart';
 import 'package:studentsystem/models/departments_of_education.dart';
 import 'package:studentsystem/widgets/bottom_navigation.dart';
 import 'package:studentsystem/widgets/teacher_drawer.dart';
@@ -93,11 +94,16 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
   }
 
   Future<List<TeachersMajorPlanning>> fetchTeachersMajorPlanning() async {
+    if (widget.dep.teacher == null) {
+      return [];
+    }
     try {
       final response = await http.post(
         getApiUrl('/Get/allMajors/Of/Teacher'),
-        body:
-            json.encode({'teacher_id': widget.userDetails.teacher!.teacherId}),
+        body: json.encode({
+          'teacher_id': widget.userDetails.teacher!.teacherId,
+          'search_parameter': widget.u
+        }),
         headers: {'Content-Type': 'application/json'},
       ).timeout(Duration(seconds: 30));
 
@@ -108,6 +114,14 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
             teacherMajorsJson.map((item) {
           return TeachersMajorPlanning.fromJsonTeachersMajorPlanning(item);
         }).toList();
+
+        List<dynamic> coursesJson = decodedJson['teacherCourses'];
+        List<Courses> teachersCourses = coursesJson.map((item) {
+          return Courses.fromJsonCourses(item);
+        }).toList();
+
+        logger.d(teachersCourses, teachersCourses.length);
+
         return teacherMajors;
       } else {
         logger.d('Error: ${response.statusCode}');

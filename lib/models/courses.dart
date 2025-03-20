@@ -3,10 +3,12 @@ class Courses {
 
   Courses({required this.courses});
 
-  // Factory constructor to create a Courses instance from JSON
-  factory Courses.fromJson(List<dynamic> json) {
-    List<Course> coursesList =
-        json.map((courseJson) => Course.fromJson(courseJson)).toList();
+  factory Courses.fromJsonCourses(List<dynamic> json) {
+    List<Course> coursesList = json
+        .where((courseJson) => courseJson != null)
+        .map((courseJson) => Course.fromJsonCourses(courseJson ?? {}))
+        .toList();
+
     return Courses(courses: coursesList);
   }
 }
@@ -35,7 +37,7 @@ class Course {
   });
 
   // Factory constructor to create a Course instance from JSON
-  factory Course.fromJson(Map<String, dynamic> json) {
+  factory Course.fromJsonCourses(Map<String, dynamic> json) {
     return Course(
       courseId: json['course_id'],
       courseName: json['course_name'],
