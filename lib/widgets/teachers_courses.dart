@@ -1,3 +1,4 @@
+import 'package:studentsystem/models/teacherscourseplanning.dart';
 import 'package:studentsystem/models/teachersmajorplanning.dart';
 import 'package:studentsystem/widgets/teacher_dashboard.dart';
 import 'package:flutter/material.dart';
@@ -7,32 +8,28 @@ import 'package:studentsystem/api/get_api_url.dart';
 import 'package:logger/logger.dart';
 import 'package:studentsystem/models/user_details.dart';
 import 'package:studentsystem/widgets/bottom_navigation.dart';
-import 'package:studentsystem/widgets/teacher_dashboard.dart';
 import 'package:studentsystem/constants/teacher_drawer.dart';
 import 'package:studentsystem/models/major.dart';
 import 'package:studentsystem/models/department.dart';
+import 'package:studentsystem/models/courses.dart';
 
 var logger = Logger();
 
-class TeachersMajors extends StatefulWidget {
-  const TeachersMajors({required this.userDetails, super.key});
+class TeachersCourses extends StatefulWidget {
+  const TeachersCourses({required this.userDetails, super.key});
 
   final UserDetails userDetails;
 
   @override
-  _TeachersMajorsState createState() => _TeachersMajorsState();
+  _TeachersCoursesState createState() => _TeachersCoursesState();
 }
 
-class _TeachersMajorsState extends State<TeachersMajors> {
-  late String departmentName = '';
-  List<String> weekdays = [];
-  late String currentDayOfWeek = '';
-  late Future<List<Major>> futureMajorDetails;
+class _TeachersCoursesState extends State<TeachersCourses> {
   late Future<UserDetails> futureUserDetails;
-  late Future<List<Department>> futureDepartmentsDetails;
-  late Future<List<TeachersMajorPlanning>> futureTeachersMajorPlanning;
+  late Future<List<Courses>> futureCoursesDetails;
+  late Future<List<TeachersCoursePlanning>> futureTeachersCoursesPlanning;
   ScrollController _scrollController = ScrollController();
-  bool teacherHasSelectedMajors = false;
+  bool teacherHasSelectedCoursess = false;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<Widget> _screens = [];
   int _selectedIndex = 0;
@@ -44,9 +41,8 @@ class _TeachersMajorsState extends State<TeachersMajors> {
       TeacherDashboard(userId: widget.userDetails.user.userId),
     ];
     futureUserDetails = Future.value(widget.userDetails);
-    futureMajorDetails = fetchMajorsDetails();
-    futureDepartmentsDetails = fetchDepartmentsDetails();
-    futureTeachersMajorPlanning = fetchTeachersMajorPlanning();
+    futureTeachersCoursesPlanning = fetchTeachersCoursesPlanning();
+    futureCoursesDetails = fetchCoursesDetails();
   }
 
   @override
@@ -55,42 +51,41 @@ class _TeachersMajorsState extends State<TeachersMajors> {
     super.dispose();
   }
 
-  void refreshMajorsPlanning() {
+  void refreshCoursesPlanning() {
     setState(() {
-      futureTeachersMajorPlanning = fetchTeachersMajorPlanning();
+      futureTeachersCoursesPlanning = fetchTeachersCoursesPlanning();
     });
   }
 
-  Future<List<TeachersMajorPlanning>> fetchTeachersMajorPlanning() async {
+  Future<List<TeachersCoursePlanning>> fetchTeachersCoursesPlanning() async {
     try {
       final response = await http.get(
-        getApiUrl(('/Get/Current/MajorsPlanning/Of/Teacher'
+        getApiUrl(('/Get/Current/CoursesPlanning/Of/Teacher'
             '?teacher_id=${widget.userDetails.teacher!.teacherId}')),
         headers: {'Content-Type': 'application/json'},
       ).timeout(Duration(seconds: 30));
 
       if (response.statusCode == 200) {
         final decodedJson = json.decode(response.body);
-        List<TeachersMajorPlanning> teachersmajorplanning =
-            (decodedJson['selected_majors'] as List)
-                .map((teachersmajorplanning) =>
-                    TeachersMajorPlanning.fromJsonTeachersMajorPlanning(
-                        teachersmajorplanning))
+        List<TeachersCoursePlanning> teacherscourseplanning =
+            (decodedJson['current_courses'] as List)
+                .map((teacherscourseplanning) =>
+                    TeachersCoursePlanning.fromJsonTeachersCoursePlanning(
+                        teacherscourseplanning))
                 .toList();
 
         setState(() {
-          if (teachersmajorplanning.isNotEmpty) {
-            teacherHasSelectedMajors = true;
-            logger.d('HERE1');
+          if (teacherscourseplanning.isNotEmpty) {
+            teacherHasSelectedCoursess = true;
           }
         });
 
-        logger.d(teachersmajorplanning.length);
+        logger.d(teacherscourseplanning.length);
 
-        return teachersmajorplanning;
+        return teacherscourseplanning;
       } else {
         setState(() {
-          teacherHasSelectedMajors = false;
+          teacherHasSelectedCoursess = false;
         });
         logger.d('Error: ${response.statusCode}');
         throw Exception('Teacher has no selected majors');
@@ -101,30 +96,57 @@ class _TeachersMajorsState extends State<TeachersMajors> {
     }
   }
 
-  Future<List<Major>> fetchMajorsDetails() async {
+  Future<List<Courses>> fetchCoursesDetails() async {
+    String courseCode;
+    if (widget.userDetails.department?.departmentCode == 'ПХ') {
+      courseCode = 'КОМ';
+    } else {
+      courseCode = '*';
+    }
+
+    String urlString;
+    if (widget.userDetails.teachersMajorPlanning != null) {
+      final teachersMajorPlanningJson = jsonEncode(
+        widget.userDetails.teachersMajorPlanning!
+            .where((e) => e != null)
+            .map((e) => e.toJson())
+            .toList(),
+      );
+
+      final encodedTeachersMajorPlanning =
+          Uri.encodeComponent(teachersMajorPlanningJson);
+
+      urlString =
+          '/Get/AllCourses/Of/Teachers/Selected/Major?course_code=$courseCode';
+    } else {
+      urlString =
+          '/Get/AllCourses/Of/Teachers/Selected/Major?selected_major=[]';
+    }
+
     try {
-      final response = await http.post(
-        getApiUrl('/Get/allMajor/Of/DepartmentsOfEducation'),
-        body: json.encode({
-          'departments_of_edu_id':
-              widget.userDetails.teacher!.departmentsOfEducationId,
-          'teacher_id': widget.userDetails.teacher!.teacherId,
-        }),
-        headers: {'Content-Type': 'application/json'},
-      ).timeout(Duration(seconds: 30));
+      final response = await http
+          .post(
+            getApiUrl(urlString),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'selected_major': widget.userDetails.teachersMajorPlanning ?? [],
+              'course_code': courseCode,
+            }),
+          )
+          .timeout(Duration(seconds: 30));
 
       if (response.statusCode == 200) {
         final decodedJson = json.decode(response.body);
-        List<Major> majors = (decodedJson['courses'] as List)
-            .map((major) => Major.fromJsonMajor(major))
+        List<Courses> courses = (decodedJson['courses'] as List)
+            .map((major) => Courses.fromJsonCourses(major))
             .toList();
 
-        logger.d(majors.length);
-        return majors;
+        logger.d(courses.length);
+        return courses;
       } else {
         logger.d('Error: ${response.statusCode}');
         throw Exception(
-            'Majors of ${widget.userDetails.teacher!.departmentsOfEducationId} does not exist!');
+            'Majors of ${widget.userDetails.teacher!.departmentsOfEducationId} do not exist!');
       }
     } catch (e) {
       logger.d('Error: $e');
@@ -190,7 +212,7 @@ class _TeachersMajorsState extends State<TeachersMajors> {
               actions: [
                 TextButton(
                   onPressed: () {
-                    refreshMajorsPlanning();
+                    refreshCoursesPlanning();
                     Navigator.pop(context);
                   },
                   child: Text('Буцах'),
@@ -221,7 +243,7 @@ class _TeachersMajorsState extends State<TeachersMajors> {
       ).timeout(Duration(seconds: 30));
 
       if (response.statusCode == 200) {
-        refreshMajorsPlanning();
+        refreshCoursesPlanning();
         final decodedJson = json.decode(response.body);
         logger.d(decodedJson);
         final deleteMessage = decodedJson['message'];
@@ -272,7 +294,7 @@ class _TeachersMajorsState extends State<TeachersMajors> {
               actions: [
                 TextButton(
                   onPressed: () {
-                    refreshMajorsPlanning();
+                    refreshCoursesPlanning();
                     Navigator.pop(context);
                   },
                   child: Text('Буцах'),
@@ -455,7 +477,7 @@ class _TeachersMajorsState extends State<TeachersMajors> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Хөтөлбөрүүд',
+          'Хичээлүүд',
           textAlign: TextAlign.center,
           style: TextStyle(
               color: Colors.white, fontSize: 24.0, fontWeight: FontWeight.bold),
@@ -464,11 +486,6 @@ class _TeachersMajorsState extends State<TeachersMajors> {
       ),
       backgroundColor: Colors.blue[50],
       drawer: buildDrawer(context, futureUserDetails),
-      onDrawerChanged: (isOpened) {
-        if (isOpened) {
-          TeacherDashboard.dashboardKey.currentState?.refreshUserDetails();
-        }
-      },
       bottomNavigationBar:
           buildBottomNavigation(_selectedIndex, onItemTappedTeacherDashboard),
       body: Padding(
@@ -490,7 +507,7 @@ class _TeachersMajorsState extends State<TeachersMajors> {
               children: [
                 FutureBuilder(
                   future: Future.wait(
-                      [futureMajorDetails, futureDepartmentsDetails]),
+                      [futureTeachersCoursesPlanning, futureCoursesDetails]),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return Center(child: CircularProgressIndicator());
@@ -595,13 +612,13 @@ class _TeachersMajorsState extends State<TeachersMajors> {
               ],
             ),
           ),
-          teacherHasSelectedMajors == true
+          teacherHasSelectedCoursess == true
               ? Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Row(
                     children: [
-                      FutureBuilder<List<TeachersMajorPlanning>>(
-                        future: futureTeachersMajorPlanning,
+                      FutureBuilder<List<TeachersCoursePlanning>>(
+                        future: futureTeachersCoursesPlanning,
                         builder: (context, snapshot) {
                           if (snapshot.connectionState ==
                               ConnectionState.waiting) {
@@ -611,10 +628,10 @@ class _TeachersMajorsState extends State<TeachersMajors> {
                                 child: Text(
                                     'Error loading data: ${snapshot.error}'));
                           } else if (snapshot.hasData) {
-                            List<TeachersMajorPlanning> teachersMajorPlanning =
-                                snapshot.data!;
+                            List<TeachersCoursePlanning>
+                                teachersCoursePlanning = snapshot.data!;
 
-                            if (teachersMajorPlanning.isEmpty) {
+                            if (teachersCoursePlanning.isEmpty) {
                               return Center(
                                   child: Text('No majors available.'));
                             }
@@ -626,7 +643,7 @@ class _TeachersMajorsState extends State<TeachersMajors> {
                                     Padding(
                                       padding: const EdgeInsets.all(8.0),
                                       child: Text(
-                                        'Нийт сонгогдсон хөтөлбөрүүд: ${teachersMajorPlanning.length}',
+                                        'Нийт сонгогдсон хөтөлбөрүүд: ${teachersCoursePlanning.length}',
                                         style: TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
@@ -646,17 +663,19 @@ class _TeachersMajorsState extends State<TeachersMajors> {
                                       thumbVisibility: true,
                                       child: ListView.builder(
                                         controller: _scrollController,
-                                        itemCount: teachersMajorPlanning.length,
+                                        itemCount:
+                                            teachersCoursePlanning.length,
                                         itemBuilder: (context, index) {
-                                          TeachersMajorPlanning majorPlanning =
-                                              teachersMajorPlanning[index];
+                                          TeachersCoursePlanning
+                                              coursePlanning =
+                                              teachersCoursePlanning[index];
                                           return Container(
                                             color: Colors.white,
                                             child: ListTile(
-                                              title:
-                                                  Text(majorPlanning.majorName),
+                                              title: Text(
+                                                  coursePlanning.majorName),
                                               subtitle: Text(
-                                                  majorPlanning.academicDegree),
+                                                  coursePlanning.courseName),
                                               trailing: Row(
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: [
@@ -672,7 +691,7 @@ class _TeachersMajorsState extends State<TeachersMajors> {
                                                                 .userDetails
                                                                 .teacher!
                                                                 .teacherId,
-                                                            majorPlanning
+                                                            coursePlanning
                                                                 .majorId);
                                                       },
                                                     ),
@@ -687,7 +706,7 @@ class _TeachersMajorsState extends State<TeachersMajors> {
                                                       ),
                                                       onPressed: () {
                                                         _addCoursesOfMajorToTeacher(
-                                                            majorPlanning
+                                                            coursePlanning
                                                                 .majorId);
                                                       },
                                                     ),

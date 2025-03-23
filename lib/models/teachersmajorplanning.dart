@@ -36,4 +36,17 @@ class TeachersMajorPlanning {
       departmentOfEducationsId: json['department_of_educations_id'],
     );
   }
+  Map<String, dynamic> toJson() {
+    return {
+      'teacher_major_id': teacherMajorId,
+      'teacher_id': teacherId,
+      'academic_degree_of_major': academicDegree,
+      'major_name': majorName,
+      'major_id': majorId,
+      'credit': credit,
+      'department_id': departmentId,
+      'created_at': createdAt.toIso8601String(),
+      'department_of_educations_id': departmentOfEducationsId,
+    };
+  }
 }

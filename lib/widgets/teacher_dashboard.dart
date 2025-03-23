@@ -8,12 +8,17 @@ import 'package:studentsystem/models/department.dart';
 import 'package:studentsystem/models/teacher.dart';
 import 'package:studentsystem/models/user_details.dart';
 import 'package:studentsystem/models/departments_of_education.dart';
-import 'package:studentsystem/widgets/teacher_drawer.dart';
+import 'package:studentsystem/constants/teacher_drawer.dart';
+import 'package:studentsystem/models/teachersmajorplanning.dart';
 
 var logger = Logger();
 
 class TeacherDashboard extends StatefulWidget {
   const TeacherDashboard({required this.userId, Key? key}) : super(key: key);
+  static final GlobalKey<ScaffoldState> scaffoldKey =
+      GlobalKey<ScaffoldState>();
+  static final GlobalKey<_TeacherDashboardState> dashboardKey =
+      GlobalKey<_TeacherDashboardState>(); // For refreshing data
 
   final int userId;
 
@@ -24,7 +29,7 @@ class TeacherDashboard extends StatefulWidget {
 class _TeacherDashboardState extends State<TeacherDashboard> {
   late Future<UserDetails> userDetails;
   late String departmentName = '';
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   List<Widget> _screens = [];
   int _selectedIndex = 0;
 
@@ -39,11 +44,19 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     ];
   }
 
+  void refreshUserDetails() {
+    setState(() {
+      userDetails = fetchUserDetails();
+    });
+  }
+
   Future<UserDetails> fetchUserDetails() async {
     try {
       final response = await http.post(
         getApiUrl('/User/Login/Teacher'),
-        body: json.encode({'user_id': widget.userId}),
+        body: json.encode({
+          'user_id': widget.userId,
+        }),
         headers: {'Content-Type': 'application/json'},
       ).timeout(Duration(seconds: 30));
 
@@ -61,18 +74,26 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
         Department department =
             Department.fromJsonDepartment(decodedJson['dep']);
         departmentName = departmentOdEducation.edDepartmentName;
+        List<TeachersMajorPlanning> teachersmajorplanning =
+            (decodedJson['teachers_major'] as List)
+                .map((teachersmajorplanning) =>
+                    TeachersMajorPlanning.fromJsonTeachersMajorPlanning(
+                        teachersmajorplanning))
+                .toList();
 
         logger.d('User fetched: $user');
         logger.d('Teacher fetched: $teacher');
         logger.d('Department fetched: $department');
         logger.d('Department Of Education fetched: $departmentOdEducation');
+        logger.d('Teachers majors: $teachersmajorplanning');
 
         return UserDetails(
             user: user,
             teacher: teacher,
             student: null,
             department: department,
-            departmentOfEducation: departmentOdEducation);
+            departmentOfEducation: departmentOdEducation,
+            teachersMajorPlanning: teachersmajorplanning);
       } else {
         logger.d('Error: ${response.statusCode}');
         throw Exception('User does not exist!');
@@ -113,7 +134,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: _scaffoldKey,
+      key: TeacherDashboard.scaffoldKey,
       appBar: AppBar(
         title: Text(
           'Багшийн Хянах Самбар',
@@ -125,7 +146,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
         leading: IconButton(
           icon: Icon(Icons.menu),
           onPressed: () {
-            _scaffoldKey.currentState?.openDrawer();
+            TeacherDashboard.scaffoldKey.currentState?.openDrawer();
           },
         ),
       ),

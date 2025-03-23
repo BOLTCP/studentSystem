@@ -14,7 +14,7 @@ import 'package:studentsystem/widgets/courses_default.dart';
 import 'package:studentsystem/models/user_details.dart';
 import 'package:studentsystem/widgets/contact_us.dart';
 import 'package:studentsystem/widgets/user_signup.dart';
-import 'package:studentsystem/widgets/teacher_courses_scheduler.dart';
+import 'package:studentsystem/widgets/teachers_courses.dart';
 
 void main() {
   runApp(MyApp());
@@ -84,14 +84,13 @@ class MyApp extends StatelessWidget {
         if (settings.name == '/teacher_courses_scheduler') {
           final UserDetails userDetails = settings.arguments as UserDetails;
           return MaterialPageRoute(
-            builder: (context) =>
-                TeacherCoursesScheduler(userDetails: userDetails),
+            builder: (context) => TeachersCourses(userDetails: userDetails),
           );
         }
         if (settings.name == '/teachers_courses') {
           final UserDetails userDetails = settings.arguments as UserDetails;
           return MaterialPageRoute(
-            builder: (context) => TeachersCourses(userDetails: userDetails),
+            builder: (context) => TeachersMajors(userDetails: userDetails),
           );
         }
         if (settings.name == '/courses_default') {

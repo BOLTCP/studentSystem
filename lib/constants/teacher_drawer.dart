@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:studentsystem/login_screen.dart';
-import 'package:studentsystem/widgets/teacher_courses_scheduler.dart';
-import 'package:studentsystem/widgets/teachers_majors.dart';
 import 'package:studentsystem/widgets/teacher_dashboard.dart';
 import 'package:studentsystem/widgets/user_profile.dart';
 import 'package:studentsystem/models/user_details.dart';
@@ -94,7 +92,7 @@ Widget _buildDrawer(context, userDetails, userId) {
           },
         ),
         FutureBuilder(
-          future: userDetails, // Assuming userDetails is a Future
+          future: userDetails,
           builder: (context, AsyncSnapshot snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return ListTile(
@@ -105,10 +103,14 @@ Widget _buildDrawer(context, userDetails, userId) {
                 title: Text('Error: ${snapshot.error}'),
               );
             } else if (snapshot.hasData) {
-              var details = snapshot.data; // userDetails has resolved
+              var details = snapshot.data;
               return ListTile(
-                title: Text('Хичээлийн хуваарь сонгох'),
-                subtitle: Text(details.departmentOfEducation!.edDepartmentName),
+                title: Text('Хөтөлбөрийн хичээлийг сонгох'),
+                subtitle: Text(
+                  (details.teachersMajorPlanning ?? [])
+                      .map((item) => item.majorName)
+                      .join(', '),
+                ),
                 onTap: () {
                   Navigator.pushNamed(
                     context,
