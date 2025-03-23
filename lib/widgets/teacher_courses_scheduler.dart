@@ -94,15 +94,11 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
   }
 
   Future<List<TeachersMajorPlanning>> fetchTeachersMajorPlanning() async {
-    if (widget.dep.teacher == null) {
-      return [];
-    }
     try {
       final response = await http.post(
         getApiUrl('/Get/allMajors/Of/Teacher'),
         body: json.encode({
           'teacher_id': widget.userDetails.teacher!.teacherId,
-          'search_parameter': widget.u
         }),
         headers: {'Content-Type': 'application/json'},
       ).timeout(Duration(seconds: 30));

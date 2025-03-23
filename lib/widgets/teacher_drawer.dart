@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:studentsystem/login_screen.dart';
 import 'package:studentsystem/widgets/teacher_courses_scheduler.dart';
-import 'package:studentsystem/widgets/teachers_courses.dart';
+import 'package:studentsystem/widgets/teachers_majors.dart';
 import 'package:studentsystem/widgets/teacher_dashboard.dart';
 import 'package:studentsystem/widgets/user_profile.dart';
 import 'package:studentsystem/models/user_details.dart';
@@ -76,7 +76,7 @@ Widget _buildDrawer(context, userDetails, userId) {
             } else if (snapshot.hasData) {
               var details = snapshot.data;
               return ListTile(
-                title: Text('Хичээл сонгох'),
+                title: Text('Хөтөлбөр сонгох'),
                 subtitle: Text(details.departmentOfEducation!.edDepartmentName),
                 onTap: () {
                   Navigator.pushNamed(

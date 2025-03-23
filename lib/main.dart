@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:studentsystem/widgets/student_signup.dart';
 import 'package:studentsystem/widgets/teacher_dashboard.dart';
-import 'package:studentsystem/widgets/teachers_courses.dart';
+import 'package:studentsystem/widgets/teachers_majors.dart';
 import 'package:studentsystem/widgets/user_profile.dart';
 import 'admission_courses.dart';
 import 'courses.dart';
