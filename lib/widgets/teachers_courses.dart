@@ -25,14 +25,23 @@ class TeachersCourses extends StatefulWidget {
 }
 
 class _TeachersCoursesState extends State<TeachersCourses> {
-  late Future<UserDetails> futureUserDetails;
   late Future<List<Course>> futureCoursesDetails;
   late Future<List<TeachersCoursePlanning>> futureTeachersCoursesPlanning;
-  ScrollController _scrollController = ScrollController();
+  late Future<UserDetails> futureUserDetails;
+  late String? selectedMajorName;
+  late TeachersMajorPlanning? selectedMajor;
   bool teacherHasSelectedCourses = false;
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<Widget> _screens = [];
+  ScrollController _scrollController = ScrollController();
   int _selectedIndex = 0;
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -43,12 +52,8 @@ class _TeachersCoursesState extends State<TeachersCourses> {
     futureUserDetails = Future.value(widget.userDetails);
     futureTeachersCoursesPlanning = fetchTeachersCoursesPlanning();
     futureCoursesDetails = fetchCoursesDetails();
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
+    selectedMajorName = widget.userDetails.teachersMajorPlanning?[0].majorName;
+    selectedMajor = widget.userDetails.teachersMajorPlanning?[0];
   }
 
   void refreshCoursesPlanning() {
@@ -81,7 +86,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
         });
 
         logger.d(teacherscourseplanning.length);
-
+        logger.d(teacherscourseplanning);
         return teacherscourseplanning;
       } else {
         setState(() {
@@ -122,7 +127,8 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                 .map((courseJson) => Course.fromJsonCourses(courseJson))
                 .toList();
 
-        logger.d(teachersMajorsCourses.length);
+        logger.d(teachersMajorsCourses.length,
+            widget.userDetails.teachersMajorPlanning);
         return teachersMajorsCourses;
       } else {
         logger.d('Error: ${response.statusCode}');
@@ -131,6 +137,19 @@ class _TeachersCoursesState extends State<TeachersCourses> {
     } catch (e) {
       logger.d('Error: $e');
       throw Exception('An error occurred. Please try again.');
+    }
+  }
+
+  void onItemTappedTeacherDashboard(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    if (_selectedIndex == 0) {
+      Navigator.pushNamed(
+        context,
+        '/teacher_dashboard',
+        arguments: widget.userDetails,
+      );
     }
   }
 
@@ -412,43 +431,6 @@ class _TeachersCoursesState extends State<TeachersCourses> {
     }
   }
 
-  void onItemTappedTeacherDashboard(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-    if (_selectedIndex == 0) {
-      Navigator.pushNamed(
-        context,
-        '/teacher_dashboard',
-        arguments: widget.userDetails,
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Хичээлүүд',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-              color: Colors.white, fontSize: 24.0, fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.blue,
-      ),
-      backgroundColor: Colors.blue[50],
-      drawer: buildDrawer(context, futureUserDetails),
-      bottomNavigationBar:
-          buildBottomNavigation(_selectedIndex, onItemTappedTeacherDashboard),
-      body: Padding(
-        padding:
-            const EdgeInsets.only(left: 8.0, right: 8.0, top: 8.0, bottom: 8.0),
-        child: _buildBody(),
-      ),
-    );
-  }
-
   Widget _buildBody() {
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -459,8 +441,11 @@ class _TeachersCoursesState extends State<TeachersCourses> {
             child: Row(
               children: [
                 FutureBuilder(
-                  future: Future.wait(
-                      [futureCoursesDetails, futureTeachersCoursesPlanning]),
+                  future: Future.wait([
+                    futureCoursesDetails,
+                    futureTeachersCoursesPlanning,
+                    futureUserDetails
+                  ]),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return Center(child: CircularProgressIndicator());
@@ -472,6 +457,8 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                           snapshot.data![0] as List<Course>;
                       List<TeachersCoursePlanning> teachersCourses =
                           snapshot.data![1] as List<TeachersCoursePlanning>;
+                      UserDetails userDetails =
+                          snapshot.data![2] as UserDetails;
 
                       if (majorsCourses.isEmpty) {
                         return Center(child: Text('No majors available.'));
@@ -491,66 +478,123 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                                   slivers: [
                                     SliverToBoxAdapter(
                                       child: Container(
-                                        padding: EdgeInsets.all(16.0),
+                                        padding: EdgeInsets.all(8.0),
                                         color: Colors.blue[100],
                                         child: Row(
                                           mainAxisAlignment:
-                                              MainAxisAlignment.center,
+                                              MainAxisAlignment.start,
+                                          mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            Flexible(
-                                              child: Text(
-                                                'Хөтөлбөрүүд',
-                                                maxLines: 2,
-                                                textAlign: TextAlign.center,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: TextStyle(
-                                                  fontSize: 18.0,
-                                                  fontWeight: FontWeight.bold,
+                                            Expanded(
+                                              child: ListTile(
+                                                title: Text(
+                                                    'Багш ${userDetails.user.fname}, ${userDetails.teacher!.teacherCode}'),
+                                                subtitle: Text(
+                                                    '${userDetails.user.userRole}, ${userDetails.teacher!.jobTitle}'),
+                                                trailing: Row(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    Image.asset(
+                                                        'assets/images/icons/teacher_teaching.png')
+                                                  ],
                                                 ),
                                               ),
                                             ),
+                                            Expanded(
+                                              child: Card(
+                                                elevation: 12.0,
+                                                color: Colors.white,
+                                                child: SizedBox(
+                                                  height: 50,
+                                                  child: DropdownButton<String>(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            12),
+                                                    value: selectedMajorName,
+                                                    hint: Center(
+                                                        child: Text(
+                                                            "Хөтөлбөр сонгох")),
+                                                    onChanged: (String? value) {
+                                                      if (value != null) {
+                                                        setState(() {
+                                                          selectedMajor = userDetails
+                                                              .teachersMajorPlanning
+                                                              ?.firstWhere(
+                                                                  (major) =>
+                                                                      major
+                                                                          .majorName ==
+                                                                      value);
+                                                          selectedMajorName =
+                                                              value;
+                                                        });
+                                                      }
+                                                    },
+                                                    items: userDetails
+                                                            .teachersMajorPlanning
+                                                            ?.map((major) {
+                                                          return DropdownMenuItem<
+                                                              String>(
+                                                            value:
+                                                                major.majorName,
+                                                            child: Text(
+                                                              major.majorName,
+                                                              style: TextStyle(
+                                                                  fontSize: 16),
+                                                              maxLines: 2,
+                                                              overflow:
+                                                                  TextOverflow
+                                                                      .ellipsis,
+                                                              softWrap: true,
+                                                            ),
+                                                          );
+                                                        }).toList() ??
+                                                        [],
+                                                    isExpanded: true,
+                                                    selectedItemBuilder:
+                                                        (BuildContext context) {
+                                                      return userDetails
+                                                              .teachersMajorPlanning
+                                                              ?.map<Widget>(
+                                                                  (major) {
+                                                            return Row(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .spaceBetween,
+                                                              children: [
+                                                                Expanded(
+                                                                  child: Center(
+                                                                    child: Text(
+                                                                      selectedMajorName ??
+                                                                          "Select a major",
+                                                                      style: TextStyle(
+                                                                          fontSize:
+                                                                              16),
+                                                                      maxLines:
+                                                                          3,
+                                                                      overflow:
+                                                                          TextOverflow
+                                                                              .ellipsis,
+                                                                      softWrap:
+                                                                          true,
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            );
+                                                          }).toList() ??
+                                                          [];
+                                                    },
+                                                  ),
+                                                ),
+                                              ),
+                                            )
                                           ],
                                         ),
                                       ),
                                     ),
-                                    SliverList(
-                                      delegate: SliverChildBuilderDelegate(
-                                        (context, index) {
-                                          Course course = majorsCourses[index];
-                                          return Container(
-                                            color: Colors.white,
-                                            child: ListTile(
-                                              title: Text(
-                                                  '${course.courseName}, ${course.courseCode}'),
-                                              subtitle: Text(
-                                                  '${course.courseYear}, ${course.courseType}, ${course.totalCredits}, ${course.courseSeason}'),
-                                              trailing: Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            right: 20.0),
-                                                    child: IconButton(
-                                                      icon: Icon(Icons.add),
-                                                      onPressed: () {
-                                                        _teachersCurrentMajors(
-                                                            widget
-                                                                .userDetails
-                                                                .teacher!
-                                                                .teacherId,
-                                                            course.majorId);
-                                                      },
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                        childCount: majorsCourses.length,
-                                      ),
-                                    )
+                                    _buildSilverList(
+                                        majorsCourses, selectedMajor)
                                   ],
                                 ),
                               ),
@@ -705,6 +749,92 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                   ),
                 ),
         ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'Хичээлүүд',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+              color: Colors.white, fontSize: 24.0, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.blue,
+      ),
+      backgroundColor: Colors.blue[50],
+      drawer: buildDrawer(context, futureUserDetails),
+      bottomNavigationBar:
+          buildBottomNavigation(_selectedIndex, onItemTappedTeacherDashboard),
+      body: Padding(
+        padding:
+            const EdgeInsets.only(left: 8.0, right: 8.0, top: 8.0, bottom: 8.0),
+        child: _buildBody(),
+      ),
+    );
+  }
+
+  Widget _buildSilverList(majorsCourses, selectedMajor) {
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (context, index) {
+          Course course = majorsCourses[index];
+          return Container(
+            color: Colors.white,
+            child: course.majorId == selectedMajor.majorId
+                ? ListTile(
+                    title: Text('${course.courseName}, ${course.courseCode}'),
+                    subtitle: Text(
+                        '${course.courseYear}, ${course.courseType}, ${course.totalCredits}, ${course.courseSeason}'),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(right: 20.0),
+                          child: IconButton(
+                            icon: Icon(Icons.add),
+                            onPressed: () {
+                              _teachersCurrentMajors(
+                                  widget.userDetails.teacher!.teacherId,
+                                  course.majorId);
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : /* course.majorId != selectedMajor.majorId
+                    ? Column(
+                        children: [
+                          Row(
+                            children: [
+                              Card(
+                                elevation: 5.0,
+                                margin: EdgeInsets.symmetric(vertical: 10.0),
+                                child: SizedBox(
+                                  height: 100.0,
+                                  child: Center(
+                                    child: Text(
+                                      "No data available for the selected major.",
+                                      style: TextStyle(
+                                          fontSize: 18, color: Colors.black54),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              SizedBox.shrink(),
+                            ],
+                          ),
+                        ],
+                      )*/
+                null,
+          );
+        },
+        childCount: majorsCourses.length,
       ),
     );
   }
