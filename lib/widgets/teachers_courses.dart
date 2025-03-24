@@ -26,10 +26,10 @@ class TeachersCourses extends StatefulWidget {
 
 class _TeachersCoursesState extends State<TeachersCourses> {
   late Future<UserDetails> futureUserDetails;
-  late Future<List<Courses>> futureCoursesDetails;
+  late Future<List<Course>> futureCoursesDetails;
   late Future<List<TeachersCoursePlanning>> futureTeachersCoursesPlanning;
   ScrollController _scrollController = ScrollController();
-  bool teacherHasSelectedCoursess = false;
+  bool teacherHasSelectedCourses = false;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<Widget> _screens = [];
   int _selectedIndex = 0;
@@ -60,8 +60,8 @@ class _TeachersCoursesState extends State<TeachersCourses> {
   Future<List<TeachersCoursePlanning>> fetchTeachersCoursesPlanning() async {
     try {
       final response = await http.get(
-        getApiUrl(('/Get/Current/CoursesPlanning/Of/Teacher'
-            '?teacher_id=${widget.userDetails.teacher!.teacherId}')),
+        getApiUrl(
+            '/Get/Current/CoursesPlanning/Of/Teacher?teacher_id=${widget.userDetails.teacher!.teacherId}'),
         headers: {'Content-Type': 'application/json'},
       ).timeout(Duration(seconds: 30));
 
@@ -76,7 +76,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
 
         setState(() {
           if (teacherscourseplanning.isNotEmpty) {
-            teacherHasSelectedCoursess = true;
+            teacherHasSelectedCourses = true;
           }
         });
 
@@ -85,7 +85,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
         return teacherscourseplanning;
       } else {
         setState(() {
-          teacherHasSelectedCoursess = false;
+          teacherHasSelectedCourses = false;
         });
         logger.d('Error: ${response.statusCode}');
         throw Exception('Teacher has no selected majors');
@@ -96,7 +96,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
     }
   }
 
-  Future<List<Courses>> fetchCoursesDetails() async {
+  Future<List<Course>> fetchCoursesDetails() async {
     String courseCode;
     if (widget.userDetails.department?.departmentCode == 'ПХ') {
       courseCode = 'КОМ';
@@ -104,80 +104,33 @@ class _TeachersCoursesState extends State<TeachersCourses> {
       courseCode = '*';
     }
 
-    String urlString;
-    if (widget.userDetails.teachersMajorPlanning != null) {
-      final teachersMajorPlanningJson = jsonEncode(
-        widget.userDetails.teachersMajorPlanning!
-            .where((e) => e != null)
-            .map((e) => e.toJson())
-            .toList(),
-      );
-
-      final encodedTeachersMajorPlanning =
-          Uri.encodeComponent(teachersMajorPlanningJson);
-
-      urlString =
-          '/Get/AllCourses/Of/Teachers/Selected/Major?course_code=$courseCode';
-    } else {
-      urlString =
-          '/Get/AllCourses/Of/Teachers/Selected/Major?selected_major=[]';
-    }
-
     try {
       final response = await http
           .post(
-            getApiUrl(urlString),
+            getApiUrl('/Get/AllCourses/Of/Teachers/Selected/Major'),
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode({
-              'selected_major': widget.userDetails.teachersMajorPlanning ?? [],
+              'selected_majors': widget.userDetails.teachersMajorPlanning ?? [],
               'course_code': courseCode,
             }),
           )
           .timeout(Duration(seconds: 30));
-
       if (response.statusCode == 200) {
         final decodedJson = json.decode(response.body);
-        List<Courses> courses = (decodedJson['courses'] as List)
-            .map((major) => Courses.fromJsonCourses(major))
-            .toList();
+        List<Course> teachersMajorsCourses =
+            (decodedJson['teachers_courses'] as List)
+                .map((courseJson) => Course.fromJsonCourses(courseJson))
+                .toList();
 
-        logger.d(courses.length);
-        return courses;
+        logger.d(teachersMajorsCourses.length);
+        return teachersMajorsCourses;
       } else {
         logger.d('Error: ${response.statusCode}');
-        throw Exception(
-            'Majors of ${widget.userDetails.teacher!.departmentsOfEducationId} do not exist!');
+        throw Exception('Багшид оноогдсон хөтөлбөрт хичээл байхгүй байна!');
       }
     } catch (e) {
       logger.d('Error: $e');
       throw Exception('An error occurred. Please try again.');
-    }
-  }
-
-  Future<List<Department>> fetchDepartmentsDetails() async {
-    try {
-      final response = await http.post(
-        getApiUrl('/Get/allMajor/Of/DepartmentsOfEducation'),
-        body: json.encode({
-          'departments_of_edu_id':
-              widget.userDetails.teacher!.departmentsOfEducationId
-        }),
-        headers: {'Content-Type': 'application/json'},
-      ).timeout(Duration(seconds: 30));
-
-      if (response.statusCode == 200) {
-        final decodedJson = json.decode(response.body);
-        List<Department> departments = (decodedJson['departments'] as List)
-            .map((department) => Department.fromJsonDepartment(department))
-            .toList();
-        return departments;
-      } else {
-        logger.d('Error: ${response.statusCode}');
-        throw Exception('Departments not found');
-      }
-    } catch (e) {
-      logger.d('Error: $e');
-      throw Exception('An error occurred while fetching departments.');
     }
   }
 
@@ -507,7 +460,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
               children: [
                 FutureBuilder(
                   future: Future.wait(
-                      [futureTeachersCoursesPlanning, futureCoursesDetails]),
+                      [futureCoursesDetails, futureTeachersCoursesPlanning]),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return Center(child: CircularProgressIndicator());
@@ -515,15 +468,14 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                       return Center(
                           child: Text('Error loading data: ${snapshot.error}'));
                     } else if (snapshot.hasData) {
-                      List<Major> majors = snapshot.data![0] as List<Major>;
-                      List<Department> departments =
-                          snapshot.data![1] as List<Department>;
+                      List<Course> majorsCourses =
+                          snapshot.data![0] as List<Course>;
+                      List<TeachersCoursePlanning> teachersCourses =
+                          snapshot.data![1] as List<TeachersCoursePlanning>;
 
-                      if (majors.isEmpty) {
+                      if (majorsCourses.isEmpty) {
                         return Center(child: Text('No majors available.'));
                       }
-
-                      String departmentName = departments[0].departmentName;
 
                       return Column(
                         children: [
@@ -547,7 +499,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                                           children: [
                                             Flexible(
                                               child: Text(
-                                                '$departmentName - н хөтөлбөрүүд',
+                                                'Хөтөлбөрүүд',
                                                 maxLines: 2,
                                                 textAlign: TextAlign.center,
                                                 overflow: TextOverflow.ellipsis,
@@ -564,12 +516,14 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                                     SliverList(
                                       delegate: SliverChildBuilderDelegate(
                                         (context, index) {
-                                          Major major = majors[index];
+                                          Course course = majorsCourses[index];
                                           return Container(
                                             color: Colors.white,
                                             child: ListTile(
-                                              title: Text(major.majorName),
-                                              subtitle: Text(major.majorsType),
+                                              title: Text(
+                                                  '${course.courseName}, ${course.courseCode}'),
+                                              subtitle: Text(
+                                                  '${course.courseYear}, ${course.courseType}, ${course.totalCredits}, ${course.courseSeason}'),
                                               trailing: Row(
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: [
@@ -585,7 +539,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                                                                 .userDetails
                                                                 .teacher!
                                                                 .teacherId,
-                                                            major.majorId);
+                                                            course.majorId);
                                                       },
                                                     ),
                                                   ),
@@ -594,9 +548,9 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                                             ),
                                           );
                                         },
-                                        childCount: majors.length,
+                                        childCount: majorsCourses.length,
                                       ),
-                                    ),
+                                    )
                                   ],
                                 ),
                               ),
@@ -612,7 +566,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
               ],
             ),
           ),
-          teacherHasSelectedCoursess == true
+          teacherHasSelectedCourses == true
               ? Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Row(
@@ -734,12 +688,16 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                   padding: EdgeInsets.all(8.0),
                   child: Row(
                     children: [
-                      Card(
-                        child: Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Text(
-                            'Одоогоор багшид оноогдсон хөтөлбөр байхгүй байна',
-                            style: TextStyle(fontSize: 16.0),
+                      Expanded(
+                        child: Card(
+                          child: Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text(
+                              'Одоогоор багшид оноогдсон хөтөлбөрт сонгосон хичээлүүд байхгүй байна',
+                              style: TextStyle(fontSize: 16.0),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
                         ),
                       ),
