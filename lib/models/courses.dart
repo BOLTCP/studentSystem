@@ -50,4 +50,18 @@ class Course {
       courseSeason: json['course_season'] ?? 'Намар, Өвөл, Хавар, Зун',
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'course_id': courseId,
+      'course_name': courseName,
+      'course_code': courseCode,
+      'course_type': courseType,
+      'course_year': courseYear,
+      'total_credits': totalCredits,
+      'major_id': majorId,
+      'description': description,
+      'course_season': courseSeason,
+    };
+  }
 }

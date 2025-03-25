@@ -7,11 +7,12 @@ import 'dart:convert';
 import 'package:studentsystem/api/get_api_url.dart';
 import 'package:logger/logger.dart';
 import 'package:studentsystem/models/user_details.dart';
-import 'package:studentsystem/widgets/bottom_navigation.dart';
+import 'package:studentsystem/constants/bottom_navigation.dart';
 import 'package:studentsystem/constants/teacher_drawer.dart';
 import 'package:studentsystem/models/major.dart';
 import 'package:studentsystem/models/department.dart';
 import 'package:studentsystem/models/courses.dart';
+import 'package:studentsystem/models/teacher.dart';
 
 var logger = Logger();
 
@@ -127,8 +128,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                 .map((courseJson) => Course.fromJsonCourses(courseJson))
                 .toList();
 
-        logger.d(teachersMajorsCourses.length,
-            widget.userDetails.teachersMajorPlanning);
+        logger.d('${teachersMajorsCourses.length}');
         return teachersMajorsCourses;
       } else {
         logger.d('Error: ${response.statusCode}');
@@ -153,7 +153,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
     }
   }
 
-  Future<void> _addMajorToTeacher(BuildContext context, Major major) async {
+  Future<void> _addCourseToTeacher(BuildContext context, Major major) async {
     DateTime currentTime = DateTime.now();
     String createdAtString = currentTime.toIso8601String();
 
@@ -240,18 +240,21 @@ class _TeachersCoursesState extends State<TeachersCourses> {
       } else {
         throw Exception('Failed to add major');
       }
-    } catch (e) {}
+    } catch (e) {
+      logger.d('Error: $e');
+      throw Exception('An error occurred. Please try again.');
+    }
   }
 
-  Future<void> _addCoursesOfMajorToTeacher(majorId) async {
-    DateTime currentTime = DateTime.now();
-    String createdAtString = currentTime.toIso8601String();
-
+  /*
+  
+  Future<void> _addCoursesOfMajorToTeacher(courseId) async {
+    logger.d("HERE");
     try {
       final response = await http.post(
         getApiUrl('/Add/Courses/Of/Major/To/Teacher'),
         body: json.encode({
-          'major_id': majorId,
+          'major_id': courseId,
         }),
         headers: {'Content-Type': 'application/json'},
       ).timeout(Duration(seconds: 30));
@@ -262,7 +265,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
           builder: (BuildContext context) {
             return AlertDialog(
               title: Text('Сонгосон хөтөлбөр амжилттай нэмэгдлээ'),
-              content: Text('Хөтөлбөр ${majorId} нэмэгдлээ'),
+              content: Text('Хөтөлбөр $courseId нэмэгдлээ'),
               actions: [
                 TextButton(
                   onPressed: () {
@@ -284,13 +287,17 @@ class _TeachersCoursesState extends State<TeachersCourses> {
     }
   }
 
-  Future<void> _teachersCurrentMajors(int userId, int majorId) async {
+   */
+
+  Future<void> _addCoursesOfMajorToTeacher(TeacherUser teacherId, Course course,
+      TeachersMajorPlanning selectedMajor) async {
     try {
       final response = await http.post(
-        getApiUrl('/Get/Current/Majors/Of/Teacher'),
+        getApiUrl('/Add/Courses/OfMajor/To/Teacher'),
         body: json.encode({
-          'teacher_id': userId,
-          'major_id': majorId,
+          'teacher': teacherId,
+          'course': course,
+          'selectedMajor': selectedMajor
         }),
         headers: {'Content-Type': 'application/json'},
       ).timeout(Duration(seconds: 30));
@@ -349,7 +356,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                 ),
                 TextButton(
                   onPressed: () {
-                    _addMajorToTeacher(context, major);
+                    _addCourseToTeacher(context, major);
                     Navigator.of(context).pop();
                   },
                   child: Row(
@@ -401,7 +408,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                 ),
                 TextButton(
                   onPressed: () {
-                    _addMajorToTeacher(context, major);
+                    _addCourseToTeacher(context, major);
                     Navigator.of(context).pop();
                   },
                   child: Row(
@@ -439,6 +446,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 FutureBuilder(
                   future: Future.wait([
@@ -468,7 +476,8 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                         children: [
                           Center(
                             child: SizedBox(
-                              width: 550 - 40,
+                              width:
+                                  MediaQuery.of(context).size.height * 0.5 - 40,
                               height: 350,
                               child: Scrollbar(
                                 thickness: 4.0,
@@ -614,6 +623,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
               ? Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       FutureBuilder<List<TeachersCoursePlanning>>(
                         future: futureTeachersCoursesPlanning,
@@ -652,7 +662,9 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                                 ),
                                 Center(
                                   child: SizedBox(
-                                    width: 550 - 40,
+                                    width: MediaQuery.of(context).size.height *
+                                            0.5 -
+                                        20,
                                     height: 350,
                                     child: Scrollbar(
                                       controller: _scrollController,
@@ -704,8 +716,12 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                                                       ),
                                                       onPressed: () {
                                                         _addCoursesOfMajorToTeacher(
+                                                            widget.userDetails
+                                                                .teacher!,
                                                             coursePlanning
-                                                                .majorId);
+                                                                as Course,
+                                                            selectedMajor
+                                                                as TeachersMajorPlanning);
                                                       },
                                                     ),
                                                   ),
@@ -730,22 +746,28 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                 )
               : Padding(
                   padding: EdgeInsets.all(8.0),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Card(
-                          child: Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Text(
-                              'Одоогоор багшид оноогдсон хөтөлбөрт сонгосон хичээлүүд байхгүй байна',
-                              style: TextStyle(fontSize: 16.0),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
+                  child: SizedBox(
+                    width: 500,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Expanded(
+                          child: Card(
+                            child: Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Text(
+                                'Одоогоор багшид оноогдсон хөтөлбөрт сонгосон хичээлүүд байхгүй байна',
+                                style: TextStyle(fontSize: 16.0),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
         ],
@@ -757,11 +779,15 @@ class _TeachersCoursesState extends State<TeachersCourses> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Хичээлүүд',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-              color: Colors.white, fontSize: 24.0, fontWeight: FontWeight.bold),
+        title: Center(
+          child: Text(
+            'Хичээлүүд',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 24.0,
+                fontWeight: FontWeight.bold),
+          ),
         ),
         backgroundColor: Colors.blue,
       ),
@@ -797,9 +823,10 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                           child: IconButton(
                             icon: Icon(Icons.add),
                             onPressed: () {
-                              _teachersCurrentMajors(
-                                  widget.userDetails.teacher!.teacherId,
-                                  course.majorId);
+                              _addCoursesOfMajorToTeacher(
+                                  widget.userDetails.teacher!,
+                                  course,
+                                  selectedMajor);
                             },
                           ),
                         ),
@@ -810,6 +837,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                     ? Column(
                         children: [
                           Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Card(
                                 elevation: 5.0,
@@ -826,12 +854,11 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                                   ),
                                 ),
                               ),
-                              SizedBox.shrink(),
                             ],
                           ),
                         ],
                       )*/
-                null,
+                SizedBox.shrink(),
           );
         },
         childCount: majorsCourses.length,
