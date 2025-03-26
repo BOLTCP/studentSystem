@@ -168,87 +168,76 @@ class _LoginScreenState extends State<LoginScreen> {
                                   children: [
                                     Column(
                                       children: [
-                                        Padding(
-                                          padding: EdgeInsets.only(left: 20),
-                                          child: Row(
-                                            children: [
-                                              SizedBox(
-                                                width: 150,
-                                                child: TextFormField(
-                                                  controller:
-                                                      _loginNameController,
-                                                  decoration:
-                                                      const InputDecoration(
-                                                    labelText: 'Нэвтрэх нэр : ',
-                                                    labelStyle:
-                                                        TextStyle(fontSize: 16),
-                                                    border:
-                                                        OutlineInputBorder(),
-                                                  ),
-                                                  keyboardType:
-                                                      TextInputType.text,
-                                                  textAlign: TextAlign.center,
-                                                  style:
-                                                      TextStyle(fontSize: 20),
-                                                  validator: (value) {
-                                                    if (value == null ||
-                                                        value.isEmpty) {
-                                                      return 'Please enter your login name';
-                                                    }
-                                                    return null;
-                                                  },
+                                        Row(
+                                          children: [
+                                            SizedBox(
+                                              width: 200,
+                                              child: TextFormField(
+                                                controller:
+                                                    _loginNameController,
+                                                decoration:
+                                                    const InputDecoration(
+                                                  labelText: 'Нэвтрэх нэр : ',
+                                                  labelStyle:
+                                                      TextStyle(fontSize: 16),
+                                                  border: OutlineInputBorder(),
                                                 ),
+                                                keyboardType:
+                                                    TextInputType.text,
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(fontSize: 20),
+                                                validator: (value) {
+                                                  if (value == null ||
+                                                      value.isEmpty) {
+                                                    return 'Please enter your login name';
+                                                  }
+                                                  return null;
+                                                },
                                               ),
-                                            ],
-                                          ),
+                                            ),
+                                          ],
                                         ),
                                         const SizedBox(height: 15),
-                                        Padding(
-                                          padding: EdgeInsets.only(left: 20),
-                                          child: Row(
-                                            children: [
-                                              SizedBox(
-                                                width: 150,
-                                                child: TextFormField(
-                                                  controller:
-                                                      _passwordController,
-                                                  obscureText:
-                                                      !_isPasswordVisible,
-                                                  decoration: InputDecoration(
-                                                    labelText: 'Нууц код : ',
-                                                    labelStyle:
-                                                        TextStyle(fontSize: 16),
-                                                    border:
-                                                        const OutlineInputBorder(),
-                                                    suffixIcon: IconButton(
-                                                      icon: Icon(
-                                                        _isPasswordVisible
-                                                            ? Icons
-                                                                .visibility_off
-                                                            : Icons.visibility,
-                                                      ),
-                                                      onPressed: () {
-                                                        setState(() {
-                                                          _isPasswordVisible =
-                                                              !_isPasswordVisible;
-                                                        });
-                                                      },
+                                        Row(
+                                          children: [
+                                            SizedBox(
+                                              width: 200,
+                                              child: TextFormField(
+                                                controller: _passwordController,
+                                                obscureText:
+                                                    !_isPasswordVisible,
+                                                decoration: InputDecoration(
+                                                  labelText: 'Нууц код : ',
+                                                  labelStyle:
+                                                      TextStyle(fontSize: 16),
+                                                  border:
+                                                      const OutlineInputBorder(),
+                                                  suffixIcon: IconButton(
+                                                    icon: Icon(
+                                                      _isPasswordVisible
+                                                          ? Icons.visibility_off
+                                                          : Icons.visibility,
                                                     ),
+                                                    onPressed: () {
+                                                      setState(() {
+                                                        _isPasswordVisible =
+                                                            !_isPasswordVisible;
+                                                      });
+                                                    },
                                                   ),
-                                                  textAlign: TextAlign.center,
-                                                  style:
-                                                      TextStyle(fontSize: 20),
-                                                  validator: (value) {
-                                                    if (value == null ||
-                                                        value.isEmpty) {
-                                                      return 'Нууц үгээ оруулна уу!';
-                                                    }
-                                                    return null;
-                                                  },
                                                 ),
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(fontSize: 20),
+                                                validator: (value) {
+                                                  if (value == null ||
+                                                      value.isEmpty) {
+                                                    return 'Нууц үгээ оруулна уу!';
+                                                  }
+                                                  return null;
+                                                },
                                               ),
-                                            ],
-                                          ),
+                                            ),
+                                          ],
                                         ),
                                         Padding(
                                           padding: EdgeInsets.only(
@@ -279,8 +268,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ),
                                   ],
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.only(right: 50),
+                                Expanded(
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [

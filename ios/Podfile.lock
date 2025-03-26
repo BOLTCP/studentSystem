@@ -1,4 +1,6 @@
 PODS:
+  - external_path (2.0.1):
+    - Flutter
   - Flutter (1.0.0)
   - flutter_pdfview (1.0.2):
     - Flutter
@@ -17,6 +19,7 @@ PODS:
     - Flutter
 
 DEPENDENCIES:
+  - external_path (from `.symlinks/plugins/external_path/ios`)
   - Flutter (from `Flutter`)
   - flutter_pdfview (from `.symlinks/plugins/flutter_pdfview/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
@@ -26,6 +29,8 @@ DEPENDENCIES:
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
 
 EXTERNAL SOURCES:
+  external_path:
+    :path: ".symlinks/plugins/external_path/ios"
   Flutter:
     :path: Flutter
   flutter_pdfview:
@@ -42,6 +47,7 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/url_launcher_ios/ios"
 
 SPEC CHECKSUMS:
+  external_path: fd37c654b69a1336e33a2403f48383ae6100e443
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   flutter_pdfview: 32bf27bda6fd85b9dd2c09628a824df5081246cf
   path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564

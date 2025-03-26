@@ -13,6 +13,8 @@ import 'package:studentsystem/models/major.dart';
 import 'package:studentsystem/models/department.dart';
 import 'package:studentsystem/models/courses.dart';
 import 'package:studentsystem/models/teacher.dart';
+import 'package:studentsystem/models/departments_of_education.dart';
+import 'package:studentsystem/models/auth_user.dart';
 
 var logger = Logger();
 
@@ -61,6 +63,60 @@ class _TeachersCoursesState extends State<TeachersCourses> {
     setState(() {
       futureTeachersCoursesPlanning = fetchTeachersCoursesPlanning();
     });
+  }
+
+  void refreshUserDetails() {
+    setState(() {
+      futureUserDetails = fetchUserDetails(widget.userDetails.user.userId);
+    });
+  }
+
+  Future<UserDetails> fetchUserDetails(int userId) async {
+    try {
+      final response = await http.post(
+        getApiUrl('/User/Login/Teacher'),
+        body: json.encode({
+          'user_id': userId,
+        }),
+        headers: {'Content-Type': 'application/json'},
+      ).timeout(Duration(seconds: 30));
+
+      logger.d('Response status: ${response.statusCode}');
+      logger.d('Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final decodedJson = json.decode(response.body);
+
+        AuthUser user = AuthUser.fromJsonAuthUser(decodedJson['user']);
+        TeacherUser teacher =
+            TeacherUser.fromJsonTeacher(decodedJson['teacher']);
+        DepartmentOfEducation departmentOdEducation =
+            DepartmentOfEducation.fromJsonDepartmentOfEducation(
+                decodedJson['dept_of_edu']);
+        Department department =
+            Department.fromJsonDepartment(decodedJson['dep']);
+        List<TeachersMajorPlanning> teachersmajorplanning =
+            (decodedJson['teachers_major'] as List)
+                .map((teachersmajorplanning) =>
+                    TeachersMajorPlanning.fromJsonTeachersMajorPlanning(
+                        teachersmajorplanning))
+                .toList();
+
+        return UserDetails(
+            user: user,
+            teacher: teacher,
+            student: null,
+            department: department,
+            departmentOfEducation: departmentOdEducation,
+            teachersMajorPlanning: teachersmajorplanning);
+      } else {
+        logger.d('Error: ${response.statusCode}');
+        throw Exception('User does not exist!');
+      }
+    } catch (e) {
+      logger.d('Error: $e');
+      throw Exception('An error occurred. Please try again.');
+    }
   }
 
   Future<List<TeachersCoursePlanning>> fetchTeachersCoursesPlanning() async {
@@ -243,558 +299,168 @@ class _TeachersCoursesState extends State<TeachersCourses> {
     }
   }
 
-  /*
-  
-  Future<void> _addCoursesOfMajorToTeacher(courseId) async {
-    logger.d("HERE");
-    try {
-      final response = await http.post(
-        getApiUrl('/Add/Courses/Of/Major/To/Teacher'),
-        body: json.encode({
-          'major_id': courseId,
-        }),
-        headers: {'Content-Type': 'application/json'},
-      ).timeout(Duration(seconds: 30));
-
-      if (response.statusCode == 200) {
-        return showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text('Сонгосон хөтөлбөр амжилттай нэмэгдлээ'),
-              content: Text('Хөтөлбөр $courseId нэмэгдлээ'),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    refreshCoursesPlanning();
-                    Navigator.pop(context);
-                  },
-                  child: Text('Буцах'),
-                ),
-              ],
-            );
-          },
-        );
-      } else {
-        throw Exception('Failed to add major');
-      }
-    } catch (e) {
-      logger.d('Error: $e');
-      throw Exception('An error occurred. Please try again.');
-    }
-  }
-
-   */
-
-  Future<void> _addCoursesOfMajorToTeacher(TeacherUser teacherId, Course course,
+  Future<void> _addCoursesOfMajorToTeacher(TeacherUser teacher, Course course,
       TeachersMajorPlanning selectedMajor) async {
     try {
-      final response = await http.post(
-        getApiUrl('/Add/Courses/OfMajor/To/Teacher'),
-        body: json.encode({
-          'teacher': teacherId,
-          'course': course,
-          'selectedMajor': selectedMajor
-        }),
-        headers: {'Content-Type': 'application/json'},
-      ).timeout(Duration(seconds: 30));
-      final decodedJson = json.decode(response.body);
-      if (response.statusCode == 200) {
-        refreshCoursesPlanning();
-        List<TeachersMajorPlanning> majors =
-            (decodedJson['current_majors'] as List)
-                .map((major) =>
-                    TeachersMajorPlanning.fromJsonTeachersMajorPlanning(major))
-                .toList();
-        Major major = Major.fromJsonMajor(decodedJson['a_major_to_be_added']);
+      final bool? confirmed = await showDialog<bool>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Энэ хичээлийг нэмэхийг хүсч байн уу?'),
+            content: Text('Багш дээр ${course.courseName} хичээлийг нэмэх үү?'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context, false);
+                },
+                child: Text('Үгүй'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context, true);
+                },
+                child: Text('Тийм нэмэх'),
+              ),
+            ],
+          );
+        },
+      );
 
-        return showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      'Одоогоор Багшийн нэр ${widget.userDetails.user.fname}, ${widget.userDetails.user.userRole}, ${widget.userDetails.teacher!.jobTitle}, ${widget.userDetails.departmentOfEducation!.edDepartmentName}',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                    ),
-                  ),
-                  Icon(Icons.warning, color: Colors.blue, size: 28),
-                ],
-              ),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ...majors.map((major) => RichText(
-                        text: TextSpan(
-                          children: [
-                            TextSpan(
-                                text: '${major.majorName}, ',
-                                style: TextStyle(color: Colors.purple)),
-                            TextSpan(
-                                text: 'Зэрэг: ${major.academicDegree}, ',
-                                style: TextStyle(color: Colors.pink)),
-                          ],
-                        ),
-                      )),
-                  Text('Сонгосон хөтөлбөрүүдийн тоо: ${majors.length}'),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: Text("Буцах", style: TextStyle(color: Colors.black)),
-                ),
-                TextButton(
-                  onPressed: () {
-                    _addCourseToTeacher(context, major);
-                    Navigator.of(context).pop();
-                  },
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.add, color: Colors.green),
-                      SizedBox(width: 8),
-                      Text(
-                        "Хөтөлбөрийг нэмэх",
-                        style: TextStyle(color: Colors.green),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            );
-          },
-        );
-      } else if (response.statusCode == 201) {
-        Major major = Major.fromJsonMajor(decodedJson['a_major_to_be_added']);
-
-        return showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      'Одоогоор Багшийн нэр ${widget.userDetails.user.fname}, ${widget.userDetails.user.userRole}, ${widget.userDetails.teacher!.jobTitle}, ${widget.userDetails.departmentOfEducation!.edDepartmentName}',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                    ),
-                  ),
-                  Icon(Icons.warning, color: Colors.blue, size: 28),
-                ],
-              ),
-              content: Text(
-                  'Одоогоор Багшийн нэр дээр сонгосон хөтөлбөр байхгүй байна.'),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: Text("Буцах", style: TextStyle(color: Colors.black)),
-                ),
-                TextButton(
-                  onPressed: () {
-                    _addCourseToTeacher(context, major);
-                    Navigator.of(context).pop();
-                  },
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.add, color: Colors.green),
-                      SizedBox(width: 8),
-                      Text(
-                        "Хөтөлбөрийг нэмэх",
-                        style: TextStyle(color: Colors.green),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            );
-          },
-        );
+      if (confirmed == null || !confirmed) {
+        return;
       } else {
-        logger.d('Error: ${response.statusCode}');
-        throw Exception(
-            'Majors of ${widget.userDetails.teacher!.departmentsOfEducationId} does not exist!');
-      }
-    } catch (e) {
-      logger.d('Error: $e');
-      throw Exception('An error occurred. Please try again.');
-    }
-  }
+        final response = await http.post(
+          getApiUrl('/Add/Courses/OfMajor/To/Teacher'),
+          body: json.encode({
+            'teacher': teacher,
+            'course': course,
+            'selectedMajor': selectedMajor
+          }),
+          headers: {'Content-Type': 'application/json'},
+        ).timeout(Duration(seconds: 30));
+        final decodedJson = json.decode(response.body);
+        if (response.statusCode == 200) {
+          refreshCoursesPlanning();
+          List<TeachersMajorPlanning> majors = (decodedJson['current_majors']
+                  as List)
+              .map((major) =>
+                  TeachersMajorPlanning.fromJsonTeachersMajorPlanning(major))
+              .toList();
+          Major major = Major.fromJsonMajor(decodedJson['a_major_to_be_added']);
 
-  Widget _buildBody() {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                FutureBuilder(
-                  future: Future.wait([
-                    futureCoursesDetails,
-                    futureTeachersCoursesPlanning,
-                    futureUserDetails,
-                  ]),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(child: CircularProgressIndicator());
-                    } else if (snapshot.hasError) {
-                      return Center(
-                          child: Text('An error occurred: ${snapshot.error}'));
-                    } else if (snapshot.hasData) {
-                      List<Course> majorsCourses =
-                          snapshot.data![0] as List<Course>;
-                      List<TeachersCoursePlanning> teachersCourses =
-                          snapshot.data![1] as List<TeachersCoursePlanning>;
-                      UserDetails userDetails =
-                          snapshot.data![2] as UserDetails;
-
-                      if (userDetails.teachersMajorPlanning == null) {
-                        return Center(
-                            child: Text(
-                                'Багшид оноогдсон хөтөлбөрүүд байхгүй байна.'));
-                      }
-
-                      return Column(
-                        children: [
-                          Center(
-                            child: SizedBox(
-                              width:
-                                  MediaQuery.of(context).size.height * 0.5 - 40,
-                              height: 350,
-                              child: Scrollbar(
-                                thickness: 4.0,
-                                trackVisibility: true,
-                                thumbVisibility: true,
-                                child: CustomScrollView(
-                                  slivers: [
-                                    SliverToBoxAdapter(
-                                      child: Container(
-                                        padding: EdgeInsets.all(8.0),
-                                        color: Colors.blue[100],
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Expanded(
-                                              child: ListTile(
-                                                title: Text(
-                                                    'Багш ${userDetails.user.fname}, ${userDetails.teacher!.teacherCode}'),
-                                                subtitle: Text(
-                                                    '${userDetails.user.userRole}, ${userDetails.teacher!.jobTitle}'),
-                                                trailing: Row(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  children: [
-                                                    Image.asset(
-                                                        'assets/images/icons/teacher_teaching.png')
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                            Expanded(
-                                              child: Card(
-                                                elevation: 12.0,
-                                                color: Colors.white,
-                                                child: SizedBox(
-                                                  height: 50,
-                                                  child: DropdownButton<String>(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            12),
-                                                    value: selectedMajorName,
-                                                    hint: Center(
-                                                        child: Text(
-                                                            "Хөтөлбөр сонгох")),
-                                                    onChanged: (String? value) {
-                                                      if (value != null) {
-                                                        setState(() {
-                                                          selectedMajor = userDetails
-                                                              .teachersMajorPlanning
-                                                              ?.firstWhere(
-                                                                  (major) =>
-                                                                      major
-                                                                          .majorName ==
-                                                                      value);
-                                                          selectedMajorName =
-                                                              value;
-                                                        });
-                                                      }
-                                                    },
-                                                    items: userDetails
-                                                            .teachersMajorPlanning
-                                                            ?.map((major) {
-                                                          return DropdownMenuItem<
-                                                              String>(
-                                                            value:
-                                                                major.majorName,
-                                                            child: Text(
-                                                              major.majorName,
-                                                              style: TextStyle(
-                                                                  fontSize: 16),
-                                                              maxLines: 2,
-                                                              overflow:
-                                                                  TextOverflow
-                                                                      .ellipsis,
-                                                              softWrap: true,
-                                                            ),
-                                                          );
-                                                        }).toList() ??
-                                                        [],
-                                                    isExpanded: true,
-                                                    selectedItemBuilder:
-                                                        (BuildContext context) {
-                                                      return userDetails
-                                                              .teachersMajorPlanning
-                                                              ?.map<Widget>(
-                                                                  (major) {
-                                                            return Row(
-                                                              mainAxisAlignment:
-                                                                  MainAxisAlignment
-                                                                      .spaceBetween,
-                                                              children: [
-                                                                Expanded(
-                                                                  child: Center(
-                                                                    child: Text(
-                                                                      selectedMajorName ??
-                                                                          "Select a major",
-                                                                      style: TextStyle(
-                                                                          fontSize:
-                                                                              16),
-                                                                      maxLines:
-                                                                          3,
-                                                                      overflow:
-                                                                          TextOverflow
-                                                                              .ellipsis,
-                                                                      softWrap:
-                                                                          true,
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            );
-                                                          }).toList() ??
-                                                          [];
-                                                    },
-                                                  ),
-                                                ),
-                                              ),
-                                            )
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    _buildSilverList(
-                                        majorsCourses, selectedMajor)
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      );
-                    } else {
-                      return Center(child: Text('No majors available.'));
-                    }
-                  },
-                ),
-              ],
-            ),
-          ),
-          teacherHasSelectedCourses == true
-              ? Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      FutureBuilder<List<TeachersCoursePlanning>>(
-                        future: futureTeachersCoursesPlanning,
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return Center(child: CircularProgressIndicator());
-                          } else if (snapshot.hasError) {
-                            return Center(
-                                child: Text(
-                                    'Error loading data: ${snapshot.error}'));
-                          } else if (snapshot.hasData) {
-                            List<TeachersCoursePlanning>
-                                teachersCoursePlanning = snapshot.data!;
-
-                            if (teachersCoursePlanning.isEmpty) {
-                              return Center(
-                                  child: Text('No majors available.'));
-                            }
-
-                            return Column(
-                              children: [
-                                Row(
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Text(
-                                        'Нийт сонгогдсон хичээлүүд: ${teachersCoursePlanning.length}',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Center(
-                                  child: SizedBox(
-                                    width: MediaQuery.of(context).size.height *
-                                            0.5 -
-                                        40,
-                                    height: 350,
-                                    child: Scrollbar(
-                                      controller: _scrollController,
-                                      thickness: 4.0,
-                                      trackVisibility: true,
-                                      thumbVisibility: true,
-                                      child: ListView.builder(
-                                        controller: _scrollController,
-                                        itemCount:
-                                            teachersCoursePlanning.length,
-                                        itemBuilder: (context, index) {
-                                          TeachersCoursePlanning
-                                              coursePlanning =
-                                              teachersCoursePlanning[index];
-                                          return Container(
-                                            color: Colors.white,
-                                            child: ListTile(
-                                              title: Text(
-                                                  coursePlanning.courseName),
-                                              subtitle: Text(
-                                                  '${coursePlanning.courseCode}, ${coursePlanning.majorName.split(' ').map((majorName) => majorName[0]).join('')}'),
-                                              trailing: Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            right: 10),
-                                                    child: IconButton(
-                                                      icon: Image.asset(
-                                                        'assets/images/icons/teachers_majors_selection.png',
-                                                      ),
-                                                      onPressed: () {
-                                                        Navigator.pushNamed(
-                                                          context,
-                                                          '/teachers_majors',
-                                                          arguments: widget
-                                                              .userDetails,
-                                                        );
-                                                      },
-                                                    ),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            right: 10),
-                                                    child: IconButton(
-                                                      icon: Icon(Icons.delete),
-                                                      onPressed: () {
-                                                        _removeFromCourseTeacher(
-                                                            widget
-                                                                .userDetails
-                                                                .teacher!
-                                                                .teacherId,
-                                                            coursePlanning
-                                                                .courseId);
-                                                      },
-                                                    ),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            right: 10),
-                                                    child: IconButton(
-                                                      icon: Image.asset(
-                                                        'assets/images/icons/teachers_courses.png',
-                                                      ),
-                                                      onPressed: () {
-                                                        _addCoursesOfMajorToTeacher(
-                                                            widget.userDetails
-                                                                .teacher!,
-                                                            coursePlanning
-                                                                as Course,
-                                                            selectedMajor
-                                                                as TeachersMajorPlanning);
-                                                      },
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            );
-                          } else {
-                            return Center(child: Text('No majors available.'));
-                          }
-                        },
+          return showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Одоогоор Багшийн нэр ${widget.userDetails.user.fname}, ${widget.userDetails.user.userRole}, ${widget.userDetails.teacher!.jobTitle}, ${widget.userDetails.departmentOfEducation!.edDepartmentName}',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 18),
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
                       ),
-                    ],
+                    ),
+                    Icon(Icons.warning, color: Colors.blue, size: 28),
+                  ],
+                ),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ...majors.map((major) => RichText(
+                          text: TextSpan(
+                            children: [
+                              TextSpan(
+                                  text: '${major.majorName}, ',
+                                  style: TextStyle(color: Colors.purple)),
+                              TextSpan(
+                                  text: 'Зэрэг: ${major.academicDegree}, ',
+                                  style: TextStyle(color: Colors.pink)),
+                            ],
+                          ),
+                        )),
+                    Text('Сонгосон хөтөлбөрүүдийн тоо: ${majors.length}'),
+                  ],
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text("Буцах", style: TextStyle(color: Colors.black)),
                   ),
-                )
-              : Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: SizedBox(
-                    width: 500,
+                  TextButton(
+                    onPressed: () {
+                      _addCourseToTeacher(context, major);
+                      Navigator.of(context).pop();
+                    },
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Expanded(
-                          child: Card(
-                            child: Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: Text(
-                                'Оноогдсон хөтөлбөрүүдэд багш сонгосон хичээл байхгүй байна',
-                                style: TextStyle(fontSize: 16.0),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                          ),
+                        Icon(Icons.add, color: Colors.green),
+                        SizedBox(width: 8),
+                        Text(
+                          "Хөтөлбөрийг нэмэх",
+                          style: TextStyle(color: Colors.green),
                         ),
                       ],
                     ),
                   ),
+                ],
+              );
+            },
+          );
+        } else if (response.statusCode == 201) {
+          return showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '${decodedJson['message']}',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 18),
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        maxLines: 4,
+                      ),
+                    ),
+                    Icon(Icons.cancel, color: Colors.red, size: 28),
+                  ],
                 ),
-        ],
-      ),
-    );
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text("Буцах", style: TextStyle(color: Colors.black)),
+                  ),
+                ],
+              );
+            },
+          );
+        } else {
+          logger.d('Error: ${response.statusCode}');
+          throw Exception(
+              'Majors of ${widget.userDetails.teacher!.departmentsOfEducationId} does not exist!');
+        }
+      }
+    } catch (e) {
+      logger.d('Error: $e');
+      throw Exception('An error occurred. Please try again.');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       appBar: AppBar(
         title: Center(
@@ -816,8 +482,352 @@ class _TeachersCoursesState extends State<TeachersCourses> {
       body: Padding(
         padding:
             const EdgeInsets.only(left: 8.0, right: 8.0, top: 8.0, bottom: 8.0),
-        child: _buildBody(),
+        child: _buildBody(screenWidth, screenHeight),
       ),
+    );
+  }
+
+  Widget _buildBody(screenWidth, screenHeight) {
+    return Column(
+      children: [
+        Padding(
+          padding: EdgeInsets.only(bottom: 8.0, right: 8.0, left: 8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              FutureBuilder(
+                future: Future.wait([
+                  futureCoursesDetails,
+                  futureTeachersCoursesPlanning,
+                  futureUserDetails,
+                ]),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(
+                        child: Text('An error occurred: ${snapshot.error}'));
+                  } else if (snapshot.hasData) {
+                    List<Course> majorsCourses =
+                        snapshot.data![0] as List<Course>;
+                    List<TeachersCoursePlanning> teachersCourses =
+                        snapshot.data![1] as List<TeachersCoursePlanning>;
+                    UserDetails userDetails = snapshot.data![2] as UserDetails;
+
+                    if (userDetails.teachersMajorPlanning == null) {
+                      return Center(
+                          child: Text(
+                              'Багшид оноогдсон хөтөлбөрүүд байхгүй байна.'));
+                    }
+
+                    return Column(
+                      children: [
+                        Center(
+                          child: SizedBox(
+                            width: screenWidth * 0.9,
+                            height: screenHeight * 0.35,
+                            child: Scrollbar(
+                              thickness: 4.0,
+                              trackVisibility: true,
+                              thumbVisibility: true,
+                              child: CustomScrollView(
+                                slivers: [
+                                  SliverToBoxAdapter(
+                                    child: Container(
+                                      padding: EdgeInsets.all(8.0),
+                                      color: Colors.blue[100],
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Expanded(
+                                            child: ListTile(
+                                              title: Text(
+                                                  'Багш ${userDetails.user.fname}, ${userDetails.teacher!.teacherCode}'),
+                                              subtitle: Text(
+                                                  '${userDetails.user.userRole}, ${userDetails.teacher!.jobTitle}'),
+                                              trailing: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Image.asset(
+                                                      'assets/images/icons/teacher_teaching.png')
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                          Expanded(
+                                            child: Card(
+                                              elevation: 12.0,
+                                              color: Colors.white,
+                                              child: SizedBox(
+                                                height: 50,
+                                                child: DropdownButton<String>(
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                  value: selectedMajorName,
+                                                  hint: Center(
+                                                      child: Text(
+                                                          "Хөтөлбөр сонгох")),
+                                                  onChanged: (String? value) {
+                                                    if (value != null) {
+                                                      setState(() {
+                                                        selectedMajor = userDetails
+                                                            .teachersMajorPlanning
+                                                            ?.firstWhere((major) =>
+                                                                major
+                                                                    .majorName ==
+                                                                value);
+                                                        selectedMajorName =
+                                                            value;
+                                                      });
+                                                    }
+                                                  },
+                                                  items: userDetails
+                                                          .teachersMajorPlanning
+                                                          ?.map((major) {
+                                                        return DropdownMenuItem<
+                                                            String>(
+                                                          value:
+                                                              major.majorName,
+                                                          child: Text(
+                                                            major.majorName,
+                                                            style: TextStyle(
+                                                                fontSize: 16),
+                                                            maxLines: 2,
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                            softWrap: true,
+                                                          ),
+                                                        );
+                                                      }).toList() ??
+                                                      [],
+                                                  isExpanded: true,
+                                                  selectedItemBuilder:
+                                                      (BuildContext context) {
+                                                    return userDetails
+                                                            .teachersMajorPlanning
+                                                            ?.map<Widget>(
+                                                                (major) {
+                                                          return Row(
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .spaceBetween,
+                                                            children: [
+                                                              Expanded(
+                                                                child: Center(
+                                                                  child: Text(
+                                                                    selectedMajorName ??
+                                                                        "Select a major",
+                                                                    style: TextStyle(
+                                                                        fontSize:
+                                                                            16),
+                                                                    maxLines: 3,
+                                                                    overflow:
+                                                                        TextOverflow
+                                                                            .ellipsis,
+                                                                    softWrap:
+                                                                        true,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          );
+                                                        }).toList() ??
+                                                        [];
+                                                  },
+                                                ),
+                                              ),
+                                            ),
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  _buildSilverList(majorsCourses, selectedMajor)
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  } else {
+                    return Center(child: Text('No majors available.'));
+                  }
+                },
+              ),
+            ],
+          ),
+        ),
+        teacherHasSelectedCourses == true
+            ? Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    FutureBuilder<List<TeachersCoursePlanning>>(
+                      future: futureTeachersCoursesPlanning,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return Center(child: CircularProgressIndicator());
+                        } else if (snapshot.hasError) {
+                          return Center(
+                              child: Text(
+                                  'Error loading data: ${snapshot.error}'));
+                        } else if (snapshot.hasData) {
+                          List<TeachersCoursePlanning> teachersCoursePlanning =
+                              snapshot.data!;
+
+                          if (teachersCoursePlanning.isEmpty) {
+                            return Center(child: Text('No majors available.'));
+                          }
+
+                          return Column(
+                            children: [
+                              Row(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text(
+                                      'Нийт сонгогдсон хичээлүүд: ${teachersCoursePlanning.length}',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Center(
+                                child: SizedBox(
+                                  width:
+                                      MediaQuery.of(context).size.height * 0.5 -
+                                          40,
+                                  height: 350,
+                                  child: Scrollbar(
+                                    controller: _scrollController,
+                                    thickness: 4.0,
+                                    trackVisibility: true,
+                                    thumbVisibility: true,
+                                    child: ListView.builder(
+                                      controller: _scrollController,
+                                      itemCount: teachersCoursePlanning.length,
+                                      itemBuilder: (context, index) {
+                                        TeachersCoursePlanning coursePlanning =
+                                            teachersCoursePlanning[index];
+                                        return Container(
+                                          color: Colors.white,
+                                          child: ListTile(
+                                            title:
+                                                Text(coursePlanning.courseName),
+                                            subtitle: Text(
+                                                '${coursePlanning.courseCode}, ${coursePlanning.majorName.split(' ').map((majorName) => majorName[0]).join('')}'),
+                                            trailing: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          right: 10),
+                                                  child: IconButton(
+                                                    icon: Image.asset(
+                                                      'assets/images/icons/teachers_majors_selection.png',
+                                                    ),
+                                                    onPressed: () {
+                                                      Navigator.pushNamed(
+                                                        context,
+                                                        '/teachers_majors',
+                                                        arguments:
+                                                            widget.userDetails,
+                                                      );
+                                                    },
+                                                  ),
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          right: 10),
+                                                  child: IconButton(
+                                                    icon: Icon(Icons.delete),
+                                                    onPressed: () {
+                                                      _removeFromCourseTeacher(
+                                                          widget
+                                                              .userDetails
+                                                              .teacher!
+                                                              .teacherId,
+                                                          coursePlanning
+                                                              .courseId);
+                                                    },
+                                                  ),
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          right: 10),
+                                                  child: IconButton(
+                                                    icon: Image.asset(
+                                                      'assets/images/icons/teachers_courses.png',
+                                                    ),
+                                                    onPressed: () {
+                                                      _addCoursesOfMajorToTeacher(
+                                                          widget.userDetails
+                                                              .teacher!,
+                                                          coursePlanning
+                                                              as Course,
+                                                          selectedMajor
+                                                              as TeachersMajorPlanning);
+                                                    },
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        } else {
+                          return Center(child: Text('No majors available.'));
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              )
+            : Padding(
+                padding: EdgeInsets.all(8.0),
+                child: SizedBox(
+                  width: 500,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Expanded(
+                        child: Card(
+                          child: Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text(
+                              'Оноогдсон хөтөлбөрүүдэд багш сонгосон хичээл байхгүй байна',
+                              style: TextStyle(fontSize: 16.0),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+      ],
     );
   }
 
