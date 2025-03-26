@@ -17,7 +17,7 @@ Widget buildDrawer(
         } else if (snapshot.hasData) {
           UserDetails userDetails = snapshot.data!;
           return _buildDrawer(
-              context, futureUserDetails, userDetails.user.userId);
+              context, futureUserDetails, userDetails.user.userId, userDetails);
         } else {
           return Center(child: Text('No data available'));
         }
@@ -26,7 +26,7 @@ Widget buildDrawer(
   );
 }
 
-Widget _buildDrawer(context, userDetails, userId) {
+Widget _buildDrawer(context, userDetails, userId, UserDetails details) {
   return Drawer(
     child: ListView(
       padding: EdgeInsets.zero,
@@ -79,7 +79,7 @@ Widget _buildDrawer(context, userDetails, userId) {
                 onTap: () {
                   Navigator.pushNamed(
                     context,
-                    '/teachers_courses',
+                    '/teachers_majors',
                     arguments: details,
                   );
                 },
@@ -91,41 +91,52 @@ Widget _buildDrawer(context, userDetails, userId) {
             }
           },
         ),
-        FutureBuilder(
-          future: userDetails,
-          builder: (context, AsyncSnapshot snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return ListTile(
-                title: Text('Loading...'),
-              );
-            } else if (snapshot.hasError) {
-              return ListTile(
-                title: Text('Error: ${snapshot.error}'),
-              );
-            } else if (snapshot.hasData) {
-              var details = snapshot.data;
-              return ListTile(
-                title: Text('Хөтөлбөрийн хичээлийг сонгох'),
+        details.teachersMajorPlanning!.isNotEmpty
+            ? FutureBuilder(
+                future: userDetails,
+                builder: (context, AsyncSnapshot snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return ListTile(
+                      title: Text('Loading...'),
+                    );
+                  } else if (snapshot.hasError) {
+                    return ListTile(
+                      title: Text('Error: ${snapshot.error}'),
+                    );
+                  } else if (snapshot.hasData) {
+                    UserDetails details = snapshot.data;
+                    return ListTile(
+                      title: Text('Хөтөлбөрийн хичээлийг сонгох'),
+                      subtitle: Text(
+                        (details.teachersMajorPlanning ?? [])
+                            .map((item) => item.majorName)
+                            .join(', '),
+                      ),
+                      onTap: () {
+                        Navigator.pushNamed(
+                          context,
+                          '/teacher_courses',
+                          arguments: details,
+                        );
+                      },
+                    );
+                  } else {
+                    return ListTile(
+                      title: Text('No data available'),
+                    );
+                  }
+                },
+              )
+            : ListTile(
+                title: Text('Багшид оноогдсон хөтөлбөр байхгүй байна'),
+                trailing: Icon(Icons.warning, size: 50, color: Colors.orange),
                 subtitle: Text(
-                  (details.teachersMajorPlanning ?? [])
-                      .map((item) => item.majorName)
-                      .join(', '),
-                ),
+                    'Хөтөлбөр нэмэгдсэний дараа хичээл сонголт хийгдэнэ!',
+                    style: TextStyle(color: Colors.red)),
                 onTap: () {
-                  Navigator.pushNamed(
-                    context,
-                    '/teacher_courses_scheduler',
-                    arguments: details,
-                  );
+                  null;
                 },
-              );
-            } else {
-              return ListTile(
-                title: Text('No data available'),
-              );
-            }
-          },
-        ),
+              ),
         ListTile(
           title: Text('Календарь'),
           onTap: () {

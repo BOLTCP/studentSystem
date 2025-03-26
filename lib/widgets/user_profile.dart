@@ -26,11 +26,15 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Хэрэглэгчийн мэдээлэл',
-          textAlign: TextAlign.start,
-          style: TextStyle(
-              fontSize: 24.0, fontWeight: FontWeight.bold, color: Colors.white),
+        title: Center(
+          child: Text(
+            'Хэрэглэгчийн мэдээлэл',
+            textAlign: TextAlign.start,
+            style: TextStyle(
+                fontSize: 24.0,
+                fontWeight: FontWeight.bold,
+                color: Colors.white),
+          ),
         ),
         backgroundColor: Colors.blue,
       ),

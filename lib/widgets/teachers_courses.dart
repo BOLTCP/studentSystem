@@ -64,7 +64,6 @@ class _TeachersCoursesState extends State<TeachersCourses> {
   }
 
   Future<List<TeachersCoursePlanning>> fetchTeachersCoursesPlanning() async {
-    if (widget.userDetails.teachersMajorPlanning!.isEmpty) {}
     try {
       final response = await http.get(
         getApiUrl(
@@ -450,18 +449,16 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                 FutureBuilder(
                   future: Future.wait([
                     futureCoursesDetails,
-                    futureTeachersCoursesPlanning.catchError(
-                        (error) => [null] as List<TeachersCoursePlanning>),
+                    futureTeachersCoursesPlanning,
                     futureUserDetails,
                   ]),
                   builder: (context, snapshot) {
-                    if (widget.userDetails.teachersMajorPlanning == null) {
-                      logger.d('true');
-                      return SizedBox.shrink();
-                    }
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return Center(child: CircularProgressIndicator());
-                    } else if (snapshot.hasData && snapshot.data == null) {
+                    } else if (snapshot.hasError) {
+                      return Center(
+                          child: Text('An error occurred: ${snapshot.error}'));
+                    } else if (snapshot.hasData) {
                       List<Course> majorsCourses =
                           snapshot.data![0] as List<Course>;
                       List<TeachersCoursePlanning> teachersCourses =
@@ -469,8 +466,10 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                       UserDetails userDetails =
                           snapshot.data![2] as UserDetails;
 
-                      if (majorsCourses.isEmpty) {
-                        return Center(child: Text('No majors available.'));
+                      if (userDetails.teachersMajorPlanning == null) {
+                        return Center(
+                            child: Text(
+                                'Багшид оноогдсон хөтөлбөрүүд байхгүй байна.'));
                       }
 
                       return Column(
@@ -603,10 +602,8 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                                         ),
                                       ),
                                     ),
-                                    snapshot.data == null
-                                        ? _buildSilverList(
-                                            majorsCourses, selectedMajor)
-                                        : SizedBox.shrink(),
+                                    _buildSilverList(
+                                        majorsCourses, selectedMajor)
                                   ],
                                 ),
                               ),
@@ -695,7 +692,25 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                                                   Padding(
                                                     padding:
                                                         const EdgeInsets.only(
-                                                            right: 20.0),
+                                                            right: 10),
+                                                    child: IconButton(
+                                                      icon: Image.asset(
+                                                        'assets/images/icons/teachers_majors_selection.png',
+                                                      ),
+                                                      onPressed: () {
+                                                        Navigator.pushNamed(
+                                                          context,
+                                                          '/teachers_majors',
+                                                          arguments: widget
+                                                              .userDetails,
+                                                        );
+                                                      },
+                                                    ),
+                                                  ),
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            right: 10),
                                                     child: IconButton(
                                                       icon: Icon(Icons.delete),
                                                       onPressed: () {
@@ -712,7 +727,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                                                   Padding(
                                                     padding:
                                                         const EdgeInsets.only(
-                                                            right: 20.0),
+                                                            right: 10),
                                                     child: IconButton(
                                                       icon: Image.asset(
                                                         'assets/images/icons/teachers_courses.png',

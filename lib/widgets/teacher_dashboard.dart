@@ -36,7 +36,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
   @override
   void initState() {
     super.initState();
-    userDetails = fetchUserDetails();
+    userDetails = fetchUserDetails(widget.userId);
     _screens = [
       _buildSettingsScreen(),
       _buildNotificationsScreen(),
@@ -46,11 +46,11 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
 
   void refreshUserDetails() {
     setState(() {
-      userDetails = fetchUserDetails();
+      userDetails = fetchUserDetails(widget.userId);
     });
   }
 
-  Future<UserDetails> fetchUserDetails() async {
+  Future<UserDetails> fetchUserDetails(int userId) async {
     try {
       final response = await http.post(
         getApiUrl('/User/Login/Teacher'),
@@ -136,11 +136,15 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     return Scaffold(
       key: TeacherDashboard.scaffoldKey,
       appBar: AppBar(
-        title: Text(
-          'Багшийн Хянах Самбар',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-              color: Colors.white, fontSize: 24.0, fontWeight: FontWeight.bold),
+        title: Center(
+          child: Text(
+            'Багшийн Хянах Самбар',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 24.0,
+                fontWeight: FontWeight.bold),
+          ),
         ),
         backgroundColor: Colors.blue,
         leading: IconButton(

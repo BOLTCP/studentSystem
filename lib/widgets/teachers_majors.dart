@@ -55,6 +55,13 @@ class _TeachersMajorsState extends State<TeachersMajors> {
     super.dispose();
   }
 
+  void refreshUserDetails() {
+    setState(() {
+      futureUserDetails = TeacherDashboard.dashboardKey.currentState!
+          .fetchUserDetails(widget.userDetails.user.userId);
+    });
+  }
+
   void refreshMajorsPlanning() {
     setState(() {
       futureTeachersMajorPlanning = fetchTeachersMajorPlanning();
@@ -189,6 +196,7 @@ class _TeachersMajorsState extends State<TeachersMajors> {
                   onPressed: () {
                     refreshMajorsPlanning();
                     Navigator.pop(context);
+                    refreshUserDetails();
                   },
                   child: Text('Буцах'),
                 ),
@@ -233,6 +241,8 @@ class _TeachersMajorsState extends State<TeachersMajors> {
                 TextButton(
                   onPressed: () {
                     Navigator.pop(context);
+                    refreshUserDetails();
+                    refreshMajorsPlanning();
                   },
                   child: Text('Буцах'),
                 ),
@@ -467,7 +477,11 @@ class _TeachersMajorsState extends State<TeachersMajors> {
       drawer: buildDrawer(context, futureUserDetails),
       onDrawerChanged: (isOpened) {
         if (isOpened) {
-          TeacherDashboard.dashboardKey.currentState?.refreshUserDetails();
+          futureUserDetails = TeacherDashboard.dashboardKey.currentState!
+              .fetchUserDetails(widget.userDetails.user.userId);
+          buildDrawer(context, futureUserDetails);
+          logger.d(TeacherDashboard.dashboardKey.currentState!
+              .fetchUserDetails(widget.userDetails.user.userId));
         }
       },
       bottomNavigationBar:
@@ -560,7 +574,7 @@ class _TeachersMajorsState extends State<TeachersMajors> {
                                                                     .min,
                                                             children: [
                                                               Image.asset(
-                                                                  'assets/images/icons/teachers_majors_selection.png')
+                                                                  'assets/images/icons/teachers_majors_selection.png'),
                                                             ],
                                                           ),
                                                         ),
@@ -719,7 +733,7 @@ class _TeachersMajorsState extends State<TeachersMajors> {
                                                     Padding(
                                                       padding:
                                                           const EdgeInsets.only(
-                                                              right: 20.0),
+                                                              right: 10),
                                                       child: IconButton(
                                                         icon: Icon(Icons.delete,
                                                             weight: 1.0),
@@ -737,7 +751,7 @@ class _TeachersMajorsState extends State<TeachersMajors> {
                                                     Padding(
                                                       padding:
                                                           const EdgeInsets.only(
-                                                              right: 20.0),
+                                                              right: 10),
                                                       child: IconButton(
                                                         icon: Image.asset(
                                                           'assets/images/icons/teacher_teaching.png',
@@ -745,7 +759,7 @@ class _TeachersMajorsState extends State<TeachersMajors> {
                                                         onPressed: () {
                                                           Navigator.pushNamed(
                                                             context,
-                                                            '/teacher_courses_scheduler',
+                                                            '/teacher_courses',
                                                             arguments: widget
                                                                 .userDetails,
                                                           );

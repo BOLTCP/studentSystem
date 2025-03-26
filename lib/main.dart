@@ -80,19 +80,16 @@ class MyApp extends StatelessWidget {
                 TeacherDashboard(userId: userDetails.user.userId),
           );
         }
-        if (settings.name == '/teacher_courses_scheduler') {
+        if (settings.name == '/teacher_courses') {
           final UserDetails userDetails = settings.arguments as UserDetails;
           return MaterialPageRoute(
             builder: (context) => TeachersCourses(userDetails: userDetails),
           );
         }
-        if (settings.name == '/teachers_courses') {
-          final Major? major = settings.arguments as Major?;
-          if (major == null) {
-            return null;
-          }
+        if (settings.name == '/teachers_majors') {
+          final UserDetails userDetails = settings.arguments as UserDetails;
           return MaterialPageRoute(
-            builder: (context) => StudentSignup(major: major),
+            builder: (context) => TeachersMajors(userDetails: userDetails),
           );
         }
         if (settings.name == '/courses_default') {
@@ -118,7 +115,6 @@ class MyApp extends StatelessWidget {
               ),
             );
           } else {
-            // If arguments are null, handle the error case
             return MaterialPageRoute(
               builder: (context) => Scaffold(
                 appBar: AppBar(title: Text('Error')),
@@ -128,7 +124,7 @@ class MyApp extends StatelessWidget {
           }
         }
 
-        return null; // Undefined route fallback
+        return null;
       },
     );
   }
