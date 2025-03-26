@@ -64,6 +64,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
   }
 
   Future<List<TeachersCoursePlanning>> fetchTeachersCoursesPlanning() async {
+    if (widget.userDetails.teachersMajorPlanning!.isEmpty) {}
     try {
       final response = await http.get(
         getApiUrl(
@@ -85,9 +86,6 @@ class _TeachersCoursesState extends State<TeachersCourses> {
             teacherHasSelectedCourses = true;
           }
         });
-
-        logger.d(teacherscourseplanning.length);
-        logger.d(teacherscourseplanning);
         return teacherscourseplanning;
       } else {
         setState(() {
@@ -128,7 +126,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                 .map((courseJson) => Course.fromJsonCourses(courseJson))
                 .toList();
 
-        logger.d('${teachersMajorsCourses.length}');
+        logger.d('${teachersMajorsCourses.length} teachersMajorsCourses');
         return teachersMajorsCourses;
       } else {
         logger.d('Error: ${response.statusCode}');
@@ -202,14 +200,14 @@ class _TeachersCoursesState extends State<TeachersCourses> {
     }
   }
 
-  Future<void> _removeFromMajorTeacher(teacherId, majorId) async {
-    logger.d(teacherId, majorId);
+  Future<void> _removeFromCourseTeacher(teacherId, courseId) async {
+    logger.d(teacherId, courseId);
     try {
-      final response = await http.post(
-        getApiUrl('/Remove/Major/From/Teacher'),
+      final response = await http.delete(
+        getApiUrl('/Remove/Course/From/Teacher'),
         body: json.encode({
           'teacher_id': teacherId,
-          'majorId': majorId,
+          'course_id': courseId,
         }),
         headers: {'Content-Type': 'application/json'},
       ).timeout(Duration(seconds: 30));
@@ -303,6 +301,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
       ).timeout(Duration(seconds: 30));
       final decodedJson = json.decode(response.body);
       if (response.statusCode == 200) {
+        refreshCoursesPlanning();
         List<TeachersMajorPlanning> majors =
             (decodedJson['current_majors'] as List)
                 .map((major) =>
@@ -451,16 +450,18 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                 FutureBuilder(
                   future: Future.wait([
                     futureCoursesDetails,
-                    futureTeachersCoursesPlanning,
-                    futureUserDetails
+                    futureTeachersCoursesPlanning.catchError(
+                        (error) => [null] as List<TeachersCoursePlanning>),
+                    futureUserDetails,
                   ]),
                   builder: (context, snapshot) {
+                    if (widget.userDetails.teachersMajorPlanning == null) {
+                      logger.d('true');
+                      return SizedBox.shrink();
+                    }
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return Center(child: CircularProgressIndicator());
-                    } else if (snapshot.hasError) {
-                      return Center(
-                          child: Text('Error loading data: ${snapshot.error}'));
-                    } else if (snapshot.hasData) {
+                    } else if (snapshot.hasData && snapshot.data == null) {
                       List<Course> majorsCourses =
                           snapshot.data![0] as List<Course>;
                       List<TeachersCoursePlanning> teachersCourses =
@@ -602,8 +603,10 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                                         ),
                                       ),
                                     ),
-                                    _buildSilverList(
-                                        majorsCourses, selectedMajor)
+                                    snapshot.data == null
+                                        ? _buildSilverList(
+                                            majorsCourses, selectedMajor)
+                                        : SizedBox.shrink(),
                                   ],
                                 ),
                               ),
@@ -651,7 +654,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                                     Padding(
                                       padding: const EdgeInsets.all(8.0),
                                       child: Text(
-                                        'Нийт сонгогдсон хөтөлбөрүүд: ${teachersCoursePlanning.length}',
+                                        'Нийт сонгогдсон хичээлүүд: ${teachersCoursePlanning.length}',
                                         style: TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
@@ -664,7 +667,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                                   child: SizedBox(
                                     width: MediaQuery.of(context).size.height *
                                             0.5 -
-                                        20,
+                                        40,
                                     height: 350,
                                     child: Scrollbar(
                                       controller: _scrollController,
@@ -683,9 +686,9 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                                             color: Colors.white,
                                             child: ListTile(
                                               title: Text(
-                                                  coursePlanning.majorName),
-                                              subtitle: Text(
                                                   coursePlanning.courseName),
+                                              subtitle: Text(
+                                                  '${coursePlanning.courseCode}, ${coursePlanning.majorName.split(' ').map((majorName) => majorName[0]).join('')}'),
                                               trailing: Row(
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: [
@@ -696,13 +699,13 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                                                     child: IconButton(
                                                       icon: Icon(Icons.delete),
                                                       onPressed: () {
-                                                        _removeFromMajorTeacher(
+                                                        _removeFromCourseTeacher(
                                                             widget
                                                                 .userDetails
                                                                 .teacher!
                                                                 .teacherId,
                                                             coursePlanning
-                                                                .majorId);
+                                                                .courseId);
                                                       },
                                                     ),
                                                   ),
@@ -757,7 +760,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                             child: Padding(
                               padding: EdgeInsets.all(8.0),
                               child: Text(
-                                'Одоогоор багшид оноогдсон хөтөлбөрт сонгосон хичээлүүд байхгүй байна',
+                                'Оноогдсон хөтөлбөрүүдэд багш сонгосон хичээл байхгүй байна',
                                 style: TextStyle(fontSize: 16.0),
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,

@@ -48,8 +48,7 @@ class MyApp extends StatelessWidget {
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/courses') {
-          final int majorId =
-              settings.arguments as int; // Retrieve the argument
+          final int majorId = settings.arguments as int;
           return MaterialPageRoute(
             builder: (context) => CoursesIntroduction(majorId: majorId),
           );
@@ -88,9 +87,12 @@ class MyApp extends StatelessWidget {
           );
         }
         if (settings.name == '/teachers_courses') {
-          final UserDetails userDetails = settings.arguments as UserDetails;
+          final Major? major = settings.arguments as Major?;
+          if (major == null) {
+            return null;
+          }
           return MaterialPageRoute(
-            builder: (context) => TeachersMajors(userDetails: userDetails),
+            builder: (context) => StudentSignup(major: major),
           );
         }
         if (settings.name == '/courses_default') {

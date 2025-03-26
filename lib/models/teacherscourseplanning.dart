@@ -7,6 +7,8 @@ class TeachersCoursePlanning {
   final int courseId;
   final DateTime createdAt;
   final String majorName;
+  final String courseCode;
+  final int teacherMajorId;
 
   // Constructor
   TeachersCoursePlanning({
@@ -18,6 +20,8 @@ class TeachersCoursePlanning {
     required this.courseId,
     required this.createdAt,
     required this.majorName,
+    required this.courseCode,
+    required this.teacherMajorId,
   });
 
   // Factory method to create an object from a JSON map
@@ -32,6 +36,8 @@ class TeachersCoursePlanning {
       courseId: json['course_id'],
       createdAt: DateTime.parse(json['created_at']),
       majorName: json['major_name'],
+      courseCode: json['course_code'],
+      teacherMajorId: json['teacher_major_id'],
     );
   }
 
@@ -46,6 +52,8 @@ class TeachersCoursePlanning {
       'course_id': courseId,
       'created_at': createdAt.toIso8601String(),
       'major_name': majorName,
+      'course_code': courseCode,
+      'teacher_major_id': teacherMajorId,
     };
   }
 }
