@@ -1,3 +1,6 @@
+import 'package:studentsystem/models/department.dart';
+import 'package:studentsystem/models/teacherscourseplanning.dart';
+import 'package:studentsystem/models/teachersmajorplanning.dart';
 import 'package:studentsystem/widgets/teacher_dashboard.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -49,7 +52,7 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
     _screens = [
       TeacherDashboard(userId: widget.userDetails.user.userId),
     ];
-    futureUserDetails = Future.value(widget.userDetails);
+    futureUserDetails = fetchUserDetails(widget.userDetails.user.userId);
     _generateWeekdays();
     _fetchTeachersCourses();
   }
@@ -70,41 +73,68 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
 
     for (var coursePlanning in teachersCourses.entries) {
       if (coursePlanning.key == itemToParse) {
-        parseResult = widget.userDetails
-            .teachersCoursePlanning![coursePlanning.value].courseName;
+        parseResult +=
+            '${widget.userDetails.teachersCoursePlanning![coursePlanning.value].courseName} ';
+        parseResult += widget.userDetails
+            .teachersCoursePlanning![coursePlanning.value].courseCode;
       }
     }
 
     return parseResult;
   }
 
-  Future<UserDetails> fetchUserDetails() async {
+  void refreshUserDetails() {
+    setState(() {
+      futureUserDetails = fetchUserDetails(widget.userDetails.user.userId);
+    });
+  }
+
+  Future<UserDetails> fetchUserDetails(int userId) async {
     try {
       final response = await http.post(
-        getApiUrl('Get/allMajor/Of/Course/Teacher'),
+        getApiUrl('/User/Login/Teacher'),
         body: json.encode({
-          'user_id':
-              widget.userDetails.departmentOfEducation!.departmentsOfEducationId
+          'user_id': userId,
         }),
         headers: {'Content-Type': 'application/json'},
       ).timeout(Duration(seconds: 30));
 
+      logger.d('Response status: ${response.statusCode}');
+      logger.d('Response body: ${response.body}');
+
       if (response.statusCode == 200) {
         final decodedJson = json.decode(response.body);
+
         AuthUser user = AuthUser.fromJsonAuthUser(decodedJson['user']);
         TeacherUser teacher =
             TeacherUser.fromJsonTeacher(decodedJson['teacher']);
         DepartmentOfEducation departmentOdEducation =
             DepartmentOfEducation.fromJsonDepartmentOfEducation(
-                decodedJson['department_of_edu_query']);
-        departmentName = departmentOdEducation.edDepartmentName;
+                decodedJson['dept_of_edu']);
+        Department department =
+            Department.fromJsonDepartment(decodedJson['dep']);
+        List<TeachersMajorPlanning> teachersmajorplanning =
+            (decodedJson['teachers_major'] as List)
+                .map((teachersmajorplanning) =>
+                    TeachersMajorPlanning.fromJsonTeachersMajorPlanning(
+                        teachersmajorplanning))
+                .toList();
+        List<TeachersCoursePlanning> teacherscourseplanning =
+            (decodedJson['selected_major_courses'] as List)
+                .map((teacherscourseplanning) =>
+                    TeachersCoursePlanning.fromJsonTeachersCoursePlanning(
+                        teacherscourseplanning))
+                .toList();
 
         return UserDetails(
-            user: user,
-            teacher: teacher,
-            student: null,
-            department: null,
-            departmentOfEducation: departmentOdEducation);
+          user: user,
+          teacher: teacher,
+          student: null,
+          department: department,
+          departmentOfEducation: departmentOdEducation,
+          teachersMajorPlanning: teachersmajorplanning,
+          teachersCoursePlanning: teacherscourseplanning,
+        );
       } else {
         logger.d('Error: ${response.statusCode}');
         throw Exception('User does not exist!');
@@ -134,7 +164,6 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
     }
   }
 
-//${allWeekdays.elementAt(((dayIndex + 1) % 7) - 1)}
   void _existingScheduleError(int dayIndex, receivedItem) {
     double index = dayIndex.toDouble();
 

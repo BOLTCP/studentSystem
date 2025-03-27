@@ -675,7 +675,7 @@ class _TeachersMajorsState extends State<TeachersMajors> {
                                                               255,
                                                               88,
                                                               146,
-                                                              218), // Blue
+                                                              218),
                                                           child: Center(
                                                             child: ListTile(
                                                               title: Text(
@@ -769,8 +769,9 @@ class _TeachersMajorsState extends State<TeachersMajors> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      FutureBuilder<List<TeachersMajorPlanning>>(
-                        future: futureTeachersMajorPlanning,
+                      FutureBuilder(
+                        future: Future.wait(
+                            [futureTeachersMajorPlanning, futureUserDetails]),
                         builder: (context, snapshot) {
                           if (snapshot.connectionState ==
                               ConnectionState.waiting) {
@@ -781,8 +782,10 @@ class _TeachersMajorsState extends State<TeachersMajors> {
                                     'Error loading data: ${snapshot.error}'));
                           } else if (snapshot.hasData) {
                             List<TeachersMajorPlanning> teachersMajorPlanning =
-                                snapshot.data!;
-
+                                snapshot.data![0]
+                                    as List<TeachersMajorPlanning>;
+                            UserDetails userDetails =
+                                snapshot.data![1] as UserDetails;
                             if (teachersMajorPlanning.isEmpty) {
                               return Center(
                                   child: Text('No majors available.'));
@@ -881,8 +884,8 @@ class _TeachersMajorsState extends State<TeachersMajors> {
                                                                     .pushNamed(
                                                                   context,
                                                                   '/teacher_courses',
-                                                                  arguments: widget
-                                                                      .userDetails,
+                                                                  arguments:
+                                                                      userDetails,
                                                                 );
                                                               },
                                                             ),
@@ -1265,8 +1268,7 @@ class _TeachersMajorsState extends State<TeachersMajors> {
                                                                     context,
                                                                     '/teacher_courses',
                                                                     arguments:
-                                                                        widget
-                                                                            .userDetails,
+                                                                        futureUserDetails,
                                                                   );
                                                                 },
                                                               ),

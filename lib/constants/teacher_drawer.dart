@@ -129,15 +129,21 @@ Widget _buildDrawer(context, userDetails, userId, UserDetails details) {
                   }
                 },
               )
-            : ListTile(
-                title: Text('Багшид оноогдсон хөтөлбөр байхгүй байна'),
-                trailing: Icon(Icons.warning, size: 50, color: Colors.orange),
-                subtitle: Text(
-                    'Хөтөлбөр нэмэгдсэний дараа хичээл сонголт хийгдэнэ!',
-                    style: TextStyle(color: Colors.red)),
-                onTap: () {
-                  null;
-                },
+            : Column(
+                children: [
+                  ListTile(
+                    title: Text('Багшид оноогдсон хөтөлбөр байхгүй байна'),
+                    trailing:
+                        Icon(Icons.warning, size: 50, color: Colors.orange),
+                    subtitle: Text(
+                      'Хөтөлбөр нэмэгдсэний дараа хичээл сонголт хийгдэнэ!',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                    onTap: () {
+                      null;
+                    },
+                  ),
+                ],
               ),
         details.teachersCoursePlanning!.isNotEmpty
             ? FutureBuilder(
@@ -176,10 +182,10 @@ Widget _buildDrawer(context, userDetails, userId, UserDetails details) {
                 },
               )
             : ListTile(
-                title: Text('Багшид оноогдсон хөтөлбөр байхгүй байна'),
+                title: Text('Багшид оноогдсон хичээл сонголт байхгүй байна'),
                 trailing: Icon(Icons.warning, size: 50, color: Colors.orange),
                 subtitle: Text(
-                    'Хөтөлбөр нэмэгдсэний дараа хичээл сонголт хийгдэнэ!',
+                    'Хичээл нэмэгдсэний дараа хуваарь сонголт хийгдэнэ!',
                     style: TextStyle(color: Colors.red)),
                 onTap: () {
                   null;

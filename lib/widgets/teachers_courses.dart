@@ -56,6 +56,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
     futureUserDetails = Future.value(widget.userDetails);
     futureTeachersCoursesPlanning = fetchTeachersCoursesPlanning();
     futureCoursesDetails = fetchCoursesDetails();
+    logger.d(futureCoursesDetails);
     selectedMajorName = widget.userDetails.teachersMajorPlanning?[0].majorName;
     selectedMajor = widget.userDetails.teachersMajorPlanning?[0];
   }
@@ -103,7 +104,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                         teachersmajorplanning))
                 .toList();
         List<TeachersCoursePlanning> teacherscourseplanning =
-            (decodedJson['teachers_major'] as List)
+            (decodedJson['selected_major_courses'] as List)
                 .map((teacherscourseplanning) =>
                     TeachersCoursePlanning.fromJsonTeachersCoursePlanning(
                         teacherscourseplanning))
@@ -257,7 +258,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
         if (response.statusCode == 200) {
           refreshCoursesPlanning();
           refreshUserDetails();
-          _buildSelectedCoursesOfMajor();
+          _buildSelectedCoursesOfMajor(futureUserDetails);
           final decodedJson = json.decode(response.body);
           final deletedMajor = decodedJson['message'];
           return showDialog(
@@ -332,6 +333,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
         if (response.statusCode == 200) {
           refreshCoursesPlanning();
           refreshUserDetails();
+          _buildSelectedCoursesOfMajor(futureUserDetails);
 
           final addedJson = decodedJson['teachers_course_planning'];
           return showDialog(
@@ -472,112 +474,171 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                               child: CustomScrollView(
                                 slivers: [
                                   SliverToBoxAdapter(
-                                    child: Container(
-                                      padding: EdgeInsets.all(8.0),
+                                    child: Card(
                                       color: Colors.blue[100],
                                       child: Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.start,
-                                        mainAxisSize: MainAxisSize.min,
+                                        mainAxisSize: MainAxisSize.max,
                                         children: [
-                                          Expanded(
-                                            child: ListTile(
-                                              title: Text(
-                                                  'Багш ${userDetails.user.fname}, ${userDetails.teacher!.teacherCode}'),
-                                              subtitle: Text(
-                                                  '${userDetails.user.userRole}, ${userDetails.teacher!.jobTitle}'),
-                                              trailing: Row(
-                                                mainAxisSize: MainAxisSize.min,
+                                          LayoutBuilder(
+                                            builder: (context, constraints) {
+                                              bool isSmallScreen =
+                                                  constraints.maxWidth < 600;
+                                              return Flex(
+                                                direction: isSmallScreen
+                                                    ? Axis.vertical
+                                                    : Axis.horizontal,
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceEvenly,
+                                                mainAxisSize: MainAxisSize.max,
                                                 children: [
-                                                  Image.asset(
-                                                      'assets/images/icons/teacher_teaching.png')
+                                                  SizedBox(
+                                                    width: screenWidth * 0.45,
+                                                    child: Card(
+                                                      elevation: 12,
+                                                      color: Color(0xFFFFD700),
+                                                      child: ListTile(
+                                                        title: Text(
+                                                            '${userDetails.user.fname}, ${userDetails.teacher!.teacherCode}'),
+                                                        subtitle: Text(
+                                                            '${userDetails.user.userRole}, ${userDetails.teacher!.jobTitle}'),
+                                                        trailing: Row(
+                                                          mainAxisSize:
+                                                              MainAxisSize.min,
+                                                          children: [
+                                                            Image.asset(
+                                                                'assets/images/icons/teacher_teaching.png')
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
                                                 ],
-                                              ),
-                                            ),
+                                              );
+                                            },
                                           ),
-                                          Expanded(
-                                            child: Card(
-                                              elevation: 12.0,
-                                              color: Colors.white,
-                                              child: SizedBox(
-                                                height: 50,
-                                                child: DropdownButton<String>(
-                                                  borderRadius:
-                                                      BorderRadius.circular(12),
-                                                  value: selectedMajorName,
-                                                  hint: Center(
-                                                      child: Text(
-                                                          "Хөтөлбөр сонгох")),
-                                                  onChanged: (String? value) {
-                                                    if (value != null) {
-                                                      setState(() {
-                                                        selectedMajor = userDetails
-                                                            .teachersMajorPlanning
-                                                            ?.firstWhere((major) =>
-                                                                major
-                                                                    .majorName ==
-                                                                value);
-                                                        selectedMajorName =
-                                                            value;
-                                                      });
-                                                    }
-                                                  },
-                                                  items: userDetails
-                                                          .teachersMajorPlanning
-                                                          ?.map((major) {
-                                                        return DropdownMenuItem<
-                                                            String>(
-                                                          value:
-                                                              major.majorName,
-                                                          child: Text(
-                                                            major.majorName,
-                                                            style: TextStyle(
-                                                                fontSize: 16),
-                                                            maxLines: 2,
-                                                            overflow:
-                                                                TextOverflow
-                                                                    .ellipsis,
-                                                            softWrap: true,
-                                                          ),
-                                                        );
-                                                      }).toList() ??
-                                                      [],
-                                                  isExpanded: true,
-                                                  selectedItemBuilder:
-                                                      (BuildContext context) {
-                                                    return userDetails
-                                                            .teachersMajorPlanning
-                                                            ?.map<Widget>(
-                                                                (major) {
-                                                          return Row(
-                                                            mainAxisAlignment:
-                                                                MainAxisAlignment
-                                                                    .spaceBetween,
-                                                            children: [
-                                                              Expanded(
-                                                                child: Center(
-                                                                  child: Text(
-                                                                    selectedMajorName ??
-                                                                        "Select a major",
-                                                                    style: TextStyle(
-                                                                        fontSize:
-                                                                            16),
-                                                                    maxLines: 3,
-                                                                    overflow:
-                                                                        TextOverflow
-                                                                            .ellipsis,
-                                                                    softWrap:
-                                                                        true,
-                                                                  ),
+                                          SizedBox(
+                                            width: 190,
+                                            height: 104,
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Expanded(
+                                                  child: Card(
+                                                    elevation: 12,
+                                                    color: Color.fromARGB(
+                                                        255, 88, 146, 218),
+                                                    child: SizedBox(
+                                                      height: 50,
+                                                      child: DropdownButton<
+                                                          String>(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(12),
+                                                        value:
+                                                            selectedMajorName,
+                                                        hint: Center(
+                                                            child: Text(
+                                                                "Хөтөлбөр сонгох")),
+                                                        onChanged:
+                                                            (String? value) {
+                                                          if (value != null) {
+                                                            setState(() {
+                                                              selectedMajor = userDetails
+                                                                  .teachersMajorPlanning
+                                                                  ?.firstWhere(
+                                                                      (major) =>
+                                                                          major
+                                                                              .majorName ==
+                                                                          value);
+                                                              selectedMajorName =
+                                                                  value;
+
+                                                              /* selectedMajorName =
+                                                                  (selectedMajorName!
+                                                                      .split(
+                                                                          ' ')
+                                                                      .map((majorName) =>
+                                                                          majorName[
+                                                                              0])).join(
+                                                                      '');
+                                                                      */
+                                                            });
+                                                          }
+                                                        },
+                                                        items: userDetails
+                                                                .teachersMajorPlanning
+                                                                ?.map((major) {
+                                                              return DropdownMenuItem<
+                                                                  String>(
+                                                                value: major
+                                                                    .majorName,
+                                                                child: Text(
+                                                                  major
+                                                                      .majorName,
+                                                                  style: TextStyle(
+                                                                      fontSize:
+                                                                          16),
+                                                                  maxLines: 3,
+                                                                  overflow:
+                                                                      TextOverflow
+                                                                          .ellipsis,
+                                                                  softWrap:
+                                                                      true,
                                                                 ),
-                                                              ),
-                                                            ],
-                                                          );
-                                                        }).toList() ??
-                                                        [];
-                                                  },
+                                                              );
+                                                            }).toList() ??
+                                                            [],
+                                                        isExpanded: true,
+                                                        selectedItemBuilder:
+                                                            (BuildContext
+                                                                context) {
+                                                          return userDetails
+                                                                  .teachersMajorPlanning
+                                                                  ?.map<Widget>(
+                                                                      (major) {
+                                                                return Row(
+                                                                  mainAxisAlignment:
+                                                                      MainAxisAlignment
+                                                                          .spaceBetween,
+                                                                  children: [
+                                                                    Expanded(
+                                                                      child:
+                                                                          Center(
+                                                                        child:
+                                                                            Text(
+                                                                          selectedMajorName ??
+                                                                              "Select a major",
+                                                                          style:
+                                                                              TextStyle(fontSize: 16),
+                                                                          maxLines:
+                                                                              3,
+                                                                          overflow:
+                                                                              TextOverflow.ellipsis,
+                                                                          softWrap:
+                                                                              true,
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                );
+                                                              }).toList() ??
+                                                              [];
+                                                        },
+                                                      ),
+                                                    ),
+                                                  ),
                                                 ),
-                                              ),
+                                                IconButton(
+                                                  icon: Image.asset(
+                                                      'assets/images/icons/go_back.png'),
+                                                  onPressed: () {},
+                                                ),
+                                              ],
                                             ),
                                           )
                                         ],
@@ -601,7 +662,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
           ),
         ),
         teacherHasSelectedCourses == true
-            ? _buildSelectedCoursesOfMajor()
+            ? _buildSelectedCoursesOfMajor(futureUserDetails)
             : Padding(
                 padding: EdgeInsets.all(8.0),
                 child: SizedBox(
@@ -698,7 +759,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
     );
   }
 
-  Widget _buildSelectedCoursesOfMajor() {
+  Widget _buildSelectedCoursesOfMajor(Future<UserDetails> futureUserDetails) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
     return Padding(
@@ -706,8 +767,9 @@ class _TeachersCoursesState extends State<TeachersCourses> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          FutureBuilder<List<TeachersCoursePlanning>>(
-            future: futureTeachersCoursesPlanning,
+          FutureBuilder(
+            future:
+                Future.wait([futureTeachersCoursesPlanning, futureUserDetails]),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Center(child: CircularProgressIndicator());
@@ -716,8 +778,8 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                     child: Text('Error loading data: ${snapshot.error}'));
               } else if (snapshot.hasData) {
                 List<TeachersCoursePlanning> teachersCoursePlanning =
-                    snapshot.data!;
-
+                    snapshot.data![0] as List<TeachersCoursePlanning>;
+                UserDetails details = snapshot.data![1] as UserDetails;
                 if (teachersCoursePlanning.isEmpty) {
                   return Center(child: Text('Сонгосон хичээл байхгүй байна.'));
                 }
@@ -811,8 +873,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                                                 MaterialPageRoute(
                                                   builder: (context) =>
                                                       TeacherCoursesScheduler(
-                                                          userDetails: widget
-                                                              .userDetails),
+                                                          userDetails: details),
                                                 ),
                                               );
                                             },
