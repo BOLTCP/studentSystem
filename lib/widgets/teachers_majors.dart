@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:io' as io;
+import 'package:flutter/foundation.dart' as Foundation;
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -530,6 +532,14 @@ class _TeachersMajorsState extends State<TeachersMajors> {
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
+    if (Foundation.kIsWeb) {
+      logger.d('here');
+      return _webWidget(screenWidth, screenHeight);
+    } else if (io.Platform.isAndroid) {
+      logger.d('herew');
+      return _androidWidgetiosWidget(screenWidth, screenHeight);
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Center(
@@ -551,12 +561,18 @@ class _TeachersMajorsState extends State<TeachersMajors> {
       body: Padding(
         padding:
             const EdgeInsets.only(left: 8.0, right: 8.0, top: 8.0, bottom: 8.0),
-        child: Center(child: _buildBody(screenWidth, screenHeight)),
+        child: Foundation.kIsWeb
+            ? Center(
+                child: _webWidget(screenWidth, screenHeight),
+              )
+            : Center(
+                child: _androidWidgetiosWidget(screenWidth, screenHeight),
+              ),
       ),
     );
   }
 
-  Widget _buildBody(screenWidth, screenHeight) {
+  Widget _androidWidgetiosWidget(screenWidth, screenHeight) {
     logger.d(screenHeight, screenWidth);
     return Padding(
       padding: EdgeInsets.only(bottom: 8.0, right: 8.0, left: 8.0),
@@ -596,8 +612,8 @@ class _TeachersMajorsState extends State<TeachersMajors> {
                           children: [
                             Center(
                               child: SizedBox(
-                                width: screenWidth * 0.9,
-                                height: screenHeight * 0.35,
+                                width: screenWidth * 0.4,
+                                height: screenHeight * 0.8,
                                 child: Scrollbar(
                                   thickness: 4.0,
                                   trackVisibility: true,
@@ -761,8 +777,8 @@ class _TeachersMajorsState extends State<TeachersMajors> {
                                       ),
                                       Center(
                                         child: SizedBox(
-                                          width: screenWidth * 0.9,
-                                          height: screenHeight * 0.35,
+                                          width: screenWidth * 0.4,
+                                          height: screenHeight * 0.8,
                                           child: Scrollbar(
                                             controller: _scrollController,
                                             thickness: 4.0,
@@ -874,6 +890,379 @@ class _TeachersMajorsState extends State<TeachersMajors> {
                                 ),
                                 trailing: Icon(Icons.warning,
                                     color: Colors.orange, size: 40),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+        ],
+      ),
+    );
+  }
+
+  Widget _webWidget(screenWidth, screenHeight) {
+    logger.d(screenHeight, screenWidth);
+    return Padding(
+      padding: EdgeInsets.only(bottom: 8.0, right: 8.0, left: 8.0, top: 8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              FutureBuilder(
+                future: Future.wait([
+                  futureMajorDetails,
+                  futureDepartmentsDetails,
+                  futureUserDetails
+                ]),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(
+                        child: Text('Error loading data: ${snapshot.error}'));
+                  } else if (snapshot.hasData) {
+                    List<Major> majors = snapshot.data![0] as List<Major>;
+                    Department department = snapshot.data![1] as Department;
+                    UserDetails userDetails = snapshot.data![2] as UserDetails;
+
+                    if (majors.isEmpty) {
+                      return Center(child: Text('No majors available.'));
+                    }
+                    String departmentName = department.departmentName;
+
+                    return Center(
+                      child: Column(
+                        children: [
+                          Center(
+                            child: SizedBox(
+                              width: screenWidth * 0.5,
+                              height: screenHeight * 0.8,
+                              child: Scrollbar(
+                                thickness: 4.0,
+                                trackVisibility: true,
+                                thumbVisibility: true,
+                                child: CustomScrollView(
+                                  slivers: [
+                                    SliverToBoxAdapter(
+                                      child: Card(
+                                        color: Colors.blue[100],
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          mainAxisSize: MainAxisSize.max,
+                                          children: [
+                                            LayoutBuilder(
+                                              builder: (context, constraints) {
+                                                bool isSmallScreen =
+                                                    constraints.maxWidth < 600;
+                                                return Flex(
+                                                  direction: isSmallScreen
+                                                      ? Axis.horizontal
+                                                      : Axis.vertical,
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceEvenly,
+                                                  mainAxisSize:
+                                                      MainAxisSize.max,
+                                                  children: [
+                                                    SizedBox(
+                                                      width: screenWidth * 0.48,
+                                                      child: Card(
+                                                        elevation: 12,
+                                                        color: Color(
+                                                            0xFFFFD700), // Academic Yellow
+                                                        child: ListTile(
+                                                          title: Text(
+                                                              'Багш ${userDetails.user.fname}, ${userDetails.teacher!.teacherCode}'),
+                                                          subtitle: Text(
+                                                              '${userDetails.user.userRole}, ${userDetails.teacher!.jobTitle}'),
+                                                          trailing: Image.asset(
+                                                              'assets/images/icons/teachers_majors_selection.png'),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    SizedBox(
+                                                      width: screenWidth * 0.48,
+                                                      child: Card(
+                                                        elevation: 12,
+                                                        color: Color.fromARGB(
+                                                            255,
+                                                            88,
+                                                            146,
+                                                            218), // Blue
+                                                        child: Center(
+                                                          child: ListTile(
+                                                            title: Text(
+                                                              '$departmentName - н хөтөлбөрүүд',
+                                                              maxLines: 3,
+                                                              textAlign:
+                                                                  TextAlign
+                                                                      .center,
+                                                              overflow:
+                                                                  TextOverflow
+                                                                      .ellipsis,
+                                                              style: TextStyle(
+                                                                  fontSize: 16,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                );
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    SliverList(
+                                      delegate: SliverChildBuilderDelegate(
+                                        (context, index) {
+                                          Major major = majors[index];
+                                          return Container(
+                                            color: Colors.white,
+                                            child: Card(
+                                              child: ListTile(
+                                                title: Text(major.majorName),
+                                                subtitle:
+                                                    Text(major.majorsType),
+                                                trailing: Row(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                              right: 20.0),
+                                                      child: IconButton(
+                                                        icon: Icon(Icons.add),
+                                                        onPressed: () {
+                                                          _teachersCurrentMajors(
+                                                              widget
+                                                                  .userDetails
+                                                                  .teacher!
+                                                                  .teacherId,
+                                                              major.majorId);
+                                                        },
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                        childCount: majors.length,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  } else {
+                    return Center(child: Text('No majors available.'));
+                  }
+                },
+              ),
+            ],
+          ),
+          teacherHasSelectedMajors == true
+              ? Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      FutureBuilder<List<TeachersMajorPlanning>>(
+                        future: futureTeachersMajorPlanning,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return Center(child: CircularProgressIndicator());
+                          } else if (snapshot.hasError) {
+                            return Center(
+                                child: Text(
+                                    'Error loading data: ${snapshot.error}'));
+                          } else if (snapshot.hasData) {
+                            List<TeachersMajorPlanning> teachersMajorPlanning =
+                                snapshot.data!;
+
+                            if (teachersMajorPlanning.isEmpty) {
+                              return Center(
+                                  child: Text('No majors available.'));
+                            }
+
+                            return LayoutBuilder(
+                              builder: (context, constraints) {
+                                return Center(
+                                  child: Column(
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: SizedBox(
+                                              width: 180,
+                                              height: 85,
+                                              child: Card(
+                                                elevation: 12,
+                                                color: Color.fromARGB(
+                                                    255, 88, 146, 218),
+                                                child: Center(
+                                                  child: ListTile(
+                                                    title: Text(
+                                                      'Багшид оноогдсон хөтөлбөрүүд: ${teachersMajorPlanning.length}',
+                                                      maxLines: 3,
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      style: TextStyle(
+                                                        fontSize: 16,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      Center(
+                                        child: SizedBox(
+                                          width: screenWidth * 0.5,
+                                          height: screenHeight * 0.8,
+                                          child: Scrollbar(
+                                            controller: _scrollController,
+                                            thickness: 4.0,
+                                            trackVisibility: true,
+                                            thumbVisibility: true,
+                                            child: ListView.builder(
+                                              controller: _scrollController,
+                                              itemCount:
+                                                  teachersMajorPlanning.length,
+                                              itemBuilder: (context, index) {
+                                                TeachersMajorPlanning
+                                                    majorPlanning =
+                                                    teachersMajorPlanning[
+                                                        index];
+                                                return Container(
+                                                  width: 60,
+                                                  height: 80,
+                                                  color: Colors.white,
+                                                  child: Card(
+                                                    child: ListTile(
+                                                      title: Text(majorPlanning
+                                                          .majorName),
+                                                      subtitle: Text(
+                                                          majorPlanning
+                                                              .academicDegree),
+                                                      trailing: Row(
+                                                        mainAxisSize:
+                                                            MainAxisSize.min,
+                                                        children: [
+                                                          Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .only(
+                                                                    right: 10),
+                                                            child: IconButton(
+                                                              icon: Icon(
+                                                                  Icons.delete,
+                                                                  weight: 1.0),
+                                                              onPressed: () {
+                                                                _removeFromTeachersMajors(
+                                                                    widget
+                                                                        .userDetails
+                                                                        .teacher!
+                                                                        .teacherId,
+                                                                    majorPlanning
+                                                                        .majorId);
+                                                              },
+                                                            ),
+                                                          ),
+                                                          Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .only(
+                                                                    right: 10),
+                                                            child: IconButton(
+                                                              icon: Image.asset(
+                                                                'assets/images/icons/teacher_teaching.png',
+                                                              ),
+                                                              onPressed: () {
+                                                                Navigator
+                                                                    .pushNamed(
+                                                                  context,
+                                                                  '/teacher_courses',
+                                                                  arguments: widget
+                                                                      .userDetails,
+                                                                );
+                                                              },
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            );
+                          } else {
+                            return Center(child: Text('No majors available.'));
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                )
+              : Padding(
+                  padding: EdgeInsets.only(top: 8, bottom: 8),
+                  child: SizedBox(
+                    width: screenWidth * 0.9,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: Card(
+                            child: Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Card(
+                                child: ListTile(
+                                  title: Text(
+                                    'Одоогоор багшид оноогдсон хөтөлбөр байхгүй байна',
+                                    style: TextStyle(fontSize: 16.0),
+                                    maxLines: 3,
+                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  trailing: Icon(Icons.warning,
+                                      color: Colors.orange, size: 40),
+                                ),
                               ),
                             ),
                           ),

@@ -65,6 +65,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
     });
   }
 
+  /* 
   void refreshUserDetails() {
     setState(() {
       futureUserDetails = fetchUserDetails(widget.userDetails.user.userId);
@@ -101,6 +102,14 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                     TeachersMajorPlanning.fromJsonTeachersMajorPlanning(
                         teachersmajorplanning))
                 .toList();
+        List<TeachersCoursePlanning> teacherscourseplanning =
+            (decodedJson['teachers_major'] as List)
+                .map((teacherscourseplanning) =>
+                    TeachersCoursePlanning.fromJsonTeachersCoursePlanning(
+                        teacherscourseplanning))
+                .toList();
+
+        logger.d(teachersmajorplanning.length, 'length suu');
 
         return UserDetails(
             user: user,
@@ -108,7 +117,8 @@ class _TeachersCoursesState extends State<TeachersCourses> {
             student: null,
             department: department,
             departmentOfEducation: departmentOdEducation,
-            teachersMajorPlanning: teachersmajorplanning);
+            teachersMajorPlanning: teachersmajorplanning,
+            teachersCoursePlanning: teacherscourseplanning);
       } else {
         logger.d('Error: ${response.statusCode}');
         throw Exception('User does not exist!');
@@ -118,7 +128,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
       throw Exception('An error occurred. Please try again.');
     }
   }
-
+  */
   Future<List<TeachersCoursePlanning>> fetchTeachersCoursesPlanning() async {
     try {
       final response = await http.get(
@@ -228,6 +238,9 @@ class _TeachersCoursesState extends State<TeachersCourses> {
       ).timeout(Duration(seconds: 30));
 
       if (response.statusCode == 200) {
+        setState(() {
+          teacherHasSelectedCourses == true;
+        });
         return showDialog(
           context: context,
           builder: (BuildContext context) {
@@ -238,6 +251,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                 TextButton(
                   onPressed: () {
                     refreshCoursesPlanning();
+
                     Navigator.pop(context);
                   },
                   child: Text('Буцах'),
@@ -269,6 +283,9 @@ class _TeachersCoursesState extends State<TeachersCourses> {
 
       if (response.statusCode == 200) {
         refreshCoursesPlanning();
+        logger.d('has deleted');
+
+        _buildSelectedCoursesOfMajor();
         final decodedJson = json.decode(response.body);
         logger.d(decodedJson);
         final deleteMessage = decodedJson['message'];
@@ -498,7 +515,6 @@ class _TeachersCoursesState extends State<TeachersCourses> {
               FutureBuilder(
                 future: Future.wait([
                   futureCoursesDetails,
-                  futureTeachersCoursesPlanning,
                   futureUserDetails,
                 ]),
                 builder: (context, snapshot) {
@@ -510,9 +526,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                   } else if (snapshot.hasData) {
                     List<Course> majorsCourses =
                         snapshot.data![0] as List<Course>;
-                    List<TeachersCoursePlanning> teachersCourses =
-                        snapshot.data![1] as List<TeachersCoursePlanning>;
-                    UserDetails userDetails = snapshot.data![2] as UserDetails;
+                    UserDetails userDetails = snapshot.data![1] as UserDetails;
 
                     if (userDetails.teachersMajorPlanning == null) {
                       return Center(
@@ -662,145 +676,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
           ),
         ),
         teacherHasSelectedCourses == true
-            ? Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    FutureBuilder<List<TeachersCoursePlanning>>(
-                      future: futureTeachersCoursesPlanning,
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return Center(child: CircularProgressIndicator());
-                        } else if (snapshot.hasError) {
-                          return Center(
-                              child: Text(
-                                  'Error loading data: ${snapshot.error}'));
-                        } else if (snapshot.hasData) {
-                          List<TeachersCoursePlanning> teachersCoursePlanning =
-                              snapshot.data!;
-
-                          if (teachersCoursePlanning.isEmpty) {
-                            return Center(child: Text('No majors available.'));
-                          }
-
-                          return Column(
-                            children: [
-                              Row(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(
-                                      'Нийт сонгогдсон хичээлүүд: ${teachersCoursePlanning.length}',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Center(
-                                child: SizedBox(
-                                  width:
-                                      MediaQuery.of(context).size.height * 0.5 -
-                                          40,
-                                  height: 350,
-                                  child: Scrollbar(
-                                    controller: _scrollController,
-                                    thickness: 4.0,
-                                    trackVisibility: true,
-                                    thumbVisibility: true,
-                                    child: ListView.builder(
-                                      controller: _scrollController,
-                                      itemCount: teachersCoursePlanning.length,
-                                      itemBuilder: (context, index) {
-                                        TeachersCoursePlanning coursePlanning =
-                                            teachersCoursePlanning[index];
-                                        return Container(
-                                          color: Colors.white,
-                                          child: ListTile(
-                                            title:
-                                                Text(coursePlanning.courseName),
-                                            subtitle: Text(
-                                                '${coursePlanning.courseCode}, ${coursePlanning.majorName.split(' ').map((majorName) => majorName[0]).join('')}'),
-                                            trailing: Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          right: 10),
-                                                  child: IconButton(
-                                                    icon: Image.asset(
-                                                      'assets/images/icons/teachers_majors_selection.png',
-                                                    ),
-                                                    onPressed: () {
-                                                      Navigator.pushNamed(
-                                                        context,
-                                                        '/teachers_majors',
-                                                        arguments:
-                                                            widget.userDetails,
-                                                      );
-                                                    },
-                                                  ),
-                                                ),
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          right: 10),
-                                                  child: IconButton(
-                                                    icon: Icon(Icons.delete),
-                                                    onPressed: () {
-                                                      _removeFromCourseTeacher(
-                                                          widget
-                                                              .userDetails
-                                                              .teacher!
-                                                              .teacherId,
-                                                          coursePlanning
-                                                              .courseId);
-                                                    },
-                                                  ),
-                                                ),
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          right: 10),
-                                                  child: IconButton(
-                                                    icon: Image.asset(
-                                                      'assets/images/icons/teachers_courses.png',
-                                                    ),
-                                                    onPressed: () {
-                                                      _addCoursesOfMajorToTeacher(
-                                                          widget.userDetails
-                                                              .teacher!,
-                                                          coursePlanning
-                                                              as Course,
-                                                          selectedMajor
-                                                              as TeachersMajorPlanning);
-                                                    },
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          );
-                        } else {
-                          return Center(child: Text('No majors available.'));
-                        }
-                      },
-                    ),
-                  ],
-                ),
-              )
+            ? _buildSelectedCoursesOfMajor()
             : Padding(
                 padding: EdgeInsets.all(8.0),
                 child: SizedBox(
@@ -890,6 +766,136 @@ class _TeachersCoursesState extends State<TeachersCourses> {
           );
         },
         childCount: majorsCourses.length,
+      ),
+    );
+  }
+
+  Widget _buildSelectedCoursesOfMajor() {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          FutureBuilder<List<TeachersCoursePlanning>>(
+            future: futureTeachersCoursesPlanning,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(
+                    child: Text('Error loading data: ${snapshot.error}'));
+              } else if (snapshot.hasData) {
+                List<TeachersCoursePlanning> teachersCoursePlanning =
+                    snapshot.data!;
+
+                if (teachersCoursePlanning.isEmpty) {
+                  return Center(child: Text('Сонгосон хичээл байхгүй байна.'));
+                }
+
+                return Column(
+                  children: [
+                    Row(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            'Нийт сонгогдсон хичээлүүд: ${teachersCoursePlanning.length}',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Center(
+                      child: SizedBox(
+                        width: screenWidth * 0.9,
+                        height: screenHeight * 0.35,
+                        child: Scrollbar(
+                          controller: _scrollController,
+                          thickness: 4.0,
+                          trackVisibility: true,
+                          thumbVisibility: true,
+                          child: ListView.builder(
+                            controller: _scrollController,
+                            itemCount: teachersCoursePlanning.length,
+                            itemBuilder: (context, index) {
+                              TeachersCoursePlanning coursePlanning =
+                                  teachersCoursePlanning[index];
+                              return Container(
+                                color: Colors.white,
+                                child: ListTile(
+                                  title: Text(coursePlanning.courseName),
+                                  subtitle: Text(
+                                      '${coursePlanning.courseCode}, ${coursePlanning.majorName.split(' ').map((majorName) => majorName[0]).join('')}'),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(right: 10),
+                                        child: IconButton(
+                                          icon: Image.asset(
+                                            'assets/images/icons/teachers_majors_selection.png',
+                                          ),
+                                          onPressed: () {
+                                            Navigator.pushNamed(
+                                              context,
+                                              '/teachers_majors',
+                                              arguments: widget.userDetails,
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(right: 10),
+                                        child: IconButton(
+                                          icon: Icon(Icons.delete),
+                                          onPressed: () {
+                                            _removeFromCourseTeacher(
+                                                widget.userDetails.teacher!
+                                                    .teacherId,
+                                                coursePlanning.courseId);
+                                          },
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(right: 10),
+                                        child: IconButton(
+                                          icon: Image.asset(
+                                            'assets/images/icons/teachers_courses.png',
+                                          ),
+                                          onPressed: () {
+                                            _addCoursesOfMajorToTeacher(
+                                                widget.userDetails.teacher!,
+                                                coursePlanning as Course,
+                                                selectedMajor
+                                                    as TeachersMajorPlanning);
+                                          },
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              } else {
+                return Center(child: Text('No majors available.'));
+              }
+            },
+          ),
+        ],
       ),
     );
   }
