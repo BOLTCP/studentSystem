@@ -128,8 +128,8 @@ class _AdmissionCoursesState extends State<AdmissionCourses> {
                   ),
                 ),
                 Positioned(
-                  bottom: 21.0,
-                  left: 16.0,
+                  bottom: 30.0,
+                  left: 20.0,
                   child: GestureDetector(
                     onTap: () {
                       _showDescriptionDialog(

@@ -1163,60 +1163,73 @@ class _TeachersMajorsState extends State<TeachersMajors> {
                                                         index];
                                                 return Container(
                                                   width: 60,
-                                                  height: 80,
+                                                  height: 90,
                                                   color: Colors.white,
                                                   child: Card(
-                                                    child: ListTile(
-                                                      title: Text(majorPlanning
-                                                          .majorName),
-                                                      subtitle: Text(
+                                                    child: Center(
+                                                      child: ListTile(
+                                                        title: Text(
                                                           majorPlanning
-                                                              .academicDegree),
-                                                      trailing: Row(
-                                                        mainAxisSize:
-                                                            MainAxisSize.min,
-                                                        children: [
-                                                          Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .only(
-                                                                    right: 10),
-                                                            child: IconButton(
-                                                              icon: Icon(
-                                                                  Icons.delete,
-                                                                  weight: 1.0),
-                                                              onPressed: () {
-                                                                _removeFromTeachersMajors(
-                                                                    widget
-                                                                        .userDetails
-                                                                        .teacher!
-                                                                        .teacherId,
-                                                                    majorPlanning
-                                                                        .majorId);
-                                                              },
-                                                            ),
-                                                          ),
-                                                          Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .only(
-                                                                    right: 10),
-                                                            child: IconButton(
-                                                              icon: Image.asset(
-                                                                'assets/images/icons/teacher_teaching.png',
+                                                              .majorName,
+                                                          style: TextStyle(
+                                                              fontSize: 4),
+                                                        ),
+                                                        subtitle: Text(
+                                                          majorPlanning
+                                                              .academicDegree,
+                                                          style: TextStyle(
+                                                              fontSize: 16),
+                                                        ),
+                                                        trailing: Row(
+                                                          mainAxisSize:
+                                                              MainAxisSize.min,
+                                                          children: [
+                                                            Padding(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .only(
+                                                                      right: 5),
+                                                              child: IconButton(
+                                                                icon: Icon(
+                                                                    Icons
+                                                                        .delete,
+                                                                    weight:
+                                                                        1.0),
+                                                                onPressed: () {
+                                                                  _removeFromTeachersMajors(
+                                                                      widget
+                                                                          .userDetails
+                                                                          .teacher!
+                                                                          .teacherId,
+                                                                      majorPlanning
+                                                                          .majorId);
+                                                                },
                                                               ),
-                                                              onPressed: () {
-                                                                Navigator
-                                                                    .pushNamed(
-                                                                  context,
-                                                                  '/teacher_courses',
-                                                                  arguments: widget
-                                                                      .userDetails,
-                                                                );
-                                                              },
                                                             ),
-                                                          ),
-                                                        ],
+                                                            Padding(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .only(
+                                                                      right: 5),
+                                                              child: IconButton(
+                                                                icon:
+                                                                    Image.asset(
+                                                                  'assets/images/icons/teacher_teaching.png',
+                                                                ),
+                                                                onPressed: () {
+                                                                  Navigator
+                                                                      .pushNamed(
+                                                                    context,
+                                                                    '/teacher_courses',
+                                                                    arguments:
+                                                                        widget
+                                                                            .userDetails,
+                                                                  );
+                                                                },
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
                                                       ),
                                                     ),
                                                   ),
