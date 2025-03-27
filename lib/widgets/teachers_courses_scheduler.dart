@@ -38,6 +38,7 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
     'Бямба',
     'Ням'
   ];
+  Map<String, int> teachersCourses = {};
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<Widget> _screens = [];
   int _selectedIndex = 0;
@@ -50,6 +51,31 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
     ];
     futureUserDetails = Future.value(widget.userDetails);
     _generateWeekdays();
+    _fetchTeachersCourses();
+  }
+
+  void _fetchTeachersCourses() {
+    for (var coursePlanning in widget.userDetails.teachersCoursePlanning!) {
+      teachersCourses[coursePlanning.courseName
+              .split(' ')
+              .map((courseName) => courseName[0])
+              .join('')
+              .toUpperCase()] =
+          widget.userDetails.teachersCoursePlanning!.indexOf(coursePlanning);
+    }
+  }
+
+  String _parseAbbreviation(itemToParse) {
+    String parseResult = '';
+
+    for (var coursePlanning in teachersCourses.entries) {
+      if (coursePlanning.key == itemToParse) {
+        parseResult = widget.userDetails
+            .teachersCoursePlanning![coursePlanning.value].courseName;
+      }
+    }
+
+    return parseResult;
   }
 
   Future<UserDetails> fetchUserDetails() async {
@@ -134,41 +160,8 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
 
   final int rows = 8;
   final int cols = 7;
-
   Map<int, String> itemPositions = {};
   Set<String> placedItems = {};
-
-  List<String> draggableItems = [
-    'Circle',
-    'Square',
-    'Triangle',
-    'Rectangle',
-    'Star',
-    'Hexagon',
-    'Pentagon',
-    'Circle',
-    'Square',
-    'Triangle',
-    'Rectangle',
-    'Star',
-    'Hexagon',
-    'Pentagon',
-    'Circle',
-    'Square',
-    'Triangle',
-    'Rectangle',
-    'Star',
-    'Hexagon',
-    'Pentagon',
-    'Circle',
-    'Square',
-    'Triangle',
-    'Rectangle',
-    'Star',
-    'Hexagon',
-    'Pentagon',
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -250,32 +243,37 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
                           return DragTarget<String>(
                             onAcceptWithDetails: (receivedItem) {
                               setState(() {
+                                String receivedData = receivedItem.data;
+
                                 if (itemPositions.containsKey(index)) {
-                                  _existingScheduleError(index, receivedItem);
+                                  _existingScheduleError(index, receivedData);
                                   return;
                                 }
 
                                 itemPositions.removeWhere(
-                                    (key, value) => value == receivedItem.data);
-                                placedItems.remove(receivedItem.data);
+                                    (key, value) => value == receivedData);
+                                placedItems.remove(receivedData);
 
-                                itemPositions[index] = receivedItem.data;
-                                placedItems.add(receivedItem.data);
-                                draggableItems.remove(receivedItem.data);
+                                itemPositions[index] = receivedData;
+                                placedItems.add(receivedData);
+                                teachersCourses.remove(receivedData);
                               });
                             },
                             onLeave: (receivedItem) {
-                              if (itemPositions.containsValue(receivedItem)) {
+                              String receivedData = receivedItem!;
+
+                              if (itemPositions.containsValue(receivedData)) {
                                 setState(() {
                                   itemPositions.removeWhere(
-                                      (key, value) => value == receivedItem);
-                                  placedItems.remove(receivedItem);
+                                      (key, value) => value == receivedData);
+                                  placedItems.remove(receivedData);
                                 });
                               }
 
                               setState(() {
-                                if (!draggableItems.contains(receivedItem)) {
-                                  draggableItems.add(receivedItem!);
+                                if (!teachersCourses
+                                    .containsKey(receivedData)) {
+                                  teachersCourses[receivedData] = 1;
                                 }
                               });
                             },
@@ -330,11 +328,12 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
                   int itemsPerRow = (constraints.maxWidth / itemWidth).floor();
 
                   List<List<String>> rows = [];
-                  for (int i = 0; i < draggableItems.length; i += itemsPerRow) {
-                    rows.add(draggableItems.sublist(
+                  List<String> courseNames = teachersCourses.keys.toList();
+                  for (int i = 0; i < courseNames.length; i += itemsPerRow) {
+                    rows.add(courseNames.sublist(
                         i,
-                        i + itemsPerRow > draggableItems.length
-                            ? draggableItems.length
+                        i + itemsPerRow > courseNames.length
+                            ? courseNames.length
                             : i + itemsPerRow));
                   }
 
@@ -354,17 +353,31 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
                                         opacity: 0.3,
                                         child: _buildDraggableWidget(item),
                                       )
-                                    : Draggable<String>(
-                                        data: item,
-                                        feedback: Material(
-                                          color: Colors.transparent,
+                                    : GestureDetector(
+                                        onLongPress: () async {
+                                          String parseResult =
+                                              await _parseAbbreviation(item);
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                              content: Text(parseResult),
+                                              duration:
+                                                  Duration(milliseconds: 500),
+                                            ),
+                                          );
+                                        },
+                                        child: Draggable<String>(
+                                          data: item,
+                                          feedback: Material(
+                                            color: Colors.transparent,
+                                            child: _buildDraggableWidget(item),
+                                          ),
+                                          childWhenDragging: Opacity(
+                                            opacity: 0.5,
+                                            child: _buildDraggableWidget(item),
+                                          ),
                                           child: _buildDraggableWidget(item),
                                         ),
-                                        childWhenDragging: Opacity(
-                                          opacity: 0.5,
-                                          child: _buildDraggableWidget(item),
-                                        ),
-                                        child: _buildDraggableWidget(item),
                                       );
                               }).toList(),
                             ),

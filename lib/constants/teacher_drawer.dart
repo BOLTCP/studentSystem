@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:studentsystem/login_screen.dart';
 import 'package:studentsystem/widgets/teacher_dashboard.dart';
+import 'package:studentsystem/widgets/teachers_courses_scheduler.dart';
 import 'package:studentsystem/widgets/user_profile.dart';
 import 'package:studentsystem/models/user_details.dart';
+import 'package:studentsystem/widgets/teachers_courses_scheduler.dart';
 
 Widget buildDrawer(
     BuildContext context, Future<UserDetails> futureUserDetails) {
@@ -117,6 +119,52 @@ Widget _buildDrawer(context, userDetails, userId, UserDetails details) {
                           context,
                           '/teacher_courses',
                           arguments: details,
+                        );
+                      },
+                    );
+                  } else {
+                    return ListTile(
+                      title: Text('No data available'),
+                    );
+                  }
+                },
+              )
+            : ListTile(
+                title: Text('Багшид оноогдсон хөтөлбөр байхгүй байна'),
+                trailing: Icon(Icons.warning, size: 50, color: Colors.orange),
+                subtitle: Text(
+                    'Хөтөлбөр нэмэгдсэний дараа хичээл сонголт хийгдэнэ!',
+                    style: TextStyle(color: Colors.red)),
+                onTap: () {
+                  null;
+                },
+              ),
+        details.teachersCoursePlanning!.isNotEmpty
+            ? FutureBuilder(
+                future: userDetails,
+                builder: (context, AsyncSnapshot snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return ListTile(
+                      title: Text('Loading...'),
+                    );
+                  } else if (snapshot.hasError) {
+                    return ListTile(
+                      title: Text('Error: ${snapshot.error}'),
+                    );
+                  } else if (snapshot.hasData) {
+                    UserDetails details = snapshot.data;
+                    return ListTile(
+                      title: Text('Хичээлийн хуваарийг сонгох'),
+                      subtitle: Text(
+                          'Хичээл сонголт: ${details.teachersCoursePlanning!.length}'),
+                      onTap: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => TeacherCoursesScheduler(
+                              userDetails: details,
+                            ),
+                          ),
                         );
                       },
                     );

@@ -14,6 +14,7 @@ import 'package:studentsystem/models/teacher.dart';
 import 'package:studentsystem/models/auth_user.dart';
 import 'package:studentsystem/models/department.dart';
 import 'package:studentsystem/models/major.dart';
+import 'package:studentsystem/models/teacherscourseplanning.dart';
 import 'package:studentsystem/models/teachersmajorplanning.dart';
 import 'package:studentsystem/models/user_details.dart';
 import 'package:studentsystem/widgets/teacher_dashboard.dart';
@@ -106,13 +107,22 @@ class _TeachersMajorsState extends State<TeachersMajors> {
                         teachersmajorplanning))
                 .toList();
 
+        List<TeachersCoursePlanning> teacherscourseplanning =
+            (decodedJson['selected_major_courses'] as List)
+                .map((teacherscourseplanning) =>
+                    TeachersCoursePlanning.fromJsonTeachersCoursePlanning(
+                        teacherscourseplanning))
+                .toList();
+
         return UserDetails(
-            user: user,
-            teacher: teacher,
-            student: null,
-            department: department,
-            departmentOfEducation: departmentOdEducation,
-            teachersMajorPlanning: teachersmajorplanning);
+          user: user,
+          teacher: teacher,
+          student: null,
+          department: department,
+          departmentOfEducation: departmentOdEducation,
+          teachersMajorPlanning: teachersmajorplanning,
+          teachersCoursePlanning: teacherscourseplanning,
+        );
       } else {
         logger.d('Error: ${response.statusCode}');
         throw Exception('User does not exist!');
@@ -256,7 +266,7 @@ class _TeachersMajorsState extends State<TeachersMajors> {
                       maxLines: 2,
                     ),
                   ),
-                  Icon(Icons.check_circle, color: Colors.green, size: 28),
+                  Icon(Icons.check_circle, color: Colors.green, size: 40),
                 ],
               ),
               content: Text('Хөтөлбөр ${major.majorName} нэмэгдлээ'),
@@ -339,6 +349,7 @@ class _TeachersMajorsState extends State<TeachersMajors> {
                     child: Text('Буцах'),
                   ),
                 ],
+                icon: Icon(Icons.delete, color: Colors.red, size: 40),
               );
             },
           );
@@ -386,7 +397,7 @@ class _TeachersMajorsState extends State<TeachersMajors> {
                       maxLines: 4,
                     ),
                   ),
-                  Icon(Icons.warning, color: Colors.blue, size: 28),
+                  Icon(Icons.warning, color: Colors.blue, size: 40),
                 ],
               ),
               content: Column(
@@ -490,7 +501,7 @@ class _TeachersMajorsState extends State<TeachersMajors> {
                       maxLines: 4,
                     ),
                   ),
-                  Icon(Icons.cancel, color: Colors.red, size: 28),
+                  Icon(Icons.cancel, color: Colors.red, size: 40),
                 ],
               ),
               actions: [
@@ -533,24 +544,18 @@ class _TeachersMajorsState extends State<TeachersMajors> {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
     if (Foundation.kIsWeb) {
-      logger.d('here');
       return _webWidget(screenWidth, screenHeight);
     } else if (io.Platform.isAndroid) {
-      logger.d('herew');
       return _androidWidgetiosWidget(screenWidth, screenHeight);
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: Center(
-          child: Text(
-            'Хөтөлбөрүүд',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-                color: Colors.white,
-                fontSize: 24.0,
-                fontWeight: FontWeight.bold),
-          ),
+        title: Text(
+          'Хөтөлбөрүүд',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+              color: Colors.white, fontSize: 24.0, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.blue,
       ),
@@ -612,8 +617,8 @@ class _TeachersMajorsState extends State<TeachersMajors> {
                           children: [
                             Center(
                               child: SizedBox(
-                                width: screenWidth * 0.4,
-                                height: screenHeight * 0.8,
+                                width: screenWidth * 0.9,
+                                height: screenHeight * 0.35,
                                 child: Scrollbar(
                                   thickness: 4.0,
                                   trackVisibility: true,
@@ -621,54 +626,81 @@ class _TeachersMajorsState extends State<TeachersMajors> {
                                   child: CustomScrollView(
                                     slivers: [
                                       SliverToBoxAdapter(
-                                        child: Container(
+                                        child: Card(
                                           color: Colors.blue[100],
                                           child: Row(
                                             mainAxisAlignment:
                                                 MainAxisAlignment.center,
                                             mainAxisSize: MainAxisSize.max,
                                             children: [
-                                              Expanded(
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceEvenly,
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  children: [
-                                                    Expanded(
-                                                      child: ListTile(
-                                                        title: Text(
-                                                            'Багш ${userDetails.user.fname}, ${userDetails.teacher!.teacherCode}'),
-                                                        subtitle: Text(
-                                                            '${userDetails.user.userRole}, ${userDetails.teacher!.jobTitle}'),
-                                                        trailing: Row(
-                                                          mainAxisSize:
-                                                              MainAxisSize.min,
-                                                          children: [
-                                                            Image.asset(
+                                              LayoutBuilder(
+                                                builder:
+                                                    (context, constraints) {
+                                                  bool isSmallScreen =
+                                                      constraints.maxWidth <
+                                                          600;
+                                                  return Flex(
+                                                    direction: isSmallScreen
+                                                        ? Axis.vertical
+                                                        : Axis.horizontal,
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceEvenly,
+                                                    mainAxisSize:
+                                                        MainAxisSize.max,
+                                                    children: [
+                                                      SizedBox(
+                                                        width:
+                                                            screenWidth * 0.45,
+                                                        child: Card(
+                                                          elevation: 12,
+                                                          color: Color(
+                                                              0xFFFFD700), // Academic Yellow
+                                                          child: ListTile(
+                                                            title: Text(
+                                                                '${userDetails.user.fname}, ${userDetails.teacher!.teacherCode}'),
+                                                            subtitle: Text(
+                                                                '${userDetails.user.userRole}, ${userDetails.teacher!.jobTitle}'),
+                                                            trailing: Image.asset(
                                                                 'assets/images/icons/teachers_majors_selection.png'),
-                                                          ],
+                                                          ),
                                                         ),
                                                       ),
-                                                    ),
-                                                    Expanded(
-                                                      child: Text(
-                                                        '$departmentName - н хөтөлбөрүүд',
-                                                        maxLines: 3,
-                                                        textAlign:
-                                                            TextAlign.center,
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
-                                                        style: TextStyle(
-                                                          fontSize: 18.0,
-                                                          fontWeight:
-                                                              FontWeight.bold,
+                                                      SizedBox(
+                                                        width:
+                                                            screenWidth * 0.40,
+                                                        child: Card(
+                                                          elevation: 12,
+                                                          color: Color.fromARGB(
+                                                              255,
+                                                              88,
+                                                              146,
+                                                              218), // Blue
+                                                          child: Center(
+                                                            child: ListTile(
+                                                              title: Text(
+                                                                '$departmentName - н хөтөлбөрүүд',
+                                                                maxLines: 3,
+                                                                textAlign:
+                                                                    TextAlign
+                                                                        .center,
+                                                                overflow:
+                                                                    TextOverflow
+                                                                        .ellipsis,
+                                                                style: TextStyle(
+                                                                    fontSize:
+                                                                        14,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold),
+                                                              ),
+                                                            ),
+                                                          ),
                                                         ),
                                                       ),
-                                                    ),
-                                                  ],
-                                                ),
+                                                    ],
+                                                  );
+                                                },
                                               ),
                                             ],
                                           ),
@@ -678,12 +710,12 @@ class _TeachersMajorsState extends State<TeachersMajors> {
                                         delegate: SliverChildBuilderDelegate(
                                           (context, index) {
                                             Major major = majors[index];
-                                            return Container(
+                                            return Card(
                                               color: Colors.white,
                                               child: ListTile(
                                                 title: Text(major.majorName),
-                                                subtitle:
-                                                    Text(major.majorsType),
+                                                subtitle: Text(
+                                                    'Хөтөлбөрийн төрөл ${major.majorsType}'),
                                                 trailing: Row(
                                                   mainAxisSize:
                                                       MainAxisSize.min,
@@ -692,16 +724,20 @@ class _TeachersMajorsState extends State<TeachersMajors> {
                                                       padding:
                                                           const EdgeInsets.only(
                                                               right: 20.0),
-                                                      child: IconButton(
-                                                        icon: Icon(Icons.add),
-                                                        onPressed: () {
-                                                          _teachersCurrentMajors(
-                                                              widget
-                                                                  .userDetails
-                                                                  .teacher!
-                                                                  .teacherId,
-                                                              major.majorId);
-                                                        },
+                                                      child: Tooltip(
+                                                        message:
+                                                            'Хөтөлбөрийг багшид оноох',
+                                                        child: IconButton(
+                                                          icon: Icon(Icons.add),
+                                                          onPressed: () {
+                                                            _teachersCurrentMajors(
+                                                                widget
+                                                                    .userDetails
+                                                                    .teacher!
+                                                                    .teacherId,
+                                                                major.majorId);
+                                                          },
+                                                        ),
                                                       ),
                                                     ),
                                                   ],
@@ -777,8 +813,8 @@ class _TeachersMajorsState extends State<TeachersMajors> {
                                       ),
                                       Center(
                                         child: SizedBox(
-                                          width: screenWidth * 0.4,
-                                          height: screenHeight * 0.8,
+                                          width: screenWidth * 0.9,
+                                          height: screenHeight * 0.35,
                                           child: Scrollbar(
                                             controller: _scrollController,
                                             thickness: 4.0,
@@ -793,15 +829,13 @@ class _TeachersMajorsState extends State<TeachersMajors> {
                                                     majorPlanning =
                                                     teachersMajorPlanning[
                                                         index];
-                                                return Container(
-                                                  width: 60,
-                                                  height: 80,
+                                                return Card(
                                                   color: Colors.white,
                                                   child: ListTile(
                                                     title: Text(majorPlanning
                                                         .majorName),
-                                                    subtitle: Text(majorPlanning
-                                                        .academicDegree),
+                                                    subtitle: Text(
+                                                        'Зэрэг ${majorPlanning.academicDegree}, Кредит ${majorPlanning.credit}'),
                                                     trailing: Row(
                                                       mainAxisSize:
                                                           MainAxisSize.min,
@@ -811,19 +845,23 @@ class _TeachersMajorsState extends State<TeachersMajors> {
                                                               const EdgeInsets
                                                                   .only(
                                                                   right: 10),
-                                                          child: IconButton(
-                                                            icon: Icon(
-                                                                Icons.delete,
-                                                                weight: 1.0),
-                                                            onPressed: () {
-                                                              _removeFromTeachersMajors(
-                                                                  widget
-                                                                      .userDetails
-                                                                      .teacher!
-                                                                      .teacherId,
-                                                                  majorPlanning
-                                                                      .majorId);
-                                                            },
+                                                          child: Tooltip(
+                                                            message:
+                                                                'Хөтөлбөрийг багшаас хасах',
+                                                            child: IconButton(
+                                                              icon: Icon(
+                                                                  Icons.delete,
+                                                                  weight: 1.0),
+                                                              onPressed: () {
+                                                                _removeFromTeachersMajors(
+                                                                    widget
+                                                                        .userDetails
+                                                                        .teacher!
+                                                                        .teacherId,
+                                                                    majorPlanning
+                                                                        .majorId);
+                                                              },
+                                                            ),
                                                           ),
                                                         ),
                                                         Padding(
@@ -831,19 +869,23 @@ class _TeachersMajorsState extends State<TeachersMajors> {
                                                               const EdgeInsets
                                                                   .only(
                                                                   right: 10),
-                                                          child: IconButton(
-                                                            icon: Image.asset(
-                                                              'assets/images/icons/teacher_teaching.png',
+                                                          child: Tooltip(
+                                                            message:
+                                                                'Хөтөлбөрийн хичээл сонголт руу',
+                                                            child: IconButton(
+                                                              icon: Image.asset(
+                                                                'assets/images/icons/teacher_teaching.png',
+                                                              ),
+                                                              onPressed: () {
+                                                                Navigator
+                                                                    .pushNamed(
+                                                                  context,
+                                                                  '/teacher_courses',
+                                                                  arguments: widget
+                                                                      .userDetails,
+                                                                );
+                                                              },
                                                             ),
-                                                            onPressed: () {
-                                                              Navigator
-                                                                  .pushNamed(
-                                                                context,
-                                                                '/teacher_courses',
-                                                                arguments: widget
-                                                                    .userDetails,
-                                                              );
-                                                            },
                                                           ),
                                                         ),
                                                       ],
@@ -980,7 +1022,7 @@ class _TeachersMajorsState extends State<TeachersMajors> {
                                                             0xFFFFD700), // Academic Yellow
                                                         child: ListTile(
                                                           title: Text(
-                                                              'Багш ${userDetails.user.fname}, ${userDetails.teacher!.teacherCode}'),
+                                                              '${userDetails.user.fname}, ${userDetails.teacher!.teacherCode}'),
                                                           subtitle: Text(
                                                               '${userDetails.user.userRole}, ${userDetails.teacher!.jobTitle}'),
                                                           trailing: Image.asset(
@@ -1035,8 +1077,8 @@ class _TeachersMajorsState extends State<TeachersMajors> {
                                             child: Card(
                                               child: ListTile(
                                                 title: Text(major.majorName),
-                                                subtitle:
-                                                    Text(major.majorsType),
+                                                subtitle: Text(
+                                                    'Хөтөлбөрийн төрөл ${major.majorsType}'),
                                                 trailing: Row(
                                                   mainAxisSize:
                                                       MainAxisSize.min,
@@ -1172,14 +1214,15 @@ class _TeachersMajorsState extends State<TeachersMajors> {
                                                           majorPlanning
                                                               .majorName,
                                                           style: TextStyle(
-                                                              fontSize: 4),
-                                                        ),
-                                                        subtitle: Text(
-                                                          majorPlanning
-                                                              .academicDegree,
-                                                          style: TextStyle(
                                                               fontSize: 16),
                                                         ),
+                                                        subtitle: Text(
+                                                            'Зэрэг ${majorPlanning.academicDegree}, Кредит ${majorPlanning.credit}',
+                                                            style: TextStyle(
+                                                                fontSize: 12),
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis),
                                                         trailing: Row(
                                                           mainAxisSize:
                                                               MainAxisSize.min,

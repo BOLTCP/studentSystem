@@ -1,6 +1,7 @@
 import 'package:studentsystem/models/teacherscourseplanning.dart';
 import 'package:studentsystem/models/teachersmajorplanning.dart';
 import 'package:studentsystem/widgets/teacher_dashboard.dart';
+import 'package:studentsystem/widgets/teachers_courses_scheduler.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -65,7 +66,6 @@ class _TeachersCoursesState extends State<TeachersCourses> {
     });
   }
 
-  /* 
   void refreshUserDetails() {
     setState(() {
       futureUserDetails = fetchUserDetails(widget.userDetails.user.userId);
@@ -109,16 +109,15 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                         teacherscourseplanning))
                 .toList();
 
-        logger.d(teachersmajorplanning.length, 'length suu');
-
         return UserDetails(
-            user: user,
-            teacher: teacher,
-            student: null,
-            department: department,
-            departmentOfEducation: departmentOdEducation,
-            teachersMajorPlanning: teachersmajorplanning,
-            teachersCoursePlanning: teacherscourseplanning);
+          user: user,
+          teacher: teacher,
+          student: null,
+          department: department,
+          departmentOfEducation: departmentOdEducation,
+          teachersMajorPlanning: teachersmajorplanning,
+          teachersCoursePlanning: teacherscourseplanning,
+        );
       } else {
         logger.d('Error: ${response.statusCode}');
         throw Exception('User does not exist!');
@@ -128,7 +127,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
       throw Exception('An error occurred. Please try again.');
     }
   }
-  */
+
   Future<List<TeachersCoursePlanning>> fetchTeachersCoursesPlanning() async {
     try {
       final response = await http.get(
@@ -216,102 +215,76 @@ class _TeachersCoursesState extends State<TeachersCourses> {
     }
   }
 
-  Future<void> _addCourseToTeacher(BuildContext context, Major major) async {
-    DateTime currentTime = DateTime.now();
-    String createdAtString = currentTime.toIso8601String();
-
+  Future<void> _removeFromCourseTeacher(
+      teacherId, TeachersCoursePlanning coursePlanning) async {
+    logger.d(teacherId, coursePlanning);
     try {
-      final response = await http.post(
-        getApiUrl('/Add/Major/To/Teacher'),
-        body: json.encode({
-          'teacher_id': widget.userDetails.teacher!.teacherId,
-          'academic_degree_of_major': major.academicDegree,
-          'major_name': major.majorName,
-          'major_id': major.majorId,
-          'credit': major.totalCreditsPerYear,
-          'department_id': widget.userDetails.department?.departmentId,
-          'created_at': createdAtString,
-          'department_of_educations_id': widget
-              .userDetails.departmentOfEducation?.departmentsOfEducationId,
-        }),
-        headers: {'Content-Type': 'application/json'},
-      ).timeout(Duration(seconds: 30));
+      final bool? confirmed = await showDialog<bool>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Энэ хичээлийг хасахыг хүсч байн уу?'),
+            content: Text(
+                'Багшаас ${coursePlanning.courseName} хичээлийг хасгадана!'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context, false);
+                },
+                child: Text('Үгүй'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context, true);
+                },
+                child: Text('Тийм хасах'),
+              ),
+            ],
+          );
+        },
+      );
 
-      if (response.statusCode == 200) {
-        setState(() {
-          teacherHasSelectedCourses == true;
-        });
-        return showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text('Сонгосон хөтөлбөр амжилттай нэмэгдлээ'),
-              content: Text('Хөтөлбөр ${major.majorName} нэмэгдлээ'),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    refreshCoursesPlanning();
+      if (confirmed == true) {
+        final response = await http.delete(
+          getApiUrl('/Remove/Course/From/Teacher'),
+          body: json.encode({
+            'teacher_id': teacherId,
+            'course': coursePlanning,
+          }),
+          headers: {'Content-Type': 'application/json'},
+        ).timeout(Duration(seconds: 30));
 
-                    Navigator.pop(context);
-                  },
-                  child: Text('Буцах'),
-                ),
-              ],
-            );
-          },
-        );
+        if (response.statusCode == 200) {
+          refreshCoursesPlanning();
+          refreshUserDetails();
+          _buildSelectedCoursesOfMajor();
+          final decodedJson = json.decode(response.body);
+          final deletedMajor = decodedJson['message'];
+          return showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text('Хасагдлаа'),
+                content:
+                    Text('Багшаас ${coursePlanning.courseName} $deletedMajor'),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Text('Буцах'),
+                  ),
+                ],
+                icon: Icon(Icons.delete, color: Colors.red, size: 40),
+              );
+            },
+          );
+        }
       } else {
         throw Exception('Failed to add major');
       }
     } catch (e) {
-      logger.d('Error: $e');
-      throw Exception('An error occurred. Please try again.');
-    }
-  }
-
-  Future<void> _removeFromCourseTeacher(teacherId, courseId) async {
-    logger.d(teacherId, courseId);
-    try {
-      final response = await http.delete(
-        getApiUrl('/Remove/Course/From/Teacher'),
-        body: json.encode({
-          'teacher_id': teacherId,
-          'course_id': courseId,
-        }),
-        headers: {'Content-Type': 'application/json'},
-      ).timeout(Duration(seconds: 30));
-
-      if (response.statusCode == 200) {
-        refreshCoursesPlanning();
-        logger.d('has deleted');
-
-        _buildSelectedCoursesOfMajor();
-        final decodedJson = json.decode(response.body);
-        logger.d(decodedJson);
-        final deleteMessage = decodedJson['message'];
-        final deletedMajor = deleteMessage['deleted_major'];
-        return showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text('$deleteMessage'),
-              content: Text('${deletedMajor.major_name}'),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: Text('Буцах'),
-                ),
-              ],
-            );
-          },
-        );
-      } else {
-        throw Exception('Failed to add major');
-      }
-    } catch (e) {
-      logger.d('Error: $e');
+      logger.d('Errsssor: $e');
       throw Exception('An error occurred. Please try again.');
     }
   }
@@ -343,7 +316,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
         },
       );
 
-      if (confirmed == null || !confirmed) {
+      if (confirmed == false) {
         return;
       } else {
         final response = await http.post(
@@ -358,50 +331,22 @@ class _TeachersCoursesState extends State<TeachersCourses> {
         final decodedJson = json.decode(response.body);
         if (response.statusCode == 200) {
           refreshCoursesPlanning();
-          List<TeachersMajorPlanning> majors = (decodedJson['current_majors']
-                  as List)
-              .map((major) =>
-                  TeachersMajorPlanning.fromJsonTeachersMajorPlanning(major))
-              .toList();
-          Major major = Major.fromJsonMajor(decodedJson['a_major_to_be_added']);
+          refreshUserDetails();
 
+          final addedJson = decodedJson['teachers_course_planning'];
           return showDialog(
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
-                title: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        'Одоогоор Багшийн нэр ${widget.userDetails.user.fname}, ${widget.userDetails.user.userRole}, ${widget.userDetails.teacher!.jobTitle}, ${widget.userDetails.departmentOfEducation!.edDepartmentName}',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 18),
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                        maxLines: 2,
-                      ),
-                    ),
-                    Icon(Icons.warning, color: Colors.blue, size: 28),
-                  ],
+                title: Text(
+                  '${decodedJson['message']}',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
                 ),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ...majors.map((major) => RichText(
-                          text: TextSpan(
-                            children: [
-                              TextSpan(
-                                  text: '${major.majorName}, ',
-                                  style: TextStyle(color: Colors.purple)),
-                              TextSpan(
-                                  text: 'Зэрэг: ${major.academicDegree}, ',
-                                  style: TextStyle(color: Colors.pink)),
-                            ],
-                          ),
-                        )),
-                    Text('Сонгосон хөтөлбөрүүдийн тоо: ${majors.length}'),
-                  ],
-                ),
+                content: Text(
+                    '${addedJson['course_name']} + ${addedJson['major_name']}'),
                 actions: [
                   TextButton(
                     onPressed: () {
@@ -409,24 +354,8 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                     },
                     child: Text("Буцах", style: TextStyle(color: Colors.black)),
                   ),
-                  TextButton(
-                    onPressed: () {
-                      _addCourseToTeacher(context, major);
-                      Navigator.of(context).pop();
-                    },
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.add, color: Colors.green),
-                        SizedBox(width: 8),
-                        Text(
-                          "Хөтөлбөрийг нэмэх",
-                          style: TextStyle(color: Colors.green),
-                        ),
-                      ],
-                    ),
-                  ),
                 ],
+                icon: Icon(Icons.check_circle, color: Colors.green, size: 40),
               );
             },
           );
@@ -480,15 +409,11 @@ class _TeachersCoursesState extends State<TeachersCourses> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Center(
-          child: Text(
-            'Хичээлүүд',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-                color: Colors.white,
-                fontSize: 24.0,
-                fontWeight: FontWeight.bold),
-          ),
+        title: Text(
+          'Хичээлүүд',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+              color: Colors.white, fontSize: 24.0, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.blue,
       ),
@@ -724,14 +649,17 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                       children: [
                         Padding(
                           padding: const EdgeInsets.only(right: 20.0),
-                          child: IconButton(
-                            icon: Icon(Icons.add),
-                            onPressed: () {
-                              _addCoursesOfMajorToTeacher(
-                                  widget.userDetails.teacher!,
-                                  course,
-                                  selectedMajor);
-                            },
+                          child: Tooltip(
+                            message: 'Багшид хөтөлбөрийн хичээлийг нэмэх',
+                            child: IconButton(
+                              icon: Icon(Icons.add),
+                              onPressed: () {
+                                _addCoursesOfMajorToTeacher(
+                                    widget.userDetails.teacher!,
+                                    course,
+                                    selectedMajor);
+                              },
+                            ),
                           ),
                         ),
                       ],
@@ -774,7 +702,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -799,7 +727,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                     Row(
                       children: [
                         Padding(
-                          padding: const EdgeInsets.all(8.0),
+                          padding: const EdgeInsets.all(6.0),
                           child: Text(
                             'Нийт сонгогдсон хичээлүүд: ${teachersCoursePlanning.length}',
                             style: TextStyle(
@@ -837,46 +765,58 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                                       Padding(
                                         padding:
                                             const EdgeInsets.only(right: 10),
-                                        child: IconButton(
-                                          icon: Image.asset(
-                                            'assets/images/icons/teachers_majors_selection.png',
+                                        child: Tooltip(
+                                          message: 'Хөтөлбөр сонгох цонх руу',
+                                          child: IconButton(
+                                            icon: Image.asset(
+                                              'assets/images/icons/teachers_majors_selection.png',
+                                            ),
+                                            onPressed: () {
+                                              Navigator.pushNamed(
+                                                context,
+                                                '/teachers_majors',
+                                                arguments: widget.userDetails,
+                                              );
+                                            },
                                           ),
-                                          onPressed: () {
-                                            Navigator.pushNamed(
-                                              context,
-                                              '/teachers_majors',
-                                              arguments: widget.userDetails,
-                                            );
-                                          },
                                         ),
                                       ),
                                       Padding(
                                         padding:
                                             const EdgeInsets.only(right: 10),
-                                        child: IconButton(
-                                          icon: Icon(Icons.delete),
-                                          onPressed: () {
-                                            _removeFromCourseTeacher(
+                                        child: Tooltip(
+                                          message: 'Сонгогдсон хичээлийг хасах',
+                                          child: IconButton(
+                                            icon: Icon(Icons.delete),
+                                            onPressed: () {
+                                              _removeFromCourseTeacher(
                                                 widget.userDetails.teacher!
                                                     .teacherId,
-                                                coursePlanning.courseId);
-                                          },
+                                                coursePlanning,
+                                              );
+                                            },
+                                          ),
                                         ),
                                       ),
                                       Padding(
                                         padding:
                                             const EdgeInsets.only(right: 10),
-                                        child: IconButton(
-                                          icon: Image.asset(
-                                            'assets/images/icons/teachers_courses.png',
+                                        child: Tooltip(
+                                          message: 'Хичээлийн хуваарь луу',
+                                          child: IconButton(
+                                            icon: Icon(Icons.schedule),
+                                            onPressed: () {
+                                              Navigator.pushReplacement(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      TeacherCoursesScheduler(
+                                                          userDetails: widget
+                                                              .userDetails),
+                                                ),
+                                              );
+                                            },
                                           ),
-                                          onPressed: () {
-                                            _addCoursesOfMajorToTeacher(
-                                                widget.userDetails.teacher!,
-                                                coursePlanning as Course,
-                                                selectedMajor
-                                                    as TeachersMajorPlanning);
-                                          },
                                         ),
                                       ),
                                     ],

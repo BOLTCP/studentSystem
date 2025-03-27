@@ -6,10 +6,12 @@ import 'package:studentsystem/api/get_api_url.dart'; // Import the login screen
 import 'package:logger/logger.dart';
 import 'package:studentsystem/models/department.dart';
 import 'package:studentsystem/models/teacher.dart';
+import 'package:studentsystem/models/teacherscourseplanning.dart';
 import 'package:studentsystem/models/user_details.dart';
 import 'package:studentsystem/models/departments_of_education.dart';
 import 'package:studentsystem/constants/teacher_drawer.dart';
 import 'package:studentsystem/models/teachersmajorplanning.dart';
+import 'package:studentsystem/models/teacherscourseplanning.dart';
 
 var logger = Logger();
 
@@ -80,20 +82,22 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                     TeachersMajorPlanning.fromJsonTeachersMajorPlanning(
                         teachersmajorplanning))
                 .toList();
-
-        logger.d('User fetched: $user');
-        logger.d('Teacher fetched: $teacher');
-        logger.d('Department fetched: $department');
-        logger.d('Department Of Education fetched: $departmentOdEducation');
-        logger.d('Teachers majors: $teachersmajorplanning');
+        List<TeachersCoursePlanning> teacherscourseplanning =
+            (decodedJson['selected_major_courses'] as List)
+                .map((teacherscourseplanning) =>
+                    TeachersCoursePlanning.fromJsonTeachersCoursePlanning(
+                        teacherscourseplanning))
+                .toList();
 
         return UserDetails(
-            user: user,
-            teacher: teacher,
-            student: null,
-            department: department,
-            departmentOfEducation: departmentOdEducation,
-            teachersMajorPlanning: teachersmajorplanning);
+          user: user,
+          teacher: teacher,
+          student: null,
+          department: department,
+          departmentOfEducation: departmentOdEducation,
+          teachersMajorPlanning: teachersmajorplanning,
+          teachersCoursePlanning: teacherscourseplanning,
+        );
       } else {
         logger.d('Error: ${response.statusCode}');
         throw Exception('User does not exist!');
@@ -136,15 +140,11 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     return Scaffold(
       key: TeacherDashboard.scaffoldKey,
       appBar: AppBar(
-        title: Center(
-          child: Text(
-            'Багшийн Хянах Самбар',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-                color: Colors.white,
-                fontSize: 24.0,
-                fontWeight: FontWeight.bold),
-          ),
+        title: Text(
+          'Багшийн Хянах Самбар',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+              color: Colors.white, fontSize: 24.0, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.blue,
         leading: IconButton(
