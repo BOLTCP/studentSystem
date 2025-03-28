@@ -223,8 +223,7 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
     ];
 
     return Padding(
-      padding:
-          const EdgeInsets.only(top: 4.0, bottom: 4.0, right: 8.0, left: 8.0),
+      padding: const EdgeInsets.only(top: 8, bottom: 8, right: 8.0, left: 8.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -347,8 +346,8 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
             ),
           ),
           SizedBox(
-            width: 500,
-            height: 198,
+            width: 424,
+            height: 190,
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: LayoutBuilder(
@@ -427,21 +426,26 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
   Widget _buildDraggableWidget(String label) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4.0),
-      child: Container(
-        width: 80,
-        height: 80,
-        decoration: BoxDecoration(
-          color: Colors.blueAccent,
-          shape: BoxShape.rectangle,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Center(
-          child: Text(
-            label,
-            style: TextStyle(color: Colors.white),
+      child: Builder(builder: (context) {
+        return Card(
+          elevation: 12,
+          child: Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: Colors.blueAccent,
+              shape: BoxShape.rectangle,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Center(
+              child: Text(
+                label,
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      }),
     );
   }
 }

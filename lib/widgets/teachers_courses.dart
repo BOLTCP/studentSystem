@@ -527,7 +527,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                                               mainAxisAlignment:
                                                   MainAxisAlignment.center,
                                               children: [
-                                                Expanded(
+                                                Flexible(
                                                   child: Card(
                                                     elevation: 12,
                                                     color: Color.fromARGB(
@@ -616,7 +616,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                                                                           style:
                                                                               TextStyle(fontSize: 16),
                                                                           maxLines:
-                                                                              3,
+                                                                              4,
                                                                           overflow:
                                                                               TextOverflow.ellipsis,
                                                                           softWrap:
@@ -633,11 +633,6 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                                                     ),
                                                   ),
                                                 ),
-                                                IconButton(
-                                                  icon: Image.asset(
-                                                      'assets/images/icons/go_back.png'),
-                                                  onPressed: () {},
-                                                ),
                                               ],
                                             ),
                                           )
@@ -645,7 +640,8 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                                       ),
                                     ),
                                   ),
-                                  _buildSilverList(majorsCourses, selectedMajor)
+                                  _buildSilverList(
+                                      majorsCourses, selectedMajor, userDetails)
                                 ],
                               ),
                             ),
@@ -693,23 +689,36 @@ class _TeachersCoursesState extends State<TeachersCourses> {
     );
   }
 
-  Widget _buildSilverList(majorsCourses, selectedMajor) {
+  Widget _buildSilverList(
+      majorsCourses, selectedMajor, UserDetails userDetails) {
+    List<String> selectedCourses = (userDetails.teachersCoursePlanning!
+        .map((coursePlanning) => coursePlanning.courseName)).toList();
+    List courses = majorsCourses as List;
+
+    majorsCourses = courses
+        .where((coursePlanning) =>
+            !selectedCourses.contains(coursePlanning.courseName))
+        .toList();
+
+    logger.d(majorsCourses.length, selectedCourses.length);
+
     return SliverList(
       delegate: SliverChildBuilderDelegate(
         (context, index) {
           Course course = majorsCourses[index];
-          return Container(
+          return Card(
             color: Colors.white,
-            child: course.majorId == selectedMajor.majorId
+            child: course.majorId == selectedMajor.majorId &&
+                    !selectedCourses.contains(course.courseName)
                 ? ListTile(
                     title: Text('${course.courseName}, ${course.courseCode}'),
                     subtitle: Text(
-                        '${course.courseYear}, ${course.courseType}, ${course.totalCredits}, ${course.courseSeason}'),
+                        '${course.courseYear} ${(course.courseType).split(' ').map((courseType) => courseType[0]).join('').toUpperCase()} ${course.totalCredits} ${course.courseSeason}'),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Padding(
-                          padding: const EdgeInsets.only(right: 20.0),
+                          padding: const EdgeInsets.only(right: 5.0),
                           child: Tooltip(
                             message: 'Багшид хөтөлбөрийн хичээлийг нэмэх',
                             child: IconButton(
@@ -726,7 +735,9 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                       ],
                     ),
                   )
-                : /* course.majorId != selectedMajor.majorId
+                :
+
+                /* course.majorId != selectedMajor.majorId
                     ? Column(
                         children: [
                           Row(
@@ -751,7 +762,10 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                           ),
                         ],
                       )*/
-                SizedBox.shrink(),
+                Offstage(
+                    offstage: true,
+                    child: SizedBox.shrink(),
+                  ),
           );
         },
         childCount: majorsCourses.length,
@@ -815,7 +829,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                             itemBuilder: (context, index) {
                               TeachersCoursePlanning coursePlanning =
                                   teachersCoursePlanning[index];
-                              return Container(
+                              return Card(
                                 color: Colors.white,
                                 child: ListTile(
                                   title: Text(coursePlanning.courseName),
