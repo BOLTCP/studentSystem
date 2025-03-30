@@ -88,7 +88,6 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                     TeachersCoursePlanning.fromJsonTeachersCoursePlanning(
                         teacherscourseplanning))
                 .toList();
-
         return UserDetails(
           user: user,
           teacher: teacher,
