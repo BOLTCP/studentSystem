@@ -35,11 +35,14 @@ Widget _buildDrawer(context, userDetails, userId, UserDetails details) {
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          DrawerHeader(
-            decoration: BoxDecoration(color: Colors.blue),
-            child: Text(
-              'Profile',
-              style: TextStyle(color: Colors.white, fontSize: 24),
+          SizedBox(
+            height: 150.0,
+            child: DrawerHeader(
+              decoration: BoxDecoration(color: Colors.blue),
+              child: Text(
+                'Profile',
+                style: TextStyle(color: Colors.white, fontSize: 24),
+              ),
             ),
           ),
           ListTile(

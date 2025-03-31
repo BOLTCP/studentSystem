@@ -9,6 +9,7 @@ class TeachersCoursePlanning {
   final String majorName;
   final String courseCode;
   final int teacherMajorId;
+  final int? courseLecture;
 
   // Constructor
   TeachersCoursePlanning({
@@ -22,6 +23,7 @@ class TeachersCoursePlanning {
     required this.majorName,
     required this.courseCode,
     required this.teacherMajorId,
+    this.courseLecture,
   });
 
   // Factory method to create an object from a JSON map

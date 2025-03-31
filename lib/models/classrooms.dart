@@ -36,7 +36,7 @@ class Classroom {
   }
 
   // toJson
-  Map<String, dynamic> toJsoClassroomn() {
+  Map<String, dynamic> toJsoClassroom() {
     return {
       'classroom_id': classroomId,
       'department_id': departmentId,
@@ -47,5 +47,10 @@ class Classroom {
       'created_at': createdAt.toIso8601String(),
       'capacity': capacity,
     };
+  }
+
+  @override
+  String toString() {
+    return 'Classroom(classroomId: $classroomId, departmentId: $departmentId, classroomType: $classroomType, classroomNumber: $classroomNumber, projector: $projector, tv: $tv, createdAt: $createdAt, capacity: $capacity)';
   }
 }
