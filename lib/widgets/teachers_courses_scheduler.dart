@@ -127,6 +127,28 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
     return parseResult;
   }
 
+  String encodeTeachersCoursesClassrooms(
+      Map<TeachersCoursePlanning, Classroom> dataToEncode) {
+    List<Map<String, dynamic>> encodedList = dataToEncode.entries.map((entry) {
+      return {
+        'teachersCoursePlanning': entry.key.toJsonTeachersCoursePlanning(),
+        'classroom': entry.value.toJsoClassroom(),
+      };
+    }).toList();
+    return jsonEncode(encodedList);
+  }
+
+  String encodeCoursesClassrooms(
+      Map<int, TeachersCoursePlanning> dataToEncode) {
+    List<Map<String, dynamic>> encodedList = dataToEncode.entries.map((entry) {
+      return {
+        'daysOfWeekPositionToint': entry.key.toString(),
+        'teachersCoursePlanning': entry.value.toJsonTeachersCoursePlanning(),
+      };
+    }).toList();
+    return jsonEncode(encodedList);
+  }
+
   void refreshUserDetails() {
     setState(() {
       futureUserDetails = fetchUserDetails(widget.userDetails.user.userId);
@@ -284,7 +306,7 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
         builder: (BuildContext context) {
           return AlertDialog(
             title: Text(
-              '',
+              '${teachersCoursesClassrooms.length} өдөр цаг ангийг сонгосон хичээлүүдийн хуваарийг шалгах',
               /*'${course.courseName} хичээлийг № ${classroom.classroomNumber} ангид $dayOfWeek гарагт $periodOfDay-р цагийн хуваарьт нэмэх?'*/
               style: TextStyle(fontSize: 20),
             ),
@@ -313,10 +335,15 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
       if (confirmed == false) {
         return null;
       } else {
+        String courseClassroomDataToSend =
+            encodeTeachersCoursesClassrooms(teachersCoursesClassrooms);
+        String coursesWeekDaysPositions =
+            encodeCoursesClassrooms(itemPositions);
         final response = await http.post(
           getApiUrl('/Add/Classroom/To/Teachers/Course'),
           body: json.encode({
-            'teachersCoursesClassrooms': teachersCoursesClassrooms,
+            'teachersCoursesClassrooms': courseClassroomDataToSend,
+            'coursesClassroomsPositions': coursesWeekDaysPositions,
             /* 'classroom': classroom.toJsoClassroom(),
             'course': course,
             'dayOfWeek': dayOfWeek,
@@ -863,11 +890,12 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
               onPressed: () {
                 if (teachersCoursesClassrooms.length !=
                     teachersCourses.length) {
+                  logger.d('HERE');
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                          'Заавал бүх хичээлийн хуваарийг сонгосон байх ёстой!'),
-                      duration: Duration(seconds: 1),
+                          'Заавал бүх хичээлийн хуваарийг болон хичээл орох ангийг сонгосон байх ёстой!'),
+                      duration: Duration(seconds: 3),
                     ),
                   );
                 } else {
@@ -992,6 +1020,7 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
                                         classrooms[index], course, dayIndex);
                                         */
                                     logger.d(teachersCoursesClassrooms.length);
+                                    Navigator.pop(context);
                                   },
                                 );
                               },

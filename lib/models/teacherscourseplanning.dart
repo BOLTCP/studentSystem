@@ -44,7 +44,7 @@ class TeachersCoursePlanning {
   }
 
   // Method to convert the object to a JSON map
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toJsonTeachersCoursePlanning() {
     return {
       'teacher_course_planning_id': teacherCoursePlanningId,
       'teacher_id': teacherId,
