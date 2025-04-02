@@ -50,6 +50,7 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
   ];
   Map<int, TeachersCoursePlanning> teachersCourses = {};
   Map<int, TeachersCoursePlanning> teachersCoursesLectures = {};
+  Map<TeachersCoursePlanning, Classroom> teachersCoursesClassrooms = {};
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<Widget> _screens = [];
   int _selectedIndex = 0;
@@ -268,26 +269,28 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
     }
   }
 
-  void addClassroomToTeachersCourses(
-      Classroom classroom, TeachersCoursePlanning course, int dayIndex) async {
-    logger.d(itemPositions.toString());
+  void addClassroomsToTeachersCourses(
+      /* Classroom classroom, TeachersCoursePlanning course, int dayIndex */) async {
+    /* logger.d(itemPositions.toString());
     String dayOfWeek = allWeekdays[
         ((dayIndex + 1) - (((dayIndex + 1) / 7).toInt() * 7) - 1).toInt() == -1
             ? 6
             : ((dayIndex + 1) - (((dayIndex + 1) / 7).toInt() * 7) - 1)
                 .toInt()];
-    int periodOfDay = ((dayIndex + 1) / 7).toDouble().ceil();
+    int periodOfDay = ((dayIndex + 1) / 7).toDouble().ceil(); */
     try {
       final bool? confirmed = await showDialog<bool?>(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
             title: Text(
-              '${course.courseName} хичээлийг № ${classroom.classroomNumber} ангид $dayOfWeek гарагт $periodOfDay-р цагийн хуваарьт нэмэх?',
+              '',
+              /*'${course.courseName} хичээлийг № ${classroom.classroomNumber} ангид $dayOfWeek гарагт $periodOfDay-р цагийн хуваарьт нэмэх?'*/
               style: TextStyle(fontSize: 20),
             ),
             content: Text(
-                'Багтаамж: ${classroom.capacity}, Проектор: ${classroom.projector}'),
+              '', /*'Багтаамж: ${classroom.capacity}, Проектор: ${classroom.projector}'*/
+            ),
             actions: [
               TextButton(
                 child: Text('Үгүй'),
@@ -313,10 +316,11 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
         final response = await http.post(
           getApiUrl('/Add/Classroom/To/Teachers/Course'),
           body: json.encode({
-            'classroom': classroom.toJsoClassroom(),
+            'teachersCoursesClassrooms': teachersCoursesClassrooms,
+            /* 'classroom': classroom.toJsoClassroom(),
             'course': course,
             'dayOfWeek': dayOfWeek,
-            'periodOfDay': periodOfDay,
+            'periodOfDay': periodOfDay, */
           }),
           headers: {'Content-Type': 'application/json'},
         ).timeout(Duration(seconds: 30));
@@ -333,7 +337,7 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
               return AlertDialog(
                 title: Text('Хичээлийг амжилттай нэмлээ!'),
                 content: Text(
-                    '$dayOfWeek гарагт $periodOfDay-р цагт хуваарийг нэмлээ!'),
+                    '' /*'$dayOfWeek гарагт $periodOfDay-р цагт хуваарийг нэмлээ!'*/),
                 actions: [
                   TextButton(
                     onPressed: () {
@@ -856,7 +860,20 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
             top: 540,
             left: 225,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                if (teachersCoursesClassrooms.length !=
+                    teachersCourses.length) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                          'Заавал бүх хичээлийн хуваарийг сонгосон байх ёстой!'),
+                      duration: Duration(seconds: 1),
+                    ),
+                  );
+                } else {
+                  addClassroomsToTeachersCourses();
+                }
+              },
               child: Text('Хуваариудыг шалгах'),
             ),
           ),
@@ -969,8 +986,12 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
                                   subtitle:
                                       Text(classrooms[index].classroomType),
                                   onTap: () {
-                                    addClassroomToTeachersCourses(
+                                    teachersCoursesClassrooms[course] =
+                                        classrooms[index];
+                                    /* addClassroomToTeachersCourses(
                                         classrooms[index], course, dayIndex);
+                                        */
+                                    logger.d(teachersCoursesClassrooms.length);
                                   },
                                 );
                               },
