@@ -250,7 +250,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
           getApiUrl('/Remove/Course/From/Teacher'),
           body: json.encode({
             'teacher_id': teacherId,
-            'course': coursePlanning,
+            'course': coursePlanning.toJsonTeachersCoursePlanning(),
           }),
           headers: {'Content-Type': 'application/json'},
         ).timeout(Duration(seconds: 30));

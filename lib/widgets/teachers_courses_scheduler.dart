@@ -140,10 +140,11 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
 
   String encodeCoursesClassrooms(
       Map<int, TeachersCoursePlanning> dataToEncode) {
-    List<Map<String, dynamic>> encodedList = dataToEncode.entries.map((entry) {
+    List<Map<String, String>> encodedList = dataToEncode.entries.map((entry) {
       return {
         'daysOfWeekPositionToint': entry.key.toString(),
-        'teachersCoursePlanning': entry.value.toJsonTeachersCoursePlanning(),
+        'teachersCoursePlanningId':
+            entry.value.teacherCoursePlanningId.toString(),
       };
     }).toList();
     return jsonEncode(encodedList);
@@ -344,6 +345,8 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
           body: json.encode({
             'teachersCoursesClassrooms': courseClassroomDataToSend,
             'coursesClassroomsPositions': coursesWeekDaysPositions,
+            'teacher': widget.userDetails.teacher!,
+            'teacher_name': widget.userDetails.user.fname,
             /* 'classroom': classroom.toJsoClassroom(),
             'course': course,
             'dayOfWeek': dayOfWeek,
