@@ -50,7 +50,7 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
   ];
   Map<int, TeachersCoursePlanning> teachersCourses = {};
   Map<int, TeachersCoursePlanning> teachersCoursesLectures = {};
-  Map<TeachersCoursePlanning, Classroom> teachersCoursesClassrooms = {};
+  Map<TeachersCoursePlanning, Classroom?> teachersCoursesClassrooms = {};
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<Widget> _screens = [];
   int _selectedIndex = 0;
@@ -128,11 +128,11 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
   }
 
   String encodeTeachersCoursesClassrooms(
-      Map<TeachersCoursePlanning, Classroom> dataToEncode) {
+      Map<TeachersCoursePlanning, Classroom?> dataToEncode) {
     List<Map<String, dynamic>> encodedList = dataToEncode.entries.map((entry) {
       return {
         'teachersCoursePlanning': entry.key.toJsonTeachersCoursePlanning(),
-        'classroom': entry.value.toJsoClassroom(),
+        'classroom': entry.value?.toJsoClassroom(),
       };
     }).toList();
     return jsonEncode(encodedList);
@@ -144,7 +144,7 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
       return {
         'daysOfWeekPositionToint': entry.key.toString(),
         'teachersCoursePlanningId':
-            entry.value.teacherCoursePlanningId.toString(),
+            '${entry.value.teacherCoursePlanningId.toString()} Лекц',
       };
     }).toList();
     return jsonEncode(encodedList);
@@ -356,7 +356,6 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
         ).timeout(Duration(seconds: 30));
 
         if (response.statusCode == 200) {
-          //need to rebuild
           final decodedJson = json.decode(response.body);
           logger.d(decodedJson);
           final addedClassroom = decodedJson['added_classroom'];
@@ -368,6 +367,38 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
                 title: Text('Хичээлийг амжилттай нэмлээ!'),
                 content: Text(
                     '' /*'$dayOfWeek гарагт $periodOfDay-р цагт хуваарийг нэмлээ!'*/),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Text('Буцах'),
+                  )
+                ],
+                icon: Icon(Icons.check_circle, color: Colors.green, size: 40),
+              );
+            },
+          );
+        } else if (response.statusCode == 400) {
+          final decodedJson = json.decode(response.body);
+          logger.d(decodedJson);
+          final List errorMessages = (decodedJson['errorMessages']);
+
+          return await showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text('Хичээлүүдийг нэмэхэд алдаа гарлаа!'),
+                content: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: errorMessages.map<Widget>((message) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: Text(message),
+                    );
+                  }).toList(),
+                ),
                 actions: [
                   TextButton(
                     onPressed: () {
@@ -892,8 +923,7 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
             child: ElevatedButton(
               onPressed: () {
                 if (teachersCoursesClassrooms.length !=
-                    teachersCourses.length) {
-                  logger.d('HERE');
+                    teachersCourses.length * 2) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
@@ -1092,6 +1122,7 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
 
   Widget _buildDraggableWidgetWithLectureIcon(
       TeachersCoursePlanning course, dayIndex) {
+    teachersCoursesClassrooms[course] = null;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4.0),
       child: Builder(builder: (context) {
