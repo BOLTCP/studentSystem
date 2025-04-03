@@ -35,7 +35,7 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
   List<String> weekdays = [];
   late String currentDayOfWeek = '';
   late Future<UserDetails> futureUserDetails;
-  late Future<List<TeachersSchedule>> futureTeachersAutoSchedule;
+  late Future<List> futureTeachersAutoSchedule;
   late Future<List<Classroom>> futureClassrooms;
   Set<String> classroomSearchType = {};
   String classroomSearchTypeToServer = '';
@@ -220,9 +220,6 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
         headers: {'Content-Type': 'application/json'},
       ).timeout(Duration(seconds: 30));
 
-      logger.d('Response status: ${response.statusCode}');
-      logger.d('Response body: ${response.body}');
-
       if (response.statusCode == 200) {
         final decodedJson = json.decode(response.body);
         List<Classroom> allClassrooms = ((decodedJson['all_class_rooms']
@@ -240,51 +237,27 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
     }
   }
 
-  Future<List<TeachersSchedule>> fetchTeachersAutoSchedule() async {
+  Future<List> fetchTeachersAutoSchedule() async {
     try {
       final response = await http.get(
-        getApiUrl(
-            '/Get/Teachers/Auto/Schedule?teacher_id=${widget.userDetails.teacher!.teacherId}'),
+        getApiUrl('/Get/Teachers/Auto/Schedule'),
         headers: {'Content-Type': 'application/json'},
       ).timeout(Duration(seconds: 30));
 
       logger.d('Response status: ${response.statusCode}');
-      logger.d('Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final decodedJson = json.decode(response.body);
-
-        AuthUser user = AuthUser.fromJsonAuthUser(decodedJson['user']);
-        TeacherUser teacher =
-            TeacherUser.fromJsonTeacher(decodedJson['teacher']);
-        DepartmentOfEducation departmentOdEducation =
-            DepartmentOfEducation.fromJsonDepartmentOfEducation(
-                decodedJson['dept_of_edu']);
-        Department department =
-            Department.fromJsonDepartment(decodedJson['dep']);
-        List<TeachersMajorPlanning> teachersmajorplanning =
-            (decodedJson['teachers_major'] as List)
-                .map((teachersmajorplanning) =>
-                    TeachersMajorPlanning.fromJsonTeachersMajorPlanning(
-                        teachersmajorplanning))
-                .toList();
-        List<TeachersCoursePlanning> teacherscourseplanning =
-            (decodedJson['selected_major_courses'] as List)
-                .map((teacherscourseplanning) =>
-                    TeachersCoursePlanning.fromJsonTeachersCoursePlanning(
-                        teacherscourseplanning))
+        logger.d(decodedJson);
+        List scheduledClassrooms =
+            (decodedJson['scheduled_classrooms_array'] as List)
+                .map((scheduledClassrooms) => (scheduledClassrooms))
                 .toList();
 
-        List<TeachersSchedule> teachersAutoSchedule = (decodedJson[
-                'teachers_auto_schedule'] as List)
-            .map((teachersAutoSchedule) =>
-                TeachersSchedule.fromMapTeachersSchedule(teachersAutoSchedule))
-            .toList();
-
-        return teachersAutoSchedule;
+        return scheduledClassrooms;
       } else {
         logger.d('Error: ${response.statusCode}');
-        throw Exception('User does not exist!');
+        throw Exception('Server Error!');
       }
     } catch (e) {
       logger.d('Error: $e');
@@ -988,8 +961,9 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
               showDialog(
                 context: context,
                 builder: (BuildContext context) {
-                  return FutureBuilder<List<Classroom>>(
-                    future: fetchClassrooms(),
+                  return FutureBuilder(
+                    future: Future.wait(
+                        [futureClassrooms, futureTeachersAutoSchedule]),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return AlertDialog(
@@ -1031,7 +1005,9 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
                           ],
                         );
                       } else {
-                        List<Classroom> classrooms = snapshot.data!;
+                        List<Classroom> classrooms =
+                            snapshot.data![0] as List<Classroom>;
+                        List scheduledClassrooms = snapshot.data![1];
                         return AlertDialog(
                           title: Text('Хичээл орох анги сонгоно уу!'),
                           content: Container(
@@ -1041,21 +1017,11 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
                             child: ListView.builder(
                               itemCount: classrooms.length,
                               itemBuilder: (context, index) {
-                                return ListTile(
-                                  title: Text(
-                                      '№ ${classrooms[index].classroomNumber}'),
-                                  subtitle:
-                                      Text(classrooms[index].classroomType),
-                                  onTap: () {
-                                    teachersCoursesClassrooms[course] =
-                                        classrooms[index];
-                                    /* addClassroomToTeachersCourses(
-                                        classrooms[index], course, dayIndex);
-                                        */
-                                    logger.d(teachersCoursesClassrooms.length);
-                                    Navigator.pop(context);
-                                  },
-                                );
+                                return _buildScheduledClassroomsWidget(
+                                    classrooms[index],
+                                    dayIndex,
+                                    course,
+                                    scheduledClassrooms);
                               },
                             ),
                           ),
@@ -1160,5 +1126,37 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
         );
       }),
     );
+  }
+
+  Widget _buildScheduledClassroomsWidget(Classroom classroom, int dayIndex,
+      TeachersCoursePlanning course, List scheduledClassrooms) {
+    String dayOfWeek =
+        ('${allWeekdays[((dayIndex + 1) - (((dayIndex + 1) / 7).toInt() * 7) - 1)]} гараг');
+
+    String periodOfDay =
+        ('${((dayIndex + 1) / 7).toDouble().ceil().toString()}-р цаг');
+
+    bool exists = scheduledClassrooms.any((item) =>
+        item['time'] == periodOfDay &&
+        item['days'] == dayOfWeek &&
+        item['classroom_id'] == classroom.classroomId);
+    return exists == true
+        ? ListTile(
+            title: Text('№ ${classroom.classroomNumber}'),
+            subtitle: Text(classroom.classroomType),
+            onTap: () {
+              Navigator.pop(context);
+            },
+            enabled: false,
+          )
+        : ListTile(
+            title: Text('№ ${classroom.classroomNumber}'),
+            subtitle: Text(classroom.classroomType),
+            onTap: () {
+              teachersCoursesClassrooms[course] = classroom;
+              logger.d(teachersCoursesClassrooms.length);
+              Navigator.pop(context);
+            },
+          );
   }
 }
