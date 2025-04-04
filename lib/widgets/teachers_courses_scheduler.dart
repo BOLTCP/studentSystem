@@ -13,9 +13,8 @@ import 'package:studentsystem/models/user_details.dart';
 import 'package:studentsystem/models/departments_of_education.dart';
 import 'package:studentsystem/constants/bottom_navigation.dart';
 import 'package:studentsystem/constants/teacher_drawer.dart';
-import 'package:studentsystem/models/teachers_schedule.dart';
+import 'package:studentsystem/models/teachersschedule.dart';
 import 'package:studentsystem/models/classrooms.dart';
-import 'package:studentsystem/widgets/teachers_courses.dart';
 
 var logger = Logger();
 
@@ -31,12 +30,17 @@ class TeacherCoursesScheduler extends StatefulWidget {
 
 class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
   //late Future<UserDetails> userDetails;
+  final int rows = 8;
+  final int cols = 7;
+  Map<int, TeachersCoursePlanning> itemPositions = {};
+  Set<TeachersCoursePlanning> placedItems = {};
   late String departmentName = '';
   List<String> weekdays = [];
   late String currentDayOfWeek = '';
   late Future<UserDetails> futureUserDetails;
   late Future<List> futureTeachersAutoSchedule;
   late Future<List<Classroom>> futureClassrooms;
+  late Future<List> futureTeachersSchedule;
   Set<String> classroomSearchType = {};
   String classroomSearchTypeToServer = '';
   final List<String> allWeekdays = [
@@ -63,6 +67,7 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
     ];
     futureUserDetails = fetchUserDetails(widget.userDetails.user.userId);
     futureTeachersAutoSchedule = fetchTeachersAutoSchedule();
+    futureTeachersSchedule = fetchTeachersSchedule();
     classroomSearchType = fetchClassroomsType();
     futureClassrooms = fetchClassrooms();
     _generateWeekdays();
@@ -237,6 +242,52 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
     }
   }
 
+  Future<List> fetchTeachersSchedule() async {
+    try {
+      final response = await http.get(
+        getApiUrl(
+            '/Get/Teachers/Selected/Courses/Schedules?teacher_id=${widget.userDetails.teacher!.teacherId}'),
+        headers: {'Content-Type': 'application/json'},
+      ).timeout(Duration(seconds: 30));
+
+      logger.d(response.statusCode);
+      logger.d(response.body);
+
+      if (response.statusCode == 200) {
+        final decodedJson = json.decode(response.body);
+        List teachersAllSchedules =
+            ((decodedJson['teachers_made_schedules_array'] as List)
+                .map((teachersAllSchedules) => (teachersAllSchedules))
+                .toList());
+
+        for (var schedule in teachersAllSchedules) {
+          String day = (schedule['days']).toString().replaceAll(' гараг', '');
+
+          String period =
+              (schedule['time']).toString().replaceAll('-р цаг', '');
+          logger.d(allWeekdays.indexOf(day), period);
+        }
+
+        placedItems.add(teachersCourses.values.first);
+        itemPositions[0] = teachersCourses.values.first;
+
+        return teachersAllSchedules;
+      } else if (response.statusCode == 201) {
+        final decodedJson = json.decode(response.body);
+        logger.d(decodedJson['message']);
+        List<TeachersSchedule> teachersAllSchedules = [];
+
+        return teachersAllSchedules;
+      } else {
+        logger.d('Error: ${response.statusCode}');
+        throw Exception('User does not exist!');
+      }
+    } catch (e) {
+      logger.d('Error: $e');
+      throw Exception('An error occurred. Please try again.');
+    }
+  }
+
   Future<List> fetchTeachersAutoSchedule() async {
     try {
       final response = await http.get(
@@ -253,8 +304,21 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
             (decodedJson['scheduled_classrooms_array'] as List)
                 .map((scheduledClassrooms) => (scheduledClassrooms))
                 .toList();
+        List scheduledClassroomsLectures =
+            (decodedJson['scheduled_classrooms_lecture_array'] as List)
+                .map((scheduledClassrooms) => (scheduledClassrooms))
+                .toList();
 
-        return scheduledClassrooms;
+        return [scheduledClassrooms, scheduledClassroomsLectures];
+      } else if (response.statusCode == 201) {
+        final decodedJson = json.decode(response.body);
+        logger.d(decodedJson['message']);
+        List scheduledClassrooms = [];
+        scheduledClassrooms.add(null);
+        List scheduledClassroomsLectures = [];
+        scheduledClassroomsLectures.add(null);
+
+        return [scheduledClassrooms, scheduledClassroomsLectures];
       } else {
         logger.d('Error: ${response.statusCode}');
         throw Exception('Server Error!');
@@ -434,10 +498,6 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
     );
   }
 
-  final int rows = 8;
-  final int cols = 7;
-  Map<int, TeachersCoursePlanning> itemPositions = {};
-  Set<TeachersCoursePlanning> placedItems = {};
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -1007,7 +1067,8 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
                       } else {
                         List<Classroom> classrooms =
                             snapshot.data![0] as List<Classroom>;
-                        List scheduledClassrooms = snapshot.data![1];
+                        List scheduledClassrooms = snapshot.data![1][0];
+                        List scheduledClassroomsLectures = snapshot.data![1][1];
                         return AlertDialog(
                           title: Text('Хичээл орох анги сонгоно уу!'),
                           content: Container(
@@ -1086,6 +1147,197 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
     );
   }
 
+/*
+  Widget _buildDraggableWidgetWithLectureIcon(
+      TeachersCoursePlanning course, dayIndex) {
+    String dayOfWeek =
+        ('${allWeekdays[((dayIndex + 1) - (((dayIndex + 1) / 7).toInt() * 7) - 1)]} гараг');
+
+    String periodOfDay =
+        ('${((dayIndex + 1) / 7).toDouble().ceil().toString()}-р цаг');
+
+    bool exists;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+      child: Builder(
+        builder: (context) {
+          return FutureBuilder(
+            future: futureTeachersAutoSchedule,
+            builder: (context, asyncSnapshot) {
+              List scheduledClassroomsLectures = asyncSnapshot.data![1];
+              if (scheduledClassroomsLectures[0] == null) {
+                return SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 7.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          '${course.courseName.split(' ').map((course) => course[0]).join('').toUpperCase()} Лекц',
+                          style: TextStyle(color: Colors.white),
+                          textAlign: TextAlign.center,
+                        ),
+                        Icon(Icons.place, color: Colors.white),
+                      ],
+                    ),
+                  ),
+                );
+              } else {
+                exists = scheduledClassroomsLectures.any((item) =>
+                    item['time'] == periodOfDay &&
+                    item['days'] == dayOfWeek &&
+                    item['teacher_id'] == course.teacherId);
+
+                if (exists == true) {
+                  teachersCoursesClassrooms[course] = null;
+                  placedItems.remove(course);
+                  itemPositions.remove(dayIndex);
+                }
+
+                /*
+                  if (exists == true) {
+                    /* 
+                    return Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: Colors.orangeAccent,
+                        shape: BoxShape.rectangle,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: GestureDetector(
+                        onTap: () {
+                          //
+                        },
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.vertical,
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 7.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text(
+                                  '${course.courseName.split(' ').map((course) => course[0]).join('').toUpperCase()} Лекц',
+                                  style: TextStyle(color: Colors.white),
+                                  textAlign: TextAlign.center,
+                                ),
+                                Icon(Icons.place, color: Colors.white),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                    */
+                    null;
+                  } else {
+                    return Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: Colors.orangeAccent,
+                        shape: BoxShape.rectangle,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: GestureDetector(
+                        onTap: () {
+                          //
+                        },
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.vertical,
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 7.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text(
+                                  '${course.courseName.split(' ').map((course) => course[0]).join('').toUpperCase()} Лекц',
+                                  style: TextStyle(color: Colors.white),
+                                  textAlign: TextAlign.center,
+                                ),
+                                Icon(Icons.place, color: Colors.white),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+                  */
+              }
+
+              return exists == true
+                  ?
+                  /*
+                  Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color:
+                            exists == true ? Colors.orangeAccent : Colors.grey,
+                        shape: BoxShape.rectangle,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: GestureDetector(
+                        onTap: () {
+                          //
+                        },
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.vertical,
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 7.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text(
+                                  '${course.courseName.split(' ').map((course) => course[0]).join('').toUpperCase()} Лекц',
+                                  style: TextStyle(color: Colors.white),
+                                  textAlign: TextAlign.center,
+                                ),
+                                Icon(Icons.place, color: Colors.white),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
+                    */
+                  GestureDetector(
+                      onTap: () {
+                        // Show AlertDialog if exists is true
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: Text('Alert'),
+                            content: Text('This course was already taken!'),
+                            actions: <Widget>[
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context)
+                                      .pop(); // Close the dialog
+                                },
+                                child: Text('OK'),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    )
+                  : Text('lol');
+            },
+          );
+        },
+      ),
+    );
+  }
+*/
+
   Widget _buildDraggableWidgetWithLectureIcon(
       TeachersCoursePlanning course, dayIndex) {
     teachersCoursesClassrooms[course] = null;
@@ -1136,27 +1388,43 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
     String periodOfDay =
         ('${((dayIndex + 1) / 7).toDouble().ceil().toString()}-р цаг');
 
-    bool exists = scheduledClassrooms.any((item) =>
-        item['time'] == periodOfDay &&
-        item['days'] == dayOfWeek &&
-        item['classroom_id'] == classroom.classroomId);
-    return exists == true
-        ? ListTile(
-            title: Text('№ ${classroom.classroomNumber}'),
-            subtitle: Text(classroom.classroomType),
-            onTap: () {
-              Navigator.pop(context);
-            },
-            enabled: false,
-          )
-        : ListTile(
-            title: Text('№ ${classroom.classroomNumber}'),
-            subtitle: Text(classroom.classroomType),
-            onTap: () {
-              teachersCoursesClassrooms[course] = classroom;
-              logger.d(teachersCoursesClassrooms.length);
-              Navigator.pop(context);
-            },
-          );
+    if (scheduledClassrooms[0] == null) {
+      return ListTile(
+        title: Text('№ ${classroom.classroomNumber}'),
+        subtitle: Text(classroom.classroomType),
+        onTap: () {
+          teachersCoursesClassrooms[course] = classroom;
+          logger.d(teachersCoursesClassrooms.length);
+          Navigator.pop(context);
+        },
+      );
+    } else {
+      bool exists = scheduledClassrooms.any((item) =>
+          item['time'] == periodOfDay &&
+          item['days'] == dayOfWeek &&
+          item['classroom_id'] == classroom.classroomId);
+      return exists == true
+          ? ListTile(
+              title: Text('№ ${classroom.classroomNumber}'),
+              subtitle: Text(classroom.classroomType),
+              trailing: Text(
+                'Хуваарийг авсан байна!',
+                style: TextStyle(color: Colors.red, fontSize: 14),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+              },
+              enabled: false,
+            )
+          : ListTile(
+              title: Text('№ ${classroom.classroomNumber}'),
+              subtitle: Text(classroom.classroomType),
+              onTap: () {
+                teachersCoursesClassrooms[course] = classroom;
+                logger.d(teachersCoursesClassrooms.length);
+                Navigator.pop(context);
+              },
+            );
+    }
   }
 }

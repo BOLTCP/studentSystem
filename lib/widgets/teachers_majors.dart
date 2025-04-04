@@ -582,7 +582,6 @@ class _TeachersMajorsState extends State<TeachersMajors> {
     return Padding(
       padding: EdgeInsets.only(bottom: 8.0, right: 8.0, left: 8.0),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Center(
             child: Row(
@@ -951,7 +950,7 @@ class _TeachersMajorsState extends State<TeachersMajors> {
   Widget _webWidget(screenWidth, screenHeight) {
     logger.d(screenHeight, screenWidth);
     return Padding(
-      padding: EdgeInsets.only(bottom: 8.0, right: 8.0, left: 8.0, top: 8.0),
+      padding: EdgeInsets.only(bottom: 8.0, right: 8.0, left: 8.0, top: 60),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         mainAxisSize: MainAxisSize.min,

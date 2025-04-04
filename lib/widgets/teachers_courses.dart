@@ -520,7 +520,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
                                             },
                                           ),
                                           SizedBox(
-                                            width: 190,
+                                            width: 180,
                                             height: 104,
                                             child: Column(
                                               mainAxisSize: MainAxisSize.min,
