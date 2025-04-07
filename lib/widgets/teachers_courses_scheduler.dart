@@ -41,6 +41,7 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
   late Future<List> futureTeachersAutoSchedule;
   late Future<List<Classroom>> futureClassrooms;
   late Future<List> futureTeachersSchedule;
+  late int compareValue;
   Set<String> classroomSearchType = {};
   String classroomSearchTypeToServer = '';
   final List<String> allWeekdays = [
@@ -259,19 +260,46 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
             ((decodedJson['teachers_made_schedules_array'] as List)
                 .map((teachersAllSchedules) => (teachersAllSchedules))
                 .toList());
-
         for (var schedule in teachersAllSchedules) {
-          String day = (schedule['days']).toString().replaceAll(' гараг', '');
+          int schedulePosition = (schedule['schedules_timetable_position']);
 
-          String period =
-              (schedule['time']).toString().replaceAll('-р цаг', '');
-          logger.d(allWeekdays.indexOf(day), period);
+          int courseId = (schedule['course_id']);
+
+          for (var coursePlanning in teachersCourses.values) {
+            if (courseId == coursePlanning.courseId) {
+              setState(() {
+                placedItems.add(coursePlanning);
+                logger.d(placedItems.last);
+                itemPositions[schedulePosition] = coursePlanning;
+              });
+            }
+          }
         }
 
-        placedItems.add(teachersCourses.values.first);
-        itemPositions[0] = teachersCourses.values.first;
+        List teachersAllSchedulesLecture = ((decodedJson[
+                'teachers_made_schedules_array_lecture'] as List)
+            .map(((teachersAllSchedulesLecture) => teachersAllSchedulesLecture))
+            .toList());
+        for (var schedule in teachersAllSchedulesLecture) {
+          int schedulePosition = (schedule['schedules_timetable_position']);
 
-        return teachersAllSchedules;
+          int courseId = (schedule['course_id']);
+          logger.d(courseId);
+
+          for (var coursePlanning in teachersCoursesLectures.values) {
+            if (courseId == coursePlanning.courseId) {
+              setState(() {
+                placedItems.add(coursePlanning);
+                itemPositions[schedulePosition] = coursePlanning;
+              });
+            }
+          }
+        }
+        setState(() {
+          compareValue =
+              teachersAllSchedules.length + teachersAllSchedulesLecture.length;
+        });
+        return teachersAllSchedules + teachersAllSchedulesLecture;
       } else if (response.statusCode == 201) {
         final decodedJson = json.decode(response.body);
         logger.d(decodedJson['message']);
@@ -329,15 +357,7 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
     }
   }
 
-  void addClassroomsToTeachersCourses(
-      /* Classroom classroom, TeachersCoursePlanning course, int dayIndex */) async {
-    /* logger.d(itemPositions.toString());
-    String dayOfWeek = allWeekdays[
-        ((dayIndex + 1) - (((dayIndex + 1) / 7).toInt() * 7) - 1).toInt() == -1
-            ? 6
-            : ((dayIndex + 1) - (((dayIndex + 1) / 7).toInt() * 7) - 1)
-                .toInt()];
-    int periodOfDay = ((dayIndex + 1) / 7).toDouble().ceil(); */
+  void addClassroomsToTeachersCourses() async {
     try {
       final bool? confirmed = await showDialog<bool?>(
         context: context,
@@ -951,26 +971,32 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
             ],
           ),
           Positioned(
-            top: 540,
-            left: 225,
-            child: ElevatedButton(
-              onPressed: () {
-                if (teachersCoursesClassrooms.length !=
-                    teachersCourses.length * 2) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                          'Заавал бүх хичээлийн хуваарийг болон хичээл орох ангийг сонгосон байх ёстой!'),
-                      duration: Duration(seconds: 3),
-                    ),
-                  );
-                } else {
-                  addClassroomsToTeachersCourses();
-                }
-              },
-              child: Text('Хуваариудыг шалгах'),
-            ),
-          ),
+              top: 540,
+              left: 225,
+              child: compareValue == teachersCourses.length * 2
+                  ? ElevatedButton(
+                      onPressed: () {
+                        if (teachersCoursesClassrooms.length !=
+                            teachersCourses.length * 2) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                  'Заавал бүх хичээлийн хуваарийг болон хичээл орох ангийг сонгосон байх ёстой!'),
+                              duration: Duration(seconds: 3),
+                            ),
+                          );
+                        } else {
+                          addClassroomsToTeachersCourses();
+                        }
+                      },
+                      child: Text('Хуваариудыг шалгах'),
+                    )
+                  : ElevatedButton(
+                      onPressed: () {
+                        null;
+                      },
+                      child: Text('Хуваариудыг шалгах'),
+                    )),
         ],
       ),
     );

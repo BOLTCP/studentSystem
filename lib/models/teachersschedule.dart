@@ -16,6 +16,7 @@ class TeachersSchedule {
   int classroomCapacity;
   String classroomType;
   String classroomNumber;
+  int schedulesTimetablePosition;
 
   // Constructor
   TeachersSchedule({
@@ -36,6 +37,7 @@ class TeachersSchedule {
     required this.classroomCapacity,
     required this.classroomType,
     required this.classroomNumber,
+    required this.schedulesTimetablePosition,
   });
 
   factory TeachersSchedule.fromJsonTeachersSchedule(Map<String, dynamic> json) {
@@ -57,6 +59,7 @@ class TeachersSchedule {
       classroomCapacity: json['classroom_capacity'],
       classroomType: json['classroom_type'],
       classroomNumber: json['classroom_number'],
+      schedulesTimetablePosition: json['schedules_timetable_position'],
     );
   }
 
@@ -80,6 +83,7 @@ class TeachersSchedule {
       classroomCapacity: map['classroom_capacity'],
       classroomType: map['classroom_type'],
       classroomNumber: map['classroom_number'],
+      schedulesTimetablePosition: map['schedules_timetable_position'],
     );
   }
 
@@ -103,6 +107,7 @@ class TeachersSchedule {
       'classroom_capacity': classroomCapacity,
       'classroom_type': classroomType,
       'classroom_number': classroomNumber,
+      'schedules_timetable_position': schedulesTimetablePosition,
     };
   }
 
