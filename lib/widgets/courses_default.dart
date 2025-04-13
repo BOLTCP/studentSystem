@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:studentsystem/models/user_details.dart';
+import 'package:studentsystem/models/courses.dart';
+import 'package:logger/logger.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:studentsystem/api/get_api_url.dart';
+
+var logger = Logger();
 
 class CoursesDefault extends StatefulWidget {
   final UserDetails userDetails;
@@ -11,6 +18,44 @@ class CoursesDefault extends StatefulWidget {
 }
 
 class _CoursesDefaultState extends State<CoursesDefault> {
+  late Future<List<Courses>> futureCourses;
+
+  @override
+  void initState() {
+    super.initState();
+    futureCourses = fetchCourses();
+  }
+
+  Future<List<Courses>> fetchCourses() async {
+    try {
+      final response = await http.post(
+        getApiUrl('/Get/Student/Major/Courses/'),
+        body: json.encode({
+          'major_id': widget.userDetails.student!.majorId,
+        }),
+        headers: {'Content-Type': 'application/json'},
+      ).timeout(Duration(seconds: 30));
+
+      if (response.statusCode == 200) {
+        final decodedJson = jsonDecode(response.body);
+
+        List<Courses> majorsCourses =
+            (decodedJson['majors_courses'] as List<dynamic>)
+                .map((majorsCourse) => majorsCourse)
+                .whereType<Courses>()
+                .toList();
+
+        return majorsCourses;
+      } else {
+        logger.d('Error: ${response.statusCode}');
+        throw Exception('Something went wrong!');
+      }
+    } catch (e) {
+      logger.d('Error: $e');
+      throw Exception('An error occurred. Please try again.');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -61,7 +106,7 @@ class _CoursesDefaultState extends State<CoursesDefault> {
                             width: 2.0,
                           ),
                         ),
-                        columnSpacing: 15.0,
+                        columnSpacing: 20.0,
                         columns: [
                           DataColumn(label: Text('Төрөл')),
                           DataColumn(label: Text('Хөтөлбөрийн нэр')),
@@ -84,6 +129,68 @@ class _CoursesDefaultState extends State<CoursesDefault> {
                       Padding(
                         padding: EdgeInsets.symmetric(vertical: 15.0),
                       ),
+                      FutureBuilder(
+                        future: futureCourses,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return Center(child: CircularProgressIndicator());
+                          } else if (snapshot.hasError) {
+                            return Center(
+                                child: Text(
+                                    'An error occurred: ${snapshot.error}'));
+                          } else if (snapshot.hasData) {
+                            List<Course> majorsCourses =
+                                snapshot.data as List<Course>;
+
+                            return DataTable(
+                              border: TableBorder(
+                                right: BorderSide(
+                                  color: Color.fromARGB(255, 255, 204, 0)
+                                      .withOpacity(0.5),
+                                  width: 2.0,
+                                ),
+                                left: BorderSide(
+                                  color: Color.fromARGB(255, 255, 204, 0)
+                                      .withOpacity(0.5),
+                                  width: 2.0,
+                                ),
+                                top: BorderSide(
+                                  color: Color.fromARGB(255, 255, 204, 0)
+                                      .withOpacity(0.5),
+                                  width: 2.0,
+                                ),
+                                bottom: BorderSide(
+                                  color: Color.fromARGB(255, 255, 204, 0)
+                                      .withOpacity(0.5),
+                                  width: 2.0,
+                                ),
+                              ),
+                              columnSpacing: 10.0,
+                              columns: [
+                                DataColumn(label: Text('№')),
+                                DataColumn(label: Text('Хичээлийн нэр')),
+                                DataColumn(label: Text('Код')),
+                                DataColumn(label: Text('Кредит')),
+                              ],
+                              rows: majorsCourses.map((majorsCourse) {
+                                return DataRow(cells: [
+                                  DataCell(Text(
+                                      '${majorsCourses.indexOf(majorsCourse)}')),
+                                  DataCell(Text(majorsCourse.courseName)),
+                                  DataCell(Text(majorsCourse.courseCode)),
+                                  DataCell(
+                                      Text('${majorsCourse.totalCredits}')),
+                                ]);
+                              }).toList(),
+                            );
+                          } else {
+                            return Center(child: Text('No courses available.'));
+                          }
+                        },
+                      ),
+                      /*
+                      
                       DataTable(
                         border: TableBorder(
                           right: BorderSide(
@@ -445,6 +552,8 @@ class _CoursesDefaultState extends State<CoursesDefault> {
                           ]),
                         ],
                       ),
+
+                       */
                     ],
                   ),
                 ),
