@@ -513,7 +513,7 @@ class _PersonalInfoState extends State<PersonalInfo> {
                               children: [
                                 ListTile(
                                     title: widget.userRoleSpecification ==
-                                            'Оюутан'
+                                            'student'
                                         ? Text(
                                             "Шалгуулагчийн мэдээлэл",
                                             textAlign: TextAlign.center,
@@ -521,7 +521,8 @@ class _PersonalInfoState extends State<PersonalInfo> {
                                               fontWeight: FontWeight.w700,
                                             ),
                                           )
-                                        : widget.userRoleSpecification == 'Багш'
+                                        : widget.userRoleSpecification ==
+                                                'teacher'
                                             ? Text(
                                                 "Багшийн мэдээлэл",
                                                 textAlign: TextAlign.center,
@@ -638,7 +639,7 @@ class _PersonalInfoState extends State<PersonalInfo> {
                                     ],
                                   ),
                                 ),
-                                widget.userRoleSpecification == 'Оюутан'
+                                widget.userRoleSpecification == 'student'
                                     ? Padding(
                                         padding: const EdgeInsets.symmetric(
                                             vertical: 8.0),
@@ -699,7 +700,7 @@ class _PersonalInfoState extends State<PersonalInfo> {
                                         ),
                                       )
                                     : SizedBox.shrink(),
-                                widget.userRoleSpecification == 'Оюутан'
+                                widget.userRoleSpecification == 'student'
                                     ? Padding(
                                         padding: const EdgeInsets.symmetric(
                                             vertical: 8.0),
@@ -779,30 +780,31 @@ class _PersonalInfoState extends State<PersonalInfo> {
                             child: Column(
                               children: [
                                 ListTile(
-                                  title: widget.userRoleSpecification ==
-                                          'Оюутан'
-                                      ? Text(
-                                          "Элсэлтийн Дэлгэрэнгүй Анкет",
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        )
-                                      : widget.userRoleSpecification == 'Багш'
+                                  title:
+                                      widget.userRoleSpecification == 'student'
                                           ? Text(
-                                              "Ажил горилогчийн Дэлгэрэнгүй Анкет",
+                                              "Элсэлтийн Дэлгэрэнгүй Анкет",
                                               textAlign: TextAlign.center,
                                               style: TextStyle(
                                                 fontWeight: FontWeight.w700,
                                               ),
                                             )
-                                          : Text(
-                                              "Ажил горилогчийн Дэлгэрэнгүй Анкет",
-                                              textAlign: TextAlign.center,
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.w700,
-                                              ),
-                                            ),
+                                          : widget.userRoleSpecification ==
+                                                  'teacher'
+                                              ? Text(
+                                                  "Ажил горилогчийн Дэлгэрэнгүй Анкет",
+                                                  textAlign: TextAlign.center,
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.w700,
+                                                  ),
+                                                )
+                                              : Text(
+                                                  "Ажил горилогчийн Дэлгэрэнгүй Анкет",
+                                                  textAlign: TextAlign.center,
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.w700,
+                                                  ),
+                                                ),
                                 ),
                                 Padding(
                                   padding:
@@ -814,7 +816,7 @@ class _PersonalInfoState extends State<PersonalInfo> {
                                           Expanded(
                                             child: widget
                                                         .userRoleSpecification ==
-                                                    'Оюутан'
+                                                    'student'
                                                 ? TextFormField(
                                                     controller:
                                                         TextEditingController(
@@ -841,7 +843,7 @@ class _PersonalInfoState extends State<PersonalInfo> {
                                                         true, // Makes the field read-only but without gray shading
                                                   )
                                                 : widget.userRoleSpecification ==
-                                                        'Багш'
+                                                        'teacher'
                                                     ? TextFormField(
                                                         controller:
                                                             TextEditingController(
@@ -914,7 +916,7 @@ class _PersonalInfoState extends State<PersonalInfo> {
                                               Expanded(
                                                 child: widget
                                                             .userRoleSpecification ==
-                                                        'Багш'
+                                                        'teacher'
                                                     ? DropdownButtonFormField<
                                                         String>(
                                                         decoration:
@@ -1017,7 +1019,7 @@ class _PersonalInfoState extends State<PersonalInfo> {
                                               Expanded(
                                                 child:
                                                     widget.userRoleSpecification ==
-                                                            'Багш'
+                                                            'teacher'
                                                         ? TextField(
                                                             controller:
                                                                 selectedBranchSchoolController,
@@ -1055,7 +1057,7 @@ class _PersonalInfoState extends State<PersonalInfo> {
                                               Expanded(
                                                 child: widget
                                                             .userRoleSpecification ==
-                                                        'Багш'
+                                                        'teacher'
                                                     ? DropdownButtonFormField<
                                                         String>(
                                                         decoration:
@@ -2249,7 +2251,7 @@ class _PersonalInfoState extends State<PersonalInfo> {
                                       // Dropdown button wrapped with a Flexible widget to allow resizing
                                       Flexible(
                                           child: widget.userRoleSpecification ==
-                                                  'Оюутан'
+                                                  'student'
                                               ? DropdownButtonFormField<String>(
                                                   decoration: InputDecoration(
                                                     labelText: 'Боловсрол',
@@ -2282,7 +2284,7 @@ class _PersonalInfoState extends State<PersonalInfo> {
                                                   }).toList(),
                                                 )
                                               : widget.userRoleSpecification ==
-                                                      'Багш'
+                                                      'teacher'
                                                   ? DropdownButtonFormField<
                                                       String>(
                                                       decoration:
@@ -2351,7 +2353,7 @@ class _PersonalInfoState extends State<PersonalInfo> {
                                       // TextFormField inside Expanded widget
                                       Flexible(
                                           child: widget.userRoleSpecification ==
-                                                  'Оюутан'
+                                                  'student'
                                               ? DropdownButtonFormField<String>(
                                                   decoration: InputDecoration(
                                                     labelText: 'Эрдмийн зэрэг',
@@ -2385,7 +2387,7 @@ class _PersonalInfoState extends State<PersonalInfo> {
                                                   }).toList(),
                                                 )
                                               : widget.userRoleSpecification ==
-                                                      'Багш'
+                                                      'teacher'
                                                   ? DropdownButtonFormField<
                                                       String>(
                                                       decoration:
@@ -2470,7 +2472,7 @@ class _PersonalInfoState extends State<PersonalInfo> {
                                     children: [
                                       Expanded(
                                         child: widget.userRoleSpecification ==
-                                                'Оюутан'
+                                                'student'
                                             ? TextFormField(
                                                 controller:
                                                     professionController,
@@ -2496,7 +2498,7 @@ class _PersonalInfoState extends State<PersonalInfo> {
                                                     TextInputType.text,
                                               )
                                             : widget.userRoleSpecification ==
-                                                    'Багш'
+                                                    'teacher'
                                                 ? TextFormField(
                                                     controller:
                                                         professionController,
@@ -2867,9 +2869,9 @@ class _PersonalInfoState extends State<PersonalInfo> {
                               isPDFvisible = true;
                             });
                           },
-                          child: widget.userRoleSpecification == 'Оюутан'
+                          child: widget.userRoleSpecification == 'student'
                               ? Text('Сургалтын журамтай танилцах')
-                              : widget.userRoleSpecification == 'Багш'
+                              : widget.userRoleSpecification == 'teacher'
                                   ? Text('Ажилтаны журамтай танилцах')
                                   : Text('Сургалтын журамтай танилцах'),
                         ),
@@ -2882,9 +2884,9 @@ class _PersonalInfoState extends State<PersonalInfo> {
                                   });
                                 }
                               : null,
-                          child: widget.userRoleSpecification == 'Оюутан'
+                          child: widget.userRoleSpecification == 'student'
                               ? Text('Сургалтын гэрээтэй танилцах')
-                              : widget.userRoleSpecification == 'Багш'
+                              : widget.userRoleSpecification == 'teacher'
                                   ? Text('Ажилтаны гэрээтэй танилцах')
                                   : Text('Ажилтаны гэрээтэй танилцах'),
                         ),
