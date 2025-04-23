@@ -106,7 +106,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                     context,
                     '/user_signup',
                     arguments: {
-                      'userRoleSpecification': 'Багш',
+                      'userRoleSpecification': 'teacher',
                     },
                   );
                 },

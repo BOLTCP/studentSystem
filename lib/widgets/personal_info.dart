@@ -292,7 +292,7 @@ class _PersonalInfoState extends State<PersonalInfo> {
     DateTime createdAt = DateTime.now();
     String createdAtString = createdAt.toIso8601String();
     String apiUserCreationStringStudent = '/User/Signup/Create/User';
-    if (widget.userRoleSpecification == 'Багш') {
+    if (widget.userRoleSpecification == 'teacher') {
       apiUserCreationStringStudent = '/User/Signup/Create/User/Teacher';
     }
     logger.d(departmentsOfEducationController.text);

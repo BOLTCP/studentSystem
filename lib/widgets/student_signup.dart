@@ -212,7 +212,7 @@ class _StudentSignupState extends State<StudentSignup> {
                                 arguments: {
                                   'user': result,
                                   'major': widget.major,
-                                  'userRoleSpecification': 'Оюутан'
+                                  'userRoleSpecification': 'student'
                                 },
                               );
                             }

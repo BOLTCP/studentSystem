@@ -40,7 +40,7 @@ class _CoursesIntroductionState extends State<CoursesIntroduction> {
       if (response.statusCode == 200) {
         final decodedJson = json.decode(response.body);
         Major majors = Major.fromJsonMajor(decodedJson['major']);
-
+        logger.d(majors.signUps);
         return majors;
       } else {
         logger.d('Error: ${response.statusCode}');
@@ -98,7 +98,7 @@ class _CoursesIntroductionState extends State<CoursesIntroduction> {
                               ..._buildCourseDetails(majors),
                               SizedBox(height: 20),
                               ElevatedButton(
-                                style: majors.signUps == 'бүртгэл нээлттэй'
+                                style: majors.signUps == 'admissions_open'
                                     ? ElevatedButton.styleFrom(
                                         padding: EdgeInsets.symmetric(
                                             vertical: 12, horizontal: 30),
@@ -108,7 +108,7 @@ class _CoursesIntroductionState extends State<CoursesIntroduction> {
                                             fontWeight: FontWeight.bold),
                                       )
                                     : null,
-                                onPressed: majors.signUps == 'бүртгэл нээлттэй'
+                                onPressed: majors.signUps == 'admissions_open'
                                     ? () {
                                         Navigator.pushNamed(
                                           context,
@@ -117,7 +117,7 @@ class _CoursesIntroductionState extends State<CoursesIntroduction> {
                                         );
                                       }
                                     : null,
-                                child: majors.signUps == 'бүртгэл нээлттэй'
+                                child: majors.signUps == 'admissions_open'
                                     ? Text(
                                         'Хөтөлбөрт бүртгүүлэх',
                                         textAlign: TextAlign.center,

@@ -63,14 +63,14 @@ class _LoginScreenState extends State<LoginScreen> {
             _saveCredentials(loginName, passwordHash);
           }
 
-          if (user.userRole == 'Оюутан') {
+          if (user.userRole == 'student') {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
                 builder: (context) => StudentDashboard(userId: user.userId),
               ),
             );
-          } else if (user.userRole == 'Багш') {
+          } else if (user.userRole == 'teacher') {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
