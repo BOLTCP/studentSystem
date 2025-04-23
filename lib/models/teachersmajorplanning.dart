@@ -49,4 +49,19 @@ class TeachersMajorPlanning {
       'department_of_educations_id': departmentOfEducationsId,
     };
   }
+
+  @override
+  String toString() {
+    return 'TeachersMajorPlanning{'
+        'teacherMajorId: $teacherMajorId, '
+        'teacherId: $teacherId, '
+        'academicDegree: $academicDegree, '
+        'majorName: $majorName, '
+        'majorId: $majorId, '
+        'credit: $credit, '
+        'departmentId: $departmentId, '
+        'createdAt: $createdAt, '
+        'departmentOfEducationsId: $departmentOfEducationsId'
+        '}';
+  }
 }

@@ -51,7 +51,7 @@ class _TeachersMajorsState extends State<TeachersMajors> {
     _screens = [
       TeacherDashboard(userId: widget.userDetails.user.userId),
     ];
-    futureUserDetails = Future.value(widget.userDetails);
+    futureUserDetails = fetchUserDetails(widget.userDetails.user.userId);
     futureMajorDetails = fetchMajorsDetails();
     futureDepartmentsDetails = fetchDepartmentsDetails();
     futureTeachersMajorPlanning = fetchTeachersMajorPlanning();
@@ -84,9 +84,6 @@ class _TeachersMajorsState extends State<TeachersMajors> {
         }),
         headers: {'Content-Type': 'application/json'},
       ).timeout(Duration(seconds: 30));
-
-      logger.d('Response status: ${response.statusCode}');
-      logger.d('Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final decodedJson = json.decode(response.body);
@@ -155,8 +152,6 @@ class _TeachersMajorsState extends State<TeachersMajors> {
             teacherHasSelectedMajors = true;
           }
         });
-
-        logger.d(teachersmajorplanning.length);
 
         return teachersmajorplanning;
       } else {
@@ -1267,7 +1262,8 @@ class _TeachersMajorsState extends State<TeachersMajors> {
                                                                     context,
                                                                     '/teacher_courses',
                                                                     arguments:
-                                                                        futureUserDetails,
+                                                                        widget
+                                                                            .userDetails,
                                                                   );
                                                                 },
                                                               ),

@@ -4,7 +4,6 @@ import 'package:studentsystem/widgets/teacher_dashboard.dart';
 import 'package:studentsystem/widgets/teachers_courses_scheduler.dart';
 import 'package:studentsystem/widgets/user_profile.dart';
 import 'package:studentsystem/models/user_details.dart';
-import 'package:studentsystem/widgets/teachers_courses_scheduler.dart';
 
 Widget buildDrawer(
     BuildContext context, Future<UserDetails> futureUserDetails) {

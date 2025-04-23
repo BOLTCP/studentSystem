@@ -96,6 +96,9 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
       teachersCoursesLectures[widget.userDetails.teachersCoursePlanning!
           .indexOf(coursePlanning)] = courseLecture;
     }
+    setState(() {
+      compareValue = teachersCourses.length * 2;
+    });
   }
 
   Set<String> fetchClassroomsType() {
@@ -172,9 +175,6 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
         headers: {'Content-Type': 'application/json'},
       ).timeout(Duration(seconds: 30));
 
-      logger.d('Response status: ${response.statusCode}');
-      logger.d('Response body: ${response.body}');
-
       if (response.statusCode == 200) {
         final decodedJson = json.decode(response.body);
 
@@ -232,6 +232,7 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
                 as List)
             .map((allClassrooms) => Classroom.fromJsonClassroom(allClassrooms))
             .toList());
+
         return allClassrooms;
       } else {
         logger.d('Error: ${response.statusCode}');
@@ -260,6 +261,7 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
             ((decodedJson['teachers_made_schedules_array'] as List)
                 .map((teachersAllSchedules) => (teachersAllSchedules))
                 .toList());
+
         for (var schedule in teachersAllSchedules) {
           int schedulePosition = (schedule['schedules_timetable_position']);
 
@@ -295,10 +297,12 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
             }
           }
         }
+
         setState(() {
           compareValue =
-              teachersAllSchedules.length + teachersAllSchedulesLecture.length;
+              teachersAllSchedulesLecture.length + teachersAllSchedules.length;
         });
+
         return teachersAllSchedules + teachersAllSchedulesLecture;
       } else if (response.statusCode == 201) {
         final decodedJson = json.decode(response.body);
@@ -364,7 +368,7 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
         builder: (BuildContext context) {
           return AlertDialog(
             title: Text(
-              '${teachersCoursesClassrooms.length} өдөр цаг ангийг сонгосон хичээлүүдийн хуваарийг шалгах',
+              '${teachersCoursesClassrooms.length} - н хичээлийн сонгосон хуваарийг шалгах?',
               /*'${course.courseName} хичээлийг № ${classroom.classroomNumber} ангид $dayOfWeek гарагт $periodOfDay-р цагийн хуваарьт нэмэх?'*/
               style: TextStyle(fontSize: 20),
             ),
@@ -971,6 +975,29 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
             ],
           ),
           Positioned(
+            top: 540,
+            left: 225,
+            child: ElevatedButton(
+              onPressed: () {
+                if (teachersCoursesClassrooms.length !=
+                    teachersCourses.length * 2) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                          'Заавал бүх хичээлийн хуваарийг болон хичээл орох ангийг сонгосон байх ёстой!'),
+                      duration: Duration(seconds: 3),
+                    ),
+                  );
+                } else {
+                  addClassroomsToTeachersCourses();
+                }
+              },
+              child: Text('Хуваариудыг шалгах'),
+            ),
+          ),
+
+          /*
+          Positioned(
               top: 540,
               left: 225,
               child: compareValue == teachersCourses.length * 2
@@ -997,6 +1024,7 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
                       },
                       child: Text('Хуваариудыг шалгах'),
                     )),
+           */
         ],
       ),
     );

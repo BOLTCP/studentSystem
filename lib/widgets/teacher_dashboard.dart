@@ -62,9 +62,6 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
         headers: {'Content-Type': 'application/json'},
       ).timeout(Duration(seconds: 30));
 
-      logger.d('Response status: ${response.statusCode}');
-      logger.d('Response body: ${response.body}');
-
       if (response.statusCode == 200) {
         final decodedJson = json.decode(response.body);
         AuthUser user = AuthUser.fromJsonAuthUser(decodedJson['user']);

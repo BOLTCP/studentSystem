@@ -11,7 +11,7 @@ var logger = Logger();
 class StudentSignup extends StatefulWidget {
   final Major major;
 
-  const StudentSignup({required this.major, Key? key}) : super(key: key);
+  const StudentSignup({required this.major, super.key});
 
   @override
   _StudentSignupState createState() => _StudentSignupState();
