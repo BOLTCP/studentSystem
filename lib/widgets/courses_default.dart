@@ -18,7 +18,7 @@ class CoursesDefault extends StatefulWidget {
 }
 
 class _CoursesDefaultState extends State<CoursesDefault> {
-  late Future<List<Courses>> futureCourses;
+  late Future<List<Course>> futureCourses;
 
   @override
   void initState() {
@@ -26,7 +26,7 @@ class _CoursesDefaultState extends State<CoursesDefault> {
     futureCourses = fetchCourses();
   }
 
-  Future<List<Courses>> fetchCourses() async {
+  Future<List<Course>> fetchCourses() async {
     try {
       final response = await http.post(
         getApiUrl('/Get/Student/Major/Courses/'),
@@ -38,12 +38,11 @@ class _CoursesDefaultState extends State<CoursesDefault> {
 
       if (response.statusCode == 200) {
         final decodedJson = jsonDecode(response.body);
+        final majorsCoursesJson = decodedJson['majors_courses'];
 
-        List<Courses> majorsCourses =
-            (decodedJson['majors_courses'] as List<dynamic>)
-                .map((majorsCourse) => majorsCourse)
-                .whereType<Courses>()
-                .toList();
+        List<Course> majorsCourses = (majorsCoursesJson as List)
+            .map((course) => Course.fromJsonCourses(course))
+            .toList();
 
         return majorsCourses;
       } else {
@@ -174,9 +173,13 @@ class _CoursesDefaultState extends State<CoursesDefault> {
                                 DataColumn(label: Text('Кредит')),
                               ],
                               rows: majorsCourses.map((majorsCourse) {
+                                DataRow(cells: [
+                                  DataCell(
+                                      Text('${majorsCourse.totalCredits}')),
+                                ]);
                                 return DataRow(cells: [
                                   DataCell(Text(
-                                      '${majorsCourses.indexOf(majorsCourse)}')),
+                                      '${majorsCourses.indexOf(majorsCourse) + 1}')),
                                   DataCell(Text(majorsCourse.courseName)),
                                   DataCell(Text(majorsCourse.courseCode)),
                                   DataCell(

@@ -23,6 +23,7 @@ class Course {
   final int majorId;
   final String description;
   final String courseSeason;
+  final int? timesPerWeek;
 
   Course({
     required this.courseId,
@@ -34,20 +35,22 @@ class Course {
     required this.majorId,
     this.description = '*',
     this.courseSeason = 'Намар, Өвөл, Хавар, Зун',
+    this.timesPerWeek = 0,
   });
 
   // Factory constructor to create a Course instance from JSON
   factory Course.fromJsonCourses(Map<String, dynamic> json) {
     return Course(
-      courseId: json['course_id'],
-      courseName: json['course_name'],
-      courseCode: json['course_code'],
-      courseType: json['course_type'],
-      courseYear: json['course_year'],
-      totalCredits: json['total_credits'],
-      majorId: json['major_id'],
-      description: json['description'] ?? '*',
-      courseSeason: json['course_season'] ?? 'Намар, Өвөл, Хавар, Зун',
+      courseId: json['course_id'] as int,
+      courseName: json['course_name'] as String,
+      courseCode: json['course_code'] as String,
+      courseType: json['course_type'] as String,
+      courseYear: json['course_year'] as String,
+      totalCredits: json['total_credits'] as int,
+      majorId: json['major_id'] as int,
+      description: json['description'] as String,
+      courseSeason: json['course_season'] as String,
+      timesPerWeek: json['times_per_week'] as int,
     );
   }
 
