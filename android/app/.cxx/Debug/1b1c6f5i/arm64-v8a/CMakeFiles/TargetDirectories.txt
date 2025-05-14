@@ -1,0 +1,2 @@
+/Users/ariunbold/Downloads/studentSystem/android/app/.cxx/Debug/1b1c6f5i/arm64-v8a/CMakeFiles/edit_cache.dir
+/Users/ariunbold/Downloads/studentSystem/android/app/.cxx/Debug/1b1c6f5i/arm64-v8a/CMakeFiles/rebuild_cache.dir

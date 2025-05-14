@@ -43,7 +43,7 @@ class MyApp extends StatelessWidget {
         '/contact_us': (context) => ContactUsScreen(),
         '/admission_courses': (context) => AdmissionCourses(),
         '/user_signup': (context) => UserSignUp(
-              userRoleSpecification: 'Багш',
+              userRoleSpecification: 'teacher',
             ),
       },
       onGenerateRoute: (settings) {

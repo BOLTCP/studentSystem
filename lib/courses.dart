@@ -239,35 +239,38 @@ class _CoursesIntroductionState extends State<CoursesIntroduction> {
   }
 
   Widget _buildExpandableCard(String title, String content) {
-    return Card(
-      elevation: 6.0,
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      color: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
-      ),
-      child: ExpansionTile(
-        title: Text(
-          title,
-          softWrap: true,
-          maxLines: 3,
-          overflow: TextOverflow.ellipsis,
-          textAlign: TextAlign.start,
-          style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.blueAccent),
+    return SizedBox(
+      width: 350,
+      child: Card(
+        elevation: 6.0,
+        margin: const EdgeInsets.symmetric(vertical: 8.0),
+        color: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12.0),
         ),
-        children: [
-          SingleChildScrollView(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              content,
-              style: TextStyle(fontSize: 16),
-              overflow: TextOverflow.visible,
-            ),
+        child: ExpansionTile(
+          title: Text(
+            title,
+            softWrap: true,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.start,
+            style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.blueAccent),
           ),
-        ],
+          children: [
+            SingleChildScrollView(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                content,
+                style: TextStyle(fontSize: 16),
+                overflow: TextOverflow.visible,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -46,7 +46,7 @@ class ProfileScreen extends StatelessWidget {
             return Center(child: Text('No data found.'));
           } else {
             final userDetails = snapshot.data!;
-            return userDetails.user.userRole == 'Багш'
+            return userDetails.user.userRole == 'teacher'
                 ? SingleChildScrollView(
                     padding: EdgeInsetsDirectional.only(top: 5.0, bottom: 80.0),
                     child: Center(
@@ -96,7 +96,7 @@ class ProfileScreen extends StatelessWidget {
                       ),
                     ),
                   )
-                : userDetails.user.userRole == 'Оюутан'
+                : userDetails.user.userRole == 'student'
                     ? SingleChildScrollView(
                         child: Center(
                           child: SizedBox(

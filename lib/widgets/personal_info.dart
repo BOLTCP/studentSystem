@@ -289,11 +289,14 @@ class _PersonalInfoState extends State<PersonalInfo> {
   }
 
   Future<List> createContract() async {
+    logger.d(widget.userRoleSpecification);
     DateTime createdAt = DateTime.now();
     String createdAtString = createdAt.toIso8601String();
-    String apiUserCreationStringStudent = '/User/Signup/Create/User';
+    String apiUserCreationStringStudent;
     if (widget.userRoleSpecification == 'teacher') {
       apiUserCreationStringStudent = '/User/Signup/Create/User/Teacher';
+    } else {
+      apiUserCreationStringStudent = '/User/Signup/Create/User';
     }
     logger.d(departmentsOfEducationController.text);
     try {
@@ -468,6 +471,7 @@ class _PersonalInfoState extends State<PersonalInfo> {
 
   @override
   Widget build(BuildContext context) {
+    logger.d(widget.userRoleSpecification);
     return Scaffold(
       appBar: AppBar(
         title: Text(
