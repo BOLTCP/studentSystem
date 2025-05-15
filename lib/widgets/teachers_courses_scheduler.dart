@@ -29,6 +29,7 @@ class TeacherCoursesScheduler extends StatefulWidget {
 }
 
 class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
+  Key _key = UniqueKey();
   //late Future<UserDetails> userDetails;
   final int rows = 8;
   final int cols = 7;
@@ -39,6 +40,7 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
   late String currentDayOfWeek = '';
   late Future<UserDetails> futureUserDetails;
   late Future<List> futureTeachersAutoSchedule;
+  late int prevSchedule = 0;
   late Future<List<Classroom>> futureClassrooms;
   late Future<List> futureTeachersSchedule;
   late int compareValue;
@@ -73,6 +75,12 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
     futureClassrooms = fetchClassrooms();
     _generateWeekdays();
     _fetchTeachersCourses();
+  }
+
+  void _reloadPage() {
+    setState(() {
+      _key = UniqueKey();
+    });
   }
 
   void _fetchTeachersCourses() {
@@ -286,7 +294,6 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
           int schedulePosition = (schedule['schedules_timetable_position']);
 
           int courseId = (schedule['course_id']);
-          logger.d(courseId);
 
           for (var coursePlanning in teachersCoursesLectures.values) {
             if (courseId == coursePlanning.courseId) {
@@ -340,6 +347,9 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
             (decodedJson['scheduled_classrooms_lecture_array'] as List)
                 .map((scheduledClassrooms) => (scheduledClassrooms))
                 .toList();
+
+        prevSchedule =
+            scheduledClassrooms.length + scheduledClassroomsLectures.length;
 
         return [scheduledClassrooms, scheduledClassroomsLectures];
       } else if (response.statusCode == 201) {
@@ -401,6 +411,7 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
             encodeTeachersCoursesClassrooms(teachersCoursesClassrooms);
         String coursesWeekDaysPositions =
             encodeCoursesClassrooms(itemPositions);
+
         final response = await http.post(
           getApiUrl('/Add/Classroom/To/Teachers/Course'),
           body: json.encode({
@@ -476,6 +487,84 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
       }
     } catch (error) {
       logger.d('Error: $error');
+      throw Exception('An error occurred. Please try again.');
+    }
+  }
+
+  Future<void> _removeScheduleFromTeacher(
+      TeachersCoursePlanning coursePlanning) async {
+    int schedulePosition = itemPositions.entries
+        .where((coursePlan) => coursePlan.value == coursePlanning)
+        .first
+        .key;
+    logger.d(allWeekdays[schedulePosition % 7]);
+    try {
+      final bool? confirmed = await showDialog<bool>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Энэ хуваарийг хасахыг хүсч байн уу?'),
+            content: Text('Багшаас ${coursePlanning.courseName}'
+                ' ${allWeekdays[schedulePosition % 7]} гарагийн ${((schedulePosition + 1) / 7).toDouble().ceil()} хуваарийг хасна!'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context, false);
+                },
+                child: Text('Үгүй'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context, true);
+                },
+                child: Text('Тийм хасах'),
+              ),
+            ],
+          );
+        },
+      );
+
+      if (confirmed == true) {
+        final response = await http.delete(
+          getApiUrl('/Remove/Schedule/From/Teacher'),
+          body: json.encode({
+            'teacherId': widget.userDetails.teacher?.teacherId,
+            'courseToDelete': coursePlanning.toJsonTeachersCoursePlanning(),
+          }),
+          headers: {'Content-Type': 'application/json'},
+        ).timeout(Duration(seconds: 30));
+
+        if (response.statusCode == 200) {
+          refreshUserDetails();
+          _reloadPage();
+          build(context);
+          final decodedJson = json.decode(response.body);
+          final deletedSchedule = decodedJson['message'];
+          return showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text('Хасагдлаа'),
+                content: Text(
+                    'Багшаас ${coursePlanning.courseName} $deletedSchedule'),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Text('Буцах'),
+                  ),
+                ],
+                icon: Icon(Icons.delete, color: Colors.red, size: 40),
+              );
+            },
+          );
+        }
+      } else {
+        throw Exception('Failed to add major');
+      }
+    } catch (e) {
+      logger.d('Error: $e');
       throw Exception('An error occurred. Please try again.');
     }
   }
@@ -706,35 +795,40 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
                                                     ? Colors.blueAccent
                                                     : Colors.white,
                                               ),
-                                              child: itemPositions[index] !=
-                                                      null
-                                                  ? Draggable<
-                                                      TeachersCoursePlanning>(
-                                                      data:
-                                                          itemPositions[index]!,
-                                                      feedback: Material(
-                                                        color:
-                                                            Colors.transparent,
-                                                        child:
-                                                            _buildDraggableWidget(
+                                              child:
+                                                  itemPositions[index] != null
+                                                      ? GestureDetector(
+                                                          onDoubleTap: () => {
+                                                            _removeScheduleFromTeacher(
                                                                 itemPositions[
-                                                                    index]!),
-                                                      ),
-                                                      childWhenDragging:
-                                                          Opacity(
-                                                        opacity: 0.5,
-                                                        child:
-                                                            _buildDraggableWidget(
-                                                                itemPositions[
-                                                                    index]!),
-                                                      ),
-                                                      child:
-                                                          _buildDraggableWidgetWithIcon(
-                                                              itemPositions[
-                                                                  index]!,
-                                                              index),
-                                                    )
-                                                  : null,
+                                                                    index]!)
+                                                          },
+                                                          child: Draggable<
+                                                              TeachersCoursePlanning>(
+                                                            data: itemPositions[
+                                                                index]!,
+                                                            feedback: Material(
+                                                              color: Colors
+                                                                  .transparent,
+                                                              child: _buildDraggableWidget(
+                                                                  itemPositions[
+                                                                      index]!),
+                                                            ),
+                                                            childWhenDragging:
+                                                                Opacity(
+                                                              opacity: 0.5,
+                                                              child: _buildDraggableWidget(
+                                                                  itemPositions[
+                                                                      index]!),
+                                                            ),
+                                                            child:
+                                                                _buildDraggableWidgetWithIcon(
+                                                                    itemPositions[
+                                                                        index]!,
+                                                                    index),
+                                                          ),
+                                                        )
+                                                      : null,
                                             ),
                                           )
                                         : GestureDetector(
@@ -980,7 +1074,7 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
             child: ElevatedButton(
               onPressed: () {
                 if (teachersCoursesClassrooms.length !=
-                    teachersCourses.length * 2) {
+                    (teachersCourses.length * 2) - prevSchedule) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
@@ -1423,7 +1517,6 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
                       style: TextStyle(color: Colors.white),
                       textAlign: TextAlign.center,
                     ),
-                    Icon(Icons.place, color: Colors.white),
                   ],
                 ),
               ),
