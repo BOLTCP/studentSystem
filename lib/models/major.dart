@@ -23,6 +23,8 @@ class Major {
   final String? qualifications2;
   final String signUps;
   final int departmentId;
+  final Map<String, dynamic>? recommendedCurriculum;
+  final Map<String, dynamic>? recommendedCurriculum1;
 
   Major({
     required this.majorId,
@@ -45,6 +47,8 @@ class Major {
     this.qualifications2,
     required this.signUps,
     required this.departmentId,
+    required this.recommendedCurriculum,
+    required this.recommendedCurriculum1,
   });
 
   @override
@@ -79,6 +83,12 @@ class Major {
       qualifications2: json['qualifications2'],
       signUps: json['sign_ups'],
       departmentId: json['department_id'],
+      recommendedCurriculum: json['recommended_curriculum'] != null
+          ? Map<String, dynamic>.from(json['recommended_curriculum'])
+          : null,
+      recommendedCurriculum1: json['recommended_curriculum1'] != null
+          ? Map<String, dynamic>.from(json['recommended_curriculum1'])
+          : null,
     );
   }
 
@@ -113,7 +123,9 @@ class Major {
       'qualifications1': qualifications1,
       'qualifications2': qualifications2,
       'sign_ups': signUps,
-      'department_id': departmentId
+      'department_id': departmentId,
+      'recommended_curriculum': recommendedCurriculum,
+      'recommended_curriculum1': recommendedCurriculum1,
     };
   }
 }

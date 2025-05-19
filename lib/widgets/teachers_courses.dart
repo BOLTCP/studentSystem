@@ -181,6 +181,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
             body: jsonEncode({
               'selected_majors': widget.userDetails.teachersMajorPlanning ?? [],
               'course_code': courseCode,
+              'teacher_id': widget.userDetails.teacher?.teacherId,
             }),
           )
           .timeout(Duration(seconds: 30));
@@ -694,7 +695,7 @@ class _TeachersCoursesState extends State<TeachersCourses> {
     List<String> selectedCourses = (userDetails.teachersCoursePlanning!
         .map((coursePlanning) => coursePlanning.courseName)).toList();
     List courses = majorsCourses as List;
-
+    logger.d(widget.userDetails.major, ';lasdkjf;aldskfj');
     majorsCourses = courses
         .where((coursePlanning) =>
             !selectedCourses.contains(coursePlanning.courseName))

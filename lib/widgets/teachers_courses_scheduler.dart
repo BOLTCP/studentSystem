@@ -229,8 +229,7 @@ class _TeacherCoursesSchedulerState extends State<TeacherCoursesScheduler> {
   Future<List<Classroom>> fetchClassrooms() async {
     try {
       final response = await http.get(
-        getApiUrl(
-            '/Get/Classrooms?classroomSearchType=$classroomSearchTypeToServer'),
+        getApiUrl('/Get/Classrooms?classroomSearchType=КОМ'),
         headers: {'Content-Type': 'application/json'},
       ).timeout(Duration(seconds: 30));
 
