@@ -1,3 +1,60 @@
+  1.Үндсэн Dart логик
+  lib/ хавтсанд байрлах
+  Платформ тус бүрийн код:
+  windows/, linux/, android/ хавтаснуудад C++, C, болон CMake файлууд
+  Desktop build-д зориулсан
+  Чиглүүлэлт ба Навигаци
+  Байршил: lib/main.dart
+  Доорх замууд тодорхойлогдсон:
+  /login_screen → Нэвтрэх дэлгэц
+  /contact_us → Холбоо барих
+  /admission_courses, /user_signup, /student_signup, /courses, /user_profile гэх мэт
+  Widget-ууд
+  Оюутан:
+  student_signup.dart
+  personal_info.dart
+  Багш:
+  teacher_dashboard.dart
+  teachers_majors.dart
+  Хичээлүүд:
+  courses_screen.dart
+  courses_default.dart
+  admission_courses.dart
+
+  2.Бизнес Логик ба Моделууд
+  Байршил: lib/models/
+  major.dart — Мэргэжлийн entity
+  user.dart, user_details.dart — Хэрэглэгчийн болон профайл мэдээлэл
+  API Интеграци
+  Dart-ийн http санг ашиглан API дуудалтууд хийдэг
+  Жишээ: courses.dart файлд мэргэжлийн мэдээлэл татаж авах
+  Backend логик:
+  lib/api/server.js файлд байрлах
+  Үйлдлүүд:
+  Хэрэглэгч бүртгэх
+  Нууц үг шифрлэх (bcrypt ашиглан)
+  Профайл мэдээлэл удирдах
+  Багш болон оюутны үүрэгт суурилсан (role-based) логик хэрэгжүүлдэг
+  Бүтцэт JSON хариулт буцаадаг
+
+  3.Код Бичих Ур Чадварууд
+
+  Flutter/Dart:
+  Stateless болон Stateful widget-уудыг цэвэр хуваарилсан
+  Чиглүүлэлтийн менежмент сайн зохион байгуулсан
+  async/await болон сүлжээний (network) үйлдлүүдэд алдаа барих (error handling) ашигласан
+  Загварчлал ба Абстракци:
+  API болон Model-уудыг тусгаарлан зохион байгуулсан тул код арчилгаа (maintainability) сайтай
+  Хөндлөн Платформ Дизайн:
+  Desktop build-д зориулсан CMake болон platform-specific runner-уудыг ашигласан
+  Backend Интеграци:
+  Node.js + JavaScript backend ашиглан:
+  Хэрэглэгчийн нэвтрэлт
+  Нууц үгийн хамгаалалт (bcrypt)
+  Хувийн мэдээлэл удирдах
+  Хэрэглэгчийн үүрэг (role)-ийг динамикаар оноох
+
+
 Application Structure
 
   1.
@@ -28,13 +85,7 @@ Application Structure
   Applies role-based logic for both teachers and students.
   Uses bcrypt for security and returns structured user data.
 
-  3. Platform Support and Build System
-  Windows, Linux, Android:
-  Each platform has specific runner code and build instructions, e.g.:
-  windows/runner/main.cpp, linux/runner/my_application.cc
-  CMake files set up builds and plugin support for desktop environments.
-
-  4. Coding Skills Highlights
+  3. Coding Skills Highlights
   Flutter/Dart:
   Clean widget separation, stateless/stateful widgets, and route management.
   API and model abstraction for maintainability.
